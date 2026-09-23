@@ -652,10 +652,20 @@ ul { margin: 0; padding: 0; }
   .poster-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* Stack the detail page (credits / video / logline+press+watch) well before
-   the 3-column layout would squeeze the video down too far — video stays
-   full-width and readable below this width instead of shrinking with it. */
-@media (max-width: 1150px) {
+/* Detail page has 3 tiers: wide = credits | video | logline+press+watch
+   side by side; medium = credits + video paired (2-col), logline+press+
+   watch drops to a full-width row below; narrow = everything stacked. */
+@media (max-width: 1150px) and (min-width: 701px) {
+  .detail-grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 2fr);
+    grid-template-rows: auto auto;
+  }
+  .detail-col-left { grid-column: 1; grid-row: 1; }
+  .detail-col-center { grid-column: 2; grid-row: 1; }
+  .detail-col-right { grid-column: 1 / -1; grid-row: 2; }
+}
+
+@media (max-width: 700px) {
   .detail-grid { grid-template-columns: 1fr; }
 }
 
