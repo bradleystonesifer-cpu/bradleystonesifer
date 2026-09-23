@@ -652,8 +652,15 @@ ul { margin: 0; padding: 0; }
   .poster-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* Stack the detail page (credits / video / logline+press+watch) well before
+   the 3-column layout would squeeze the video down too far — video stays
+   full-width and readable below this width instead of shrinking with it. */
+@media (max-width: 1150px) {
+  .detail-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 900px) {
-  .detail-grid, .about-top, .gallery-main, .gallery-bottom, .rep-grid { grid-template-columns: 1fr; }
+  .about-top, .gallery-main, .gallery-bottom, .rep-grid { grid-template-columns: 1fr; }
   .poster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-name { font-size: 48px; }
   .about-wrap { padding-left: clamp(10px, 5vw, 28px); padding-right: clamp(10px, 5vw, 28px); }
