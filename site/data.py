@@ -168,6 +168,8 @@ CATS = [
 # Per-project overrides keyed as "<catKey>-<index>", mirroring `_all[k] = {...override}` in build()/applyOverrides().
 OVERRIDES = {
     "narrative-1": {  # Hit & Run
+        "videoEmbed": "https://player.vimeo.com/video/65530619?badge=0&autopause=0&player_id=0&app_id=58479",
+        "videoAspect": "16/9",
         "overrideCredits": [
             {"k": "Director", "v": "David Palmer, Dax Shepard"},
             {"k": "Production Company", "v": "Exclusive Media; Panay Films; Open Road Films"},
@@ -234,11 +236,6 @@ OVERRIDES = {
             {"k": "Lead Actors", "v": "Adam Scott, Brittany Snow, Alex Frost, J.K. Simmons"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '09 (Spectrum); 25th Independent Spirit Awards — 2 nominations incl. Best Screenplay"},
             {"k": "Press — Filmmaker Magazine", "v": "“Shot in cinemascope 35mm, it has a widescreen expressiveness that is rare in low budget work.”", "href": "https://filmmakermagazine.com/1398-lee-toland-krieger-the-vicious-kind/"},
-        ],
-        "techSpecs": [
-            {"k": "Camera", "v": "Moviecam Compact MK2"},
-            {"k": "Lens", "v": "Arri Ultra Primes"},
-            {"k": "Look", "v": "Kodak Vision 2 film stock"},
         ],
         "logline": "A man tries to warn his brother away from the new girlfriend he brings home during Thanksgiving, but ends up becoming infatuated with her in the process.",
         "watchLabel": "Watch on Prime Video",
@@ -308,7 +305,7 @@ POSTERS = {
 
 # Home-page collage: (project key, image slot, aspect ratio, column span). Mirrors `_collageSpec`.
 COLLAGE_SPEC = [
-    ("narrative-0", "image", "2/3", 2),
+    ("narrative-0", "poster", "2/3", 2),
     ("commercial-2", "image", "16/9", 5),
     ("documentary-2", "image2", "16/9", 5),
     ("narrative-1", "image", "16/9", 4),
@@ -320,13 +317,13 @@ COLLAGE_SPEC = [
     ("narrative-4", "image", "16/9", 4),
     ("documentary-2", "image3", "16/9", 4),
     ("narrative-3", "image2", "16/9", 5),
-    ("documentary-0", "image", "2/3", 2),
+    ("narrative-1", "poster", "2/3", 2),
     ("commercial-19", "image", "16/9", 5),
     ("documentary-3", "image", "2.35/1", 6),
     ("music_video-5", "image", "2.35/1", 6),
-    ("narrative-1", "image2", "16/9", 4),
-    ("music_video-0", "image2", "16/9", 4),
-    ("commercial-12", "image", "16/9", 4),
+    ("narrative-1", "image2", "16/9", 5),
+    ("commercial-12", "image", "16/9", 5),
+    ("documentary-0", "poster", "2/3", 2),
     ("narrative-0", "gallery:2", "2.35/1", 6),
     ("commercial-21", "image", "2.35/1", 6),
     ("documentary-0", "image2", "16/9", 4),
@@ -334,20 +331,20 @@ COLLAGE_SPEC = [
     ("music_video-1", "image2", "16/9", 4),
     ("narrative-1", "image3", "16/9", 5),
     ("music_video-5", "image2", "16/9", 5),
-    ("narrative-3", "image", "2/3", 2),
+    ("narrative-10", "poster", "2/3", 2),
     ("narrative-4", "image2", "2.35/1", 6),
     ("music_video-2", "image2", "2.35/1", 6),
-    ("documentary-3", "image2", "16/9", 4),
-    ("commercial-4", "image", "16/9", 4),
-    ("music_video-0", "image3", "16/9", 4),
+    ("documentary-3", "poster", "2/3", 2),
+    ("commercial-4", "image", "16/9", 5),
+    ("music_video-0", "image3", "16/9", 5),
     ("commercial-22", "image", "2.35/1", 6),
     ("music_video-1", "image3", "2.35/1", 6),
     ("documentary-3", "image3", "16/9", 4),
     ("narrative-4", "image3", "16/9", 4),
     ("commercial-20", "image", "16/9", 4),
-    ("narrative-0", "gallery:8", "16/9", 4),
-    ("music_video-2", "image3", "16/9", 4),
-    ("commercial-32", "image", "16/9", 4),
+    ("commercial-32", "image", "16/9", 5),
+    ("music_video-2", "image3", "16/9", 5),
+    ("documentary-2", "poster", "2/3", 2),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).

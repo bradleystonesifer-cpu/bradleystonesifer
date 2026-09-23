@@ -22,11 +22,6 @@ PRESS_DOMAINS = {
     'variety': 'variety.com', 'indiewire': 'indiewire.com', 'hollywood reporter': 'hollywoodreporter.com',
     'vulture': 'vulture.com', 'deadline': 'deadline.com', 'rolling stone': 'rollingstone.com',
 }
-DEFAULT_TECH_SPECS = [
-    {'k': 'Camera', 'v': 'Add camera'},
-    {'k': 'Lens', 'v': 'Add lens set'},
-    {'k': 'Look', 'v': 'Add look / LUT notes'},
-]
 CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html', 'music_video': 'music-video.html'}
 
 # ---------------------------------------------------------------- helpers --
@@ -234,7 +229,6 @@ def detail_data(p):
     return {
         'creditGroups': group_credits(linked),
         'pressQuotes': press_quotes(linked),
-        'techSpecs': p.get('techSpecs') or DEFAULT_TECH_SPECS,
         'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or 'Add a one-sentence logline for this project.',
         'posterImage': p.get('posterImage') or p.get('image'),
@@ -258,6 +252,8 @@ def slot_url(all_projects, key, slot):
         idx = int(slot.split(':')[1])
         gi = p.get('galleryImages') or []
         return gi[idx] if idx < len(gi) else ''
+    if slot == 'poster':
+        return p.get('posterImage') or p.get('image', '')
     return ''
 
 
@@ -600,10 +596,7 @@ def render_detail_page(p, current_folder):
             '<div class="detail-col-left"><div>' + render_credit_groups(dd['creditGroups']) + '</div></div>',
             '<div class="detail-col-center">']
     body.append(render_video_block(p, 'first', aspect))
-    body.append('<div class="tech-banner">')
-    for ts in dd['techSpecs']:
-        body.append('<div class="tech-cell"><div class="tech-key">' + esc(ts['k']) + '</div><div class="tech-val">' + esc(ts['v']) + '</div></div>')
-    body.append('</div></div>')
+    body.append('</div>')
     body.append('<div class="detail-col-right"><div>')
     body.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
     body.append(render_press_quotes(dd['pressQuotes']))
