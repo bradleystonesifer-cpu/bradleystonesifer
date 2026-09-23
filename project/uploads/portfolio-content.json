@@ -1,0 +1,92 @@
+{
+  "person": {
+    "name": "Bradley Stonesifer",
+    "title": "Cinematographer",
+    "location": "Los Angeles, CA",
+    "instagram": "https://www.instagram.com/bradleystonesifer/"
+  },
+  "categories": {
+    "narrative": {
+      "label": "Narrative Film",
+      "projects": [
+        { "title": "The Vicious Kind", "note": "Sundance '09", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607103342287-HL1ST5M3XPAEORB8L3Z0/Screen+Shot+2020-12-01+at+4.52.58+PM.png" },
+        { "title": "Hit & Run", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107148708-7A2S36WYHRS26THPSAZT/Screen%2BShot%2B2020-12-04%2Bat%2B10.24.36%2BAM.jpg" },
+        { "title": "Me + Her", "note": "Sundance '14", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107461761-CGV4PJTQQ0TYTKSJ7XAP/Screen+Shot+2020-12-04+at+10.42.50+AM.png" },
+        { "title": "Almost Kings", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107928699-2YH6NARBNXNWXYOLLJN8/Screen+Shot+2020-12-04+at+10.50.25+AM.png" },
+        { "title": "Spork", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108972825-MMRW1EMQB6S0KOGNNM3B/Screen+Shot+2020-12-04+at+11.08.19+AM.png" },
+        { "title": "The Kid", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316900-TGEJ8QEB85YHKPCLLFPW/Screen+Shot+2021-01-30+at+5.52.52+PM.png" },
+        { "title": "De Puta Madre: A Love Story", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png" },
+        { "title": "Woman Child", "note": "placeholder", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG" },
+        { "title": "God Bless America", "note": "placeholder", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG" },
+        { "title": "House of Ideas", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG" },
+        { "title": "Misfits & Monsters", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123775-64XEY101U48YCZTZDQVF/A043C001_220624TD_CANON_10230817.JPG" }
+      ]
+    },
+    "documentary": {
+      "label": "Documentary Film",
+      "projects": [
+        { "title": "Kiss the Future", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1663713816659-UR9MZA7NFH84XZES19OX/Screen+Shot+2022-09-20+at+2.23.00+PM.png" },
+        { "title": "The Youth Governor", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1663713276785-Z29MFNEOG9UPAOVM9SFL/Screen+Shot+2022-09-20+at+2.23.00+PM.png" },
+        { "title": "Fire on the Hill", "note": "Best Doc, LAFF '18", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657831998462-OAG2MVFW0BSXBKGAD2YU/Screen+Shot+2022-07-14+at+1.52.03+PM.png" },
+        { "title": "Call Me Lucky", "note": "Sundance '15", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234587165-J9QO6XOCPVS5LLWQQUNK/Screen+Shot+2021-02-01+at+6.54.47+PM.png" },
+        { "title": "Microsoft Philanthropies - Mary Mwende", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234322741-8YA2D0032ACIT493FE9O/Screen+Shot+2021-02-01+at+6.49.37+PM.png" },
+        { "title": "Re:Purpose - Afro Beat", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234975998-17AIWGWY3UE33LGQ3F34/Screen+Shot+2021-02-01+at+7.01.07+PM.png" },
+        { "title": "Re:Purpose - Farriers", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657831589195-YM2W165EF57VOS4HJUKC/Screen+Shot+2022-07-14+at+1.45.11+PM.png" }
+      ]
+    },
+    "music_video": {
+      "label": "Music Video",
+      "projects": [
+        { "title": "M. Rivers - Champion", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607104885117-7K6CM79TRON8IKB7SYCD/Screen+Shot+2020-12-04+at+9.55.46+AM.png" },
+        { "title": "Lissie - Go Your Own Way", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612240417832-CED0VOMO935IXAN5KFZT/Screen+Shot+2021-02-01+at+8.31.37+PM.png" },
+        { "title": "Train - Bulletproof Picasso", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612299931427-PTAI6FJ1W8D2KV2RMQCM/Screen+Shot+2021-02-02+at+1.05.10+PM.png" },
+        { "title": "Jamie Joseph - Hit the Ground Running", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313131052-BF7NLFFFVLK9EV8LRQ4Z/Screen+Shot+2021-02-02+at+1.06.29+PM.png" },
+        { "title": "The Lady Tigra - Thing-a-Ling", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313197952-NYGGG8QPU58VSD6XPFDA/Screen+Shot+2021-02-02+at+4.39.19+PM.png" },
+        { "title": "AWOLNATION - Burn It Down", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313569946-N5DVZK8488GI6EZDDWXL/Screen+Shot+2021-02-02+at+4.52.37+PM.png" }
+      ]
+    },
+    "commercial": {
+      "label": "Commercial",
+      "projects": [
+        { "title": "Microsoft - Be The Pilot", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1744403771637-GKY7EFW7PNERPU15SNPZ/Screenshot+2025-04-11+at+1.35.36%E2%80%AFPM.png" },
+        { "title": "T-Mobile - Oscars", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1744404169559-KMODCMBTUUGJN0YBDNVE/Screenshot+2025-04-11+at+1.40.23%E2%80%AFPM.png" },
+        { "title": "Microsoft - Co-Pilot", "note": "Super Bowl", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1744400371044-R97PM6R38X0T3POHF9G6/Screenshot%252B2024-12-10%252Bat%252B10.02.36%2525E2%252580%2525AFAM.jpg" },
+        { "title": "T-Mobile - Home Internet", "note": "Super Bowl", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1708712016301-PP1BR472F4SXLWUR7OAS/Screenshot+2024-02-23+at+9.43.16%E2%80%AFAM.png" },
+        { "title": "T-Mobile - Snoop", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1744405039486-WN3F9N1DB7IUSXSJ75HP/Screenshot+2025-04-11+at+1.56.31%E2%80%AFPM.png" },
+        { "title": "T-Mobile - Neighbors", "note": "Super Bowl", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1744404740398-MCPYDTZOBR4Z6UVFOUYM/Screenshot+2025-04-11+at+1.48.02%E2%80%AFPM.png" },
+        { "title": "T-Mobile - Grandma", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612210184774-WMN0GIYVB43GR9O1SJNY/Screen+Shot+2021-02-01+at+12.08.12+PM.png" },
+        { "title": "Microsoft - Opportunity", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665782892311-93TFJ9CBFJSJOXSPEK6C/Screen+Shot+2022-10-14+at+2.24.28+PM.png" },
+        { "title": "T-Mobile - Zach & Donald", "note": "Campaign", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1670275410300-DXYO1QFKOHHZF0QCNZMU/Screen+Shot+2022-12-05+at+1.20.16+PM.png" },
+        { "title": "Carnival Cruise - Funderstruck", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665689306886-TLZVWA8WNGTCG4R3PIMR/Screen+Shot+2022-10-13+at+12.27.21+PM.png" },
+        { "title": "Caterpillar - Do the Work", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665778028980-UFAN4MKPT4AQKF870FI9/Screen+Shot+2022-10-14+at+1.03.50+PM.png" },
+        { "title": "T-Mobile - Misunderstandings", "note": "Campaign", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665773786566-H8BB7L60M1IITJV7Y6ZS/Screen+Shot+2022-10-14+at+11.52.05+AM.png" },
+        { "title": "Google / Samsung - Passport", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665687997511-F18M4QC0L2670RFHAOXQ/Screen+Shot+2022-10-13+at+12.03.11+PM.png" },
+        { "title": "T-Mobile - iPhone 14", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665687119595-E2U20FEFD1JB5MCGTDHY/Screen+Shot+2022-10-13+at+11.50.58+AM.png" },
+        { "title": "Triller - Tyson vs. Jones", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665773120585-DYYII3Z6ES8BZCSP0110/Screen+Shot+2022-10-14+at+11.34.17+AM.png" },
+        { "title": "T-Mobile - Audition", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1708711236347-UI9LW2YH3FDEHWD0ZFBY/Screenshot+2024-02-23+at+9.27.50%E2%80%AFAM.png" },
+        { "title": "Invesco - QQQ", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665774989834-AJB005XF45HURAT2E99S/Screen+Shot+2022-10-14+at+12.14.14+PM.png" },
+        { "title": "T-Mobile - Mama", "note": "Super Bowl 2020", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612209411603-Z7TKKOB4DQ4O09DADY19/Mama4.png" },
+        { "title": "Microsoft - Daisuke", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665694386083-5LBV1PAQNIILOF2XHWWA/Screen+Shot+2022-10-13+at+1.52.15+PM.png" },
+        { "title": "Apple - iPhone 11", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612209759059-6U969P0MGJZXI9OKJI9W/Screen+Shot+2021-02-01+at+11.59.46+AM.png" },
+        { "title": "KiwiCo - Believe", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665776457003-F4QRKDJ5QY3RSNBB9ZUB/Screen+Shot+2022-10-14+at+12.35.11+PM.png" },
+        { "title": "Absolut - Awakening", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1665781263295-WNCBU3A508QE5DIZX50J/Screen+Shot+2022-10-14+at+1.59.49+PM.png" },
+        { "title": "Fossil Firsts - Leslie Odom Jr.", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612211152328-TDA5MESXQD5K0Z4SLJCB/Screen+Shot+2021-02-01+at+12.24.14+PM.png" },
+        { "title": "Microsoft - Creators", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612210945487-6EI1ESQDW44M06ZN2QPG/Screen+Shot+2021-02-01+at+12.19.18+PM.png" },
+        { "title": "Microsoft - Earth Day", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657832634319-ZQUV01Y4KIKAQG6S91JI/Screen+Shot+2022-07-14+at+2.03.28+PM.png" },
+        { "title": "Rockstar - Back on Track", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657833428881-KK2FLW15UFKVRO0V1KYI/Screen+Shot+2022-07-14+at+2.16.59+PM.png" },
+        { "title": "Microsoft - Estella's Brilliant Bus", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612213640098-1YX0E9HMWJQCU6VPFZH9/Screen+Shot+2021-02-01+at+1.05.38+PM.png" },
+        { "title": "Super Bowl '15", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612213625327-8MGNAPB6PBTRI9BE3YOH/Screen+Shot+2021-02-01+at+1.05.24+PM.png" },
+        { "title": "Alibaba - Get to Yes", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612213885081-VF5I4T5NZRY9FDNDC90I/Screen+Shot+2021-02-01+at+1.09.34+PM.png" },
+        { "title": "Quaker - Who Do You Put 1st?", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612214096085-INYZNT562CXUDMSAE4GE/Screen+Shot+2021-02-01+at+1.12.53+PM.png" },
+        { "title": "Asus - A Father's Touch", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1550732367694-B4ZX4XX0RNPL130QMPC2/Screen+Shot+2019-01-15+at+11.10.25+AM.jpg" },
+        { "title": "Subaru - Andres Amador", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1666988191692-P53E4ESGWAWQ2B95JOYB/Screen+Shot+2022-10-28+at+1.15.23+PM.png" },
+        { "title": "Dodgers - Stadium Intro", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612220635575-R2H3PEJ1SWW9VZ7J66PU/Screen+Shot+2021-02-01+at+3.02.57+PM.png" },
+        { "title": "Google - The Big Presentation", "note": "", "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1550732367592-WXWPMMBWVXDV2M4HNFR4/Screen+Shot+2019-01-15+at+11.09.07+AM.jpg" }
+      ]
+    }
+  },
+  "notes": {
+    "venmo": "No Venmo link found anywhere on bradleystonesifer.com (checked home, about, contact, and all gallery pages).",
+    "source": "Extracted from live site on 2026-08-13, including the new 'New Website' section (Narrative, Documentary, Music Video) and the legacy Commercial gallery."
+  }
+}
