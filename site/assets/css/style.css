@@ -8,6 +8,7 @@
   --ink: #EDE6D8;
   --muted: #A79E8C;
   --hair: rgba(237, 230, 216, 0.14);
+  --gutter: clamp(30px, 4.2vw, 84px);
 }
 
 * { box-sizing: border-box; }
@@ -47,13 +48,13 @@ ul { margin: 0; padding: 0; }
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100%25" height="100%25" filter="url(%23n)"/></svg>');
 }
 
-.pad { padding-left: clamp(10px, 1.4vw, 28px); padding-right: clamp(10px, 1.4vw, 28px); }
+.pad { padding-left: var(--gutter); padding-right: var(--gutter); }
 
 /* ============ header — home marquee ============ */
 .home-header {
   background: transparent;
   color: var(--ink);
-  padding: 30px clamp(10px, 1.4vw, 28px) 26px;
+  padding: 30px var(--gutter) 26px;
   text-align: center;
 }
 .home-eyebrow {
@@ -80,7 +81,7 @@ ul { margin: 0; padding: 0; }
   display: flex;
   justify-content: flex-end;
   gap: 32px;
-  padding: 18px clamp(10px, 1.4vw, 28px);
+  padding: 18px var(--gutter);
   border-bottom: 1px solid var(--hair);
   font: 400 12px/1 'Inter', sans-serif;
   letter-spacing: 0.12em;
@@ -133,7 +134,7 @@ ul { margin: 0; padding: 0; }
 .inner-header-row {
   position: relative;
   color: var(--ink);
-  padding: 20px clamp(10px, 1.4vw, 28px);
+  padding: 20px var(--gutter);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -162,7 +163,7 @@ ul { margin: 0; padding: 0; }
 }
 
 /* ============ home — collage ============ */
-.collage-outer { padding: clamp(10px, 1.4vw, 28px); width: 100%; }
+.collage-outer { padding: clamp(10px, 1.4vw, 28px) var(--gutter); width: 100%; }
 .collage-grid {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
@@ -197,7 +198,7 @@ ul { margin: 0; padding: 0; }
 .home-intro {
   max-width: 720px;
   margin: 24px auto 64px;
-  padding: 0 clamp(10px, 1.4vw, 28px);
+  padding: 0 var(--gutter);
   text-align: center;
 }
 .home-intro p {
@@ -229,7 +230,7 @@ ul { margin: 0; padding: 0; }
 }
 
 /* ============ category page shared ============ */
-.cat-wrap { padding: 0 clamp(10px, 1.4vw, 28px) 80px; margin-top: 12px; width: 100%; }
+.cat-wrap { padding: 0 var(--gutter) 80px; margin-top: 12px; width: 100%; }
 .cat-head { border-bottom: 1px solid var(--hair); padding-bottom: 18px; margin-bottom: 30px; }
 .cat-title {
   margin: 0;
@@ -387,7 +388,7 @@ ul { margin: 0; padding: 0; }
 }
 
 /* ============ project detail ============ */
-.detail-wrap { padding: 0 clamp(10px, 1.4vw, 28px) 90px; margin-top: 12px; width: 100%; }
+.detail-wrap { padding: 0 var(--gutter) 90px; margin-top: 12px; width: 100%; }
 .detail-head {
   position: relative;
   margin: 0 0 26px;
@@ -637,7 +638,7 @@ ul { margin: 0; padding: 0; }
 .site-footer {
   background: transparent;
   color: var(--muted);
-  padding: 26px clamp(10px, 1.4vw, 28px);
+  padding: 26px var(--gutter);
   display: flex;
   justify-content: space-between;
   align-items: center;
