@@ -2,7 +2,21 @@
   publish = "site"
   command = ""
 
+# Images rarely change once uploaded — cache them aggressively.
 [[headers]]
-  for = "/assets/*"
+  for = "/assets/images/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# CSS/JS change often while we're actively iterating — always revalidate
+# with the server instead of trusting a long-lived local cache, so pushes
+# show up on a normal refresh instead of silently serving a stale copy.
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
