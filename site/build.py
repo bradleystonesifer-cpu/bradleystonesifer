@@ -23,6 +23,10 @@ PRESS_DOMAINS = {
     'vulture': 'vulture.com', 'deadline': 'deadline.com', 'rolling stone': 'rollingstone.com',
 }
 CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html', 'music_video': 'music-video.html'}
+# Commercial pages that are video-only — no gallery section/heading even if
+# still images exist in their data (those are used by the triptych thumbnail
+# on the Commercial category page, not shown as a stills gallery here).
+VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-presentation'}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -623,6 +627,36 @@ def render_detail_page(p, current_folder):
                 inner_header(root), ''.join(body))
 
 
+def render_simple_detail_page(p, current_folder, video_only=False):
+    """Music Video / Commercial detail pages: back link, title, a single
+    full-width 16:9 video player, and a stills gallery — no credits sidebar."""
+    root = '../'
+    aspect = p.get('videoAspect', '16/9')
+    back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
+    back_label = '← Back' if p['section'] == 'films' else '← All commercial'
+
+    video_html = render_video_block(p, 'first', aspect)
+    stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
+
+    body = ['<div class="detail-wrap">',
+            '<div class="detail-head">',
+            '<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>',
+            '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
+            '</div>']
+    if video_html:
+        body.append(video_html)
+    if stills:
+        body.append('<div class="field-label" style="margin-top: 34px;">Gallery</div><div class="stills-grid">')
+        for u in stills:
+            body.append('<div class="gallery-bottom-cell">' + img(u, p['title']) + '</div>')
+        body.append('</div>')
+    body.append('</div>')  # /detail-wrap
+
+    return page(root, p['title'] + ' — Bradley Stonesifer',
+                p['title'] + ', shot by cinematographer Bradley Stonesifer.',
+                inner_header(root), ''.join(body))
+
+
 def render_about():
     root = ''
     body = (
@@ -770,7 +804,12 @@ def main():
         folder = 'films' if cat['section'] == 'films' else 'commercial'
         for i in range(len(cat['projects'])):
             p = all_projects[cat['key'] + '-' + str(i)]
-            write(p['href'], render_detail_page(p, folder))
+            if cat['key'] == 'music_video':
+                write(p['href'], render_simple_detail_page(p, folder))
+            elif cat['key'] == 'commercial':
+                write(p['href'], render_simple_detail_page(p, folder, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
+            else:
+                write(p['href'], render_detail_page(p, folder))
 
     copy_assets()
     print('Built', 6 + len(all_projects), 'pages for', len(all_projects), 'projects.')
