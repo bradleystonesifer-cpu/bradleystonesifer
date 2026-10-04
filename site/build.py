@@ -357,7 +357,12 @@ def asset(root, path):
 def img(src, alt, cls='', extra='', lazy=True):
     loading = ' loading="lazy" decoding="async"' if lazy else ''
     cls_attr = ' class="' + cls + '"' if cls else ''
-    return '<img src="' + esc(src) + '" alt="' + esc(alt) + '"' + cls_attr + loading + extra + '>'
+    # draggable="false": images are draggable by default, and a real mouse
+    # almost always drifts a pixel between press and release — enough for
+    # the browser to start a native image-drag gesture instead of firing a
+    # click, which silently eats real clicks on <a><img></a> tiles (only a
+    # perfectly still synthetic click would "work").
+    return '<img src="' + esc(src) + '" alt="' + esc(alt) + '"' + cls_attr + loading + ' draggable="false"' + extra + '>'
 
 
 # --------------------------------------------------------------- fragments --
@@ -475,7 +480,7 @@ def render_collage_tile(current_folder, item):
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
     return (
-        '<a class="collage-tile" href="' + href + '" style="' + style + '">'
+        '<a class="collage-tile" href="' + href + '" style="' + style + '" draggable="false">'
         + img(item['url'], item['title']) +
         '<div class="collage-scrim"><span>' + esc(item['title']) + '</span></div>'
         '</a>'
@@ -507,7 +512,7 @@ def render_poster_tile(current_folder, p):
     root = '' if current_folder == '' else '../'
     href = page_rel(current_folder, p['href'])
     d = poster_tile_data(p)
-    out = ['<a class="poster-tile" href="' + href + '">']
+    out = ['<a class="poster-tile" href="' + href + '" draggable="false">']
     if d['hasTileImage']:
         out.append(img(asset(root, d['tileImage']), p['title']))
     if d['comingSoon']:
@@ -535,7 +540,7 @@ def render_triptych_block(current_folder, p):
     imgs = [u for u in (p.get('image'), p.get('image2'), p.get('image3')) if u]
     cells = []
     for u in imgs:
-        cells.append('<a class="triptych-img-wrap" href="' + href + '">' + img(u, p['title']) + '<div class="triptych-hover"></div></a>')
+        cells.append('<a class="triptych-img-wrap" href="' + href + '" draggable="false">' + img(u, p['title']) + '<div class="triptych-hover"></div></a>')
     note = ''
     if p.get('note'):
         note = ' <span class="triptych-note">&mdash; ' + esc(p['note']) + '</span>'

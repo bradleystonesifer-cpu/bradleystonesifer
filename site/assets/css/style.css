@@ -26,7 +26,26 @@ body {
 
 a { color: inherit; text-decoration: none; }
 a:hover { opacity: 0.62; }
-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Browsers start a native image drag on mousedown+move, which swallows
+     the click before mouseup fires — a real hand almost always drifts a
+     pixel or two between press and release, so clickable tiles built from
+     a link wrapping an <img> would silently eat real clicks (only a
+     perfectly still synthetic click would "work"). */
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 ul { margin: 0; padding: 0; }
 
 /* ============ page shell ============ */
