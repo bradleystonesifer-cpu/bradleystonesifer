@@ -26,6 +26,7 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108972825-MMRW1EMQB6S0KOGNNM3B/Screen+Shot+2020-12-04+at+11.08.19+AM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108944846-ZKDGKU7PWPZGH473WBC7/Screen+Shot+2020-12-04+at+11.06.43+AM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058336723-VIUS00EL9VVAVZOJ112A/Screen+Shot+2021-01-30+at+5.55.54+PM.png"},
+            # todo: no verified credits yet
             {"title": "The Kid", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316900-TGEJ8QEB85YHKPCLLFPW/Screen+Shot+2021-01-30+at+5.52.52+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316873-DA054WY2HK33E6SQ8V6U/Screen+Shot+2021-01-30+at+5.51.25+PM.png",
@@ -34,6 +35,7 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059129651-9EWJ2MZJAQ97OVMLV9RL/Screen+Shot+2021-01-30+at+6.06.28+PM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172630812-OMJICR9GR8GQCE5O4O7O/D042C001_220624L7_CANON_12213921.JPG"},
+            # todo: no verified credits yet
             {"title": "Woman Child", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172640305-4XRSDVO9UQYN2O9ZVNHU/A043C001_220624TD_CANON_10230817.JPG",
@@ -42,6 +44,7 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172774120-50FBS2VVPRH40V3360PA/D042C001_220624L7_CANON_12213921.JPG",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173018043-KAQ3V4BVKMU7ZNINCTNX/A043C001_220624TD_CANON_10230817.JPG"},
+            # todo: no verified credits yet (comingSoon tile until then)
             {"title": "House of Ideas", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173022957-RT5MKXVYFTUB3NO4V5EZ/D042C001_220624L7_CANON_12213921.JPG",
@@ -81,6 +84,7 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234590289-WOHKJHTQ5Y1AGABE4HI3/Screen+Shot+2021-02-01+at+6.54.38+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234587165-J9QO6XOCPVS5LLWQQUNK/Screen+Shot+2021-02-01+at+6.54.47+PM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234587606-XYJDCCVM0SZVIFOSC6BC/Screen+Shot+2021-02-01+at+6.54.11+PM.png"},
+            # todo: no verified credits yet
             {"title": "Microsoft Philanthropies - Mary Mwende", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234325220-O8C67MGH7VNW1PB1H8TW/Screen+Shot+2021-02-01+at+6.51.08+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234322741-8YA2D0032ACIT493FE9O/Screen+Shot+2021-02-01+at+6.49.37+PM.png",
@@ -95,6 +99,7 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657831590313-2JHBSRLH1GDDOS0BY8AP/Screen+Shot+2022-07-14+at+1.44.25+PM.png"},
         ],
     },
+    # todo: none of the 6 Music Video projects below have verified credits/loglines yet.
     {
         "key": "music_video", "no": "03", "label": "Music Video", "section": "films",
         "projects": [
@@ -124,6 +129,7 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313478656-SGDWQES5YERHWU1DC5RA/Screen+Shot+2021-02-02+at+4.50.04+PM.png"},
         ],
     },
+    # todo: none of the 34 Commercial projects below have verified credits yet.
     {
         "key": "commercial", "no": "01", "label": "Commercial", "section": "commercial",
         "projects": [
@@ -175,8 +181,8 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Exclusive Media; Panay Films; Open Road Films"},
             {"k": "Lead Actors", "v": "Dax Shepard, Kristen Bell, Bradley Cooper, Tom Arnold, Kristin Chenoweth"},
             {"k": "Press — Variety", "v": "“An unexpectedly satisfying date-movie spin... this low-budget B movie looks poised to surprise.”", "href": "https://variety.com/2012/film/reviews/hit-run-1117948082/"},
-            {"k": "Press — Rotten Tomatoes", "v": "Camera (color, widescreen), Bradley Stonesifer — crew credit, Rotten Tomatoes critics page", "href": "https://www.rottentomatoes.com/m/hit_and_run_2012"},
         ],
+        # todo: logline still needed
     },
     "narrative-2": {  # Me + Her
         "overrideCredits": [
@@ -185,6 +191,7 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Sundance Film Festival '14 (Shorts Program)"},
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
+        # todo: logline still needed
     },
     "narrative-3": {  # Almost Kings
         "overrideCredits": [
@@ -192,7 +199,9 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Aqueous Entertainment"},
             {"k": "Lead Actors", "v": "Lorenzo James Henrie, Alex Frost, Billy Campbell, Haley Ramm, Portia Doubleday"},
             {"k": "Notable Festivals", "v": "Los Angeles Film Festival '10 (Find Your Voice Award)"},
+            {"k": "Press — Kirk Honeycutt, The Hollywood Reporter", "v": "“These two might be the real discoveries in the film.”"},
         ],
+        "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
     },
     "narrative-4": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",
@@ -231,7 +240,7 @@ OVERRIDES = {
             "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421498614-LCKJOXFNK5D6Z39AWBM1/Screen+Shot+2022-11-02+at+1.34.56+PM.png",
         ],
         "overrideCredits": [
-            {"k": "Director", "v": "Lee Krieger"},
+            {"k": "Director", "v": "Lee Toland Krieger"},
             {"k": "Production Company", "v": "Candleridge Entertainment"},
             {"k": "Lead Actors", "v": "Adam Scott, Brittany Snow, Alex Frost, J.K. Simmons"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '09 (Spectrum); 25th Independent Spirit Awards — 2 nominations incl. Best Screenplay"},
@@ -241,23 +250,53 @@ OVERRIDES = {
         "watchLabel": "Watch on Prime Video",
         "watchUrl": "https://www.amazon.com/Vicious-Kind-Adam-Scott/dp/B0037UU848",
     },
+    "narrative-6": {  # De Puta Madre: A Love Story
+        "overrideCredits": [
+            {"k": "Director", "v": "Catherine Black"},
+            {"k": "Lead Actors", "v": "Catherine Black"},
+            {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
+            {"k": "Press — Bern Euler, Festival Director, Canadian Film Fest", "v": "“Sexy & Surreal”"},
+        ],
+        "logline": "What begins as a picnic becomes a hostage situation, as a woman held by her unstable ex-lover is forced to reckon with obsession and letting go.",
+    },
+    "narrative-8": {  # God Bless America
+        "overrideCredits": [
+            {"k": "Director", "v": "Bobcat Goldthwait"},
+            {"k": "Production Company", "v": "Darko Entertainment"},
+            {"k": "Lead Actors", "v": "Joel Murray, Tara Lynne Barr, Melinda Page Hamilton"},
+            {"k": "Notable Festivals", "v": "Toronto International Film Festival '11 (World Premiere); SXSW Film Festival '12"},
+        ],
+        "logline": "Fired, divorced, and facing a terminal diagnosis, Frank joins a teenager who shares his disgust, and together they go after the culture's cruelest voices.",
+    },
     "narrative-9": {"comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif"},  # House of Ideas
+    "narrative-10": {  # Misfits & Monsters
+        "overrideCredits": [
+            {"k": "Director", "v": "Bobcat Goldthwait"},
+            {"k": "Production Company", "v": "Left/Right Productions"},
+            {"k": "Network", "v": "truTV (2018)"},
+            {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
+        ],
+        "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
+    },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [
             {"k": "Director", "v": "Nenad Cicin-Sain"},
             {"k": "Production Company", "v": "Pearl Street Films; Fifth Season; In Cahoots Productions"},
             {"k": "Notable Talent", "v": "Bono, The Edge, Adam Clayton, Bill Clinton, Christiane Amanpour"},
-            {"k": "Notable Festivals", "v": "Berlin Film Festival '23 (Berlinale Special); Tribeca Film Festival '23 (Opening Film)"},
+            {"k": "Notable Festivals", "v": "Berlinale '23 (Berlinale Special, World Premiere); Tribeca Festival '23 (Opening Film); Sarajevo Film Festival '23 (Open Air)"},
             {"k": "Press — The Hollywood Reporter", "v": "“This moving and inspirational film... would have the same power anytime in a world perpetually marked by armed conflict.”", "href": "https://www.hollywoodreporter.com/movies/movie-reviews/kiss-the-future-review-u2-sarajevo-1235327880/"},
         ],
+        "logline": "An American aid worker in besieged Sarajevo persuades U2 to spotlight the city, and the band promises to play there once the war ends.",
     },
     "documentary-2": {  # Fire on the Hill
         "overrideCredits": [
             {"k": "Director", "v": "Brett Fallentine"},
-            {"k": "Production Company", "v": "Independent"},
-            {"k": "Notable Festivals", "v": "LA Film Festival '18 (LA Muse Documentary Award); Big Sky Documentary Film Festival (Artistic Vision Award); Heartland International Film Festival (Jimmy Stewart Legacy Award)"},
+            {"k": "Production Company", "v": "Preamble Pictures, in association with RYOT, Contend and Enzo"},
+            {"k": "Notable Talent", "v": "William Bias, Chris Byrd, Ghuan Featherstone"},
+            {"k": "Notable Festivals", "v": "LA Film Festival '18 (LA Muse Documentary Award); Big Sky Documentary Film Festival '19 (Artistic Vision Award); Heartland International Film Festival '19 (Jimmy Stewart Legacy Award); Portland Film Festival '19 (Best Documentary Feature)"},
             {"k": "Press — The Hollywood Reporter", "v": "“This modern-day buckaroo, like Brett Fallentine’s well-observed film, embraces a burnished Wild West archetype while redefining it.”", "href": "https://www.hollywoodreporter.com/review/fire-hill-1157020"},
         ],
+        "logline": "Three Black cowboys in Compton and South LA fight to keep their riding culture alive after arson destroys their historic stable.",
     },
     "documentary-3": {  # Call Me Lucky
         "overrideCredits": [
@@ -267,6 +306,16 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Sundance Film Festival '15 (U.S. Documentary Competition)"},
             {"k": "Press — Variety", "v": "“A terrifically engaging surprise... among the most devastating of numerous 2015 Sundance titles.”", "href": "https://variety.com/2015/film/reviews/sundance-film-review-call-me-lucky-1201422008/"},
         ],
+        # todo: logline still needed
+    },
+    "documentary-1": {  # The Youth Governor
+        "overrideCredits": [
+            {"k": "Director", "v": "Matthew Halmy, Jaron Halmy"},
+            {"k": "Production Company", "v": "Blumhouse Television; Red Earth"},
+            {"k": "Notable Talent", "v": "Aidan Blain, Bayo Collins, Piper Samuels"},
+            {"k": "Notable Festivals", "v": "Cleveland International Film Festival; Milwaukee Film Festival; Phoenix Film Festival"},
+        ],
+        "logline": "Inside a California program where thousands of teens run a simulated state government, three finalists campaign to become the 72nd Youth Governor.",
     },
     "documentary-5": {  # Re:Purpose - Afro Beat
         "videoEmbed": "https://player.vimeo.com/video/140062680?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -274,6 +323,7 @@ OVERRIDES = {
             {"k": "Director", "v": "Emily Bloom"},
             {"k": "Subject", "v": "Brandie Randolph"},
         ],
+        # todo: production company still needed
     },
     "documentary-6": {  # Re:Purpose - Farriers
         "videoEmbed": "https://player.vimeo.com/video/50266043?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -282,6 +332,7 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Subjects", "v": "Bob and Brant Phalen"},
         ],
+        # todo: logline still needed
     },
 }
 
