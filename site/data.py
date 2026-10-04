@@ -98,7 +98,8 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657831590313-2JHBSRLH1GDDOS0BY8AP/Screen+Shot+2022-07-14+at+1.44.25+PM.png"},
         ],
     },
-    # todo: none of the 6 Music Video projects below have verified credits/loglines yet.
+    # Music Video detail pages use the simplified video+stills template (no
+    # credits/logline fields) — see render_simple_detail_page in build.py.
     {
         "key": "music_video", "no": "03", "label": "Music Video", "section": "films",
         "projects": [
@@ -128,7 +129,8 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313478656-SGDWQES5YERHWU1DC5RA/Screen+Shot+2021-02-02+at+4.50.04+PM.png"},
         ],
     },
-    # todo: none of the 34 Commercial projects below have verified credits yet.
+    # Commercial detail pages use the simplified video+stills template (no
+    # credits/logline fields) — see render_simple_detail_page in build.py.
     {
         "key": "commercial", "no": "01", "label": "Commercial", "section": "commercial",
         "projects": [
