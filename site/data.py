@@ -26,7 +26,6 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108972825-MMRW1EMQB6S0KOGNNM3B/Screen+Shot+2020-12-04+at+11.08.19+AM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108944846-ZKDGKU7PWPZGH473WBC7/Screen+Shot+2020-12-04+at+11.06.43+AM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058336723-VIUS00EL9VVAVZOJ112A/Screen+Shot+2021-01-30+at+5.55.54+PM.png"},
-            # todo: no verified credits yet
             {"title": "The Kid", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316900-TGEJ8QEB85YHKPCLLFPW/Screen+Shot+2021-01-30+at+5.52.52+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316873-DA054WY2HK33E6SQ8V6U/Screen+Shot+2021-01-30+at+5.51.25+PM.png",
@@ -35,7 +34,6 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059129651-9EWJ2MZJAQ97OVMLV9RL/Screen+Shot+2021-01-30+at+6.06.28+PM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172630812-OMJICR9GR8GQCE5O4O7O/D042C001_220624L7_CANON_12213921.JPG"},
-            # todo: no verified credits yet
             {"title": "Woman Child", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172640305-4XRSDVO9UQYN2O9ZVNHU/A043C001_220624TD_CANON_10230817.JPG",
@@ -44,7 +42,6 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172774120-50FBS2VVPRH40V3360PA/D042C001_220624L7_CANON_12213921.JPG",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173018043-KAQ3V4BVKMU7ZNINCTNX/A043C001_220624TD_CANON_10230817.JPG"},
-            # todo: no verified credits yet (comingSoon tile until then)
             {"title": "House of Ideas", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173022957-RT5MKXVYFTUB3NO4V5EZ/D042C001_220624L7_CANON_12213921.JPG",
@@ -87,7 +84,6 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234590289-WOHKJHTQ5Y1AGABE4HI3/Screen+Shot+2021-02-01+at+6.54.38+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234587165-J9QO6XOCPVS5LLWQQUNK/Screen+Shot+2021-02-01+at+6.54.47+PM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234587606-XYJDCCVM0SZVIFOSC6BC/Screen+Shot+2021-02-01+at+6.54.11+PM.png"},
-            # todo: no verified credits yet
             {"title": "Microsoft Philanthropies - Mary Mwende", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234325220-O8C67MGH7VNW1PB1H8TW/Screen+Shot+2021-02-01+at+6.51.08+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612234322741-8YA2D0032ACIT493FE9O/Screen+Shot+2021-02-01+at+6.49.37+PM.png",
@@ -181,20 +177,21 @@ OVERRIDES = {
         "videoAspect": "16/9",
         "overrideCredits": [
             {"k": "Director", "v": "David Palmer, Dax Shepard"},
-            {"k": "Production Company", "v": "Exclusive Media; Panay Films; Open Road Films"},
+            {"k": "Production Company", "v": "Exclusive Media Group"},
             {"k": "Lead Actors", "v": "Dax Shepard, Kristen Bell, Bradley Cooper, Tom Arnold, Kristin Chenoweth"},
             {"k": "Press — Variety", "v": "“An unexpectedly satisfying date-movie spin... this low-budget B movie looks poised to surprise.”", "href": "https://variety.com/2012/film/reviews/hit-run-1117948082/"},
         ],
-        # todo: logline still needed
+        "logline": "A former getaway driver in witness protection risks his new identity to get his girlfriend to Los Angeles, with the feds and his old gang on their tail.",
     },
     "narrative-2": {  # Me + Her
         "overrideCredits": [
             {"k": "Director", "v": "Joseph Oxford"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '14 (Shorts Program)"},
+            {"k": "Cast, puppeteers", "v": "Keiko Agena, Todd G. Levin, Will Choi, Farah Griffin, Kelvin Kao"},
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
-        # todo: logline still needed
+        "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
     },
     "narrative-3": {  # Almost Kings
         "overrideCredits": [
@@ -253,6 +250,25 @@ OVERRIDES = {
         "watchLabel": "Watch on Prime Video",
         "watchUrl": "https://www.amazon.com/Vicious-Kind-Adam-Scott/dp/B0037UU848",
     },
+    "narrative-7": {  # Woman Child
+        "overrideCredits": [
+            {"k": "Director", "v": "Emily Bloom"},
+            {"k": "Writer", "v": "Emily Bloom"},
+            {"k": "Producers", "v": "Jenna Cedicci, Charlie Fonville, Ben Windle"},
+            {"k": "Production Company", "v": "Island Creek Pictures"},
+            {"k": "Lead Actors", "v": "Alexie Gilmore, Tone Bell, Toby Huss, Lynne Marie Stewart, James Handy, Nora Kirkpatrick"},
+        ],
+        "logline": "Fired from her teaching job for becoming pregnant out of wedlock, Malynn and her partner must either concede to the institution's rules or fight for her civil liberties.",
+    },
+    "narrative-5": {  # The Kid
+        "overrideCredits": [
+            {"k": "Director", "v": "Sean Brosnan"},
+            {"k": "Production Company", "v": "KnightMarcher"},
+            {"k": "Lead Actors", "v": "Kalama Epstein, Carlson Young, Gary Stretch, Cade Carradine"},
+            {"k": "Notable Festivals", "v": "Louisville's International Festival of Film '13"},
+        ],
+        "logline": "Two days in the life of a young poet in Venice, California who deals with situations far beyond his years.",
+    },
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
             {"k": "Director", "v": "Catherine Black"},
@@ -271,7 +287,17 @@ OVERRIDES = {
         ],
         "logline": "Fired, divorced, and facing a terminal diagnosis, Frank joins a teenager who shares his disgust, and together they go after the culture's cruelest voices.",
     },
-    "narrative-9": {"comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif"},  # House of Ideas
+    "narrative-9": {  # House of Ideas
+        "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
+        "overrideCredits": [
+            {"k": "Director", "v": "Gabriel Hardman"},
+            {"k": "Writers", "v": "Ian Brill, Gabriel Hardman"},
+            {"k": "Producers", "v": "Clinton Trucks, Toni Trucks"},
+            {"k": "Production Company", "v": "Session Zero Media"},
+            {"k": "Lead Actors", "v": "James Wolk, David Alan Basche, Eric Satterberg, Barry Shabaka Henley, Avital Ash, Andrew Leeds, Jonathan Sadowski"},
+        ],
+        "logline": "New York, 1964: during a recording session for a fan-club album, Stan Lee clashes with artists Jack Kirby and Steve Ditko over credit and control.",
+    },
     "narrative-10": {  # Misfits & Monsters
         "overrideCredits": [
             {"k": "Director", "v": "Bobcat Goldthwait"},
@@ -331,7 +357,14 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Sundance Film Festival '15 (U.S. Documentary Competition)"},
             {"k": "Press — Variety", "v": "“A terrifically engaging surprise... among the most devastating of numerous 2015 Sundance titles.”", "href": "https://variety.com/2015/film/reviews/sundance-film-review-call-me-lucky-1201422008/"},
         ],
-        # todo: logline still needed
+        "logline": "Bobcat Goldthwait's portrait of comedian Barry Crimmins, whose ferocious stand-up and painful past fueled a life-changing campaign of activism.",
+    },
+    "documentary-4": {  # Microsoft Philanthropies - Mary Mwende
+        "overrideCredits": [
+            {"k": "Subject", "v": "Mary Mwende"},
+            {"k": "Client", "v": "Microsoft Philanthropies"},
+        ],
+        # todo: director, logline still needed
     },
     "documentary-1": {  # The Youth Governor
         "overrideCredits": [
@@ -348,7 +381,7 @@ OVERRIDES = {
             {"k": "Director", "v": "Emily Bloom"},
             {"k": "Subject", "v": "Brandie Randolph"},
         ],
-        # todo: production company still needed
+        # todo: production company, logline still needed
     },
     "documentary-6": {  # Re:Purpose - Farriers
         "videoEmbed": "https://player.vimeo.com/video/50266043?badge=0&autopause=0&player_id=0&app_id=58479",
