@@ -203,22 +203,7 @@ def poster_tile_data(p):
 
 def detail_data(p):
     title = p['title']
-    if p.get('overrideCredits'):
-        raw_credits = p['overrideCredits']
-    elif p['section'] == 'films':
-        raw_credits = [
-            {'k': 'Director', 'v': 'Add director name'},
-            {'k': 'Lead Actors', 'v': 'Add lead cast'},
-            {'k': 'Notable Festivals', 'v': p.get('note') or 'Add festival selections'},
-            {'k': 'Press', 'v': 'Add press quote'},
-        ]
-    else:
-        raw_credits = [
-            {'k': 'Client', 'v': title.split(' - ')[0] if title else 'Add client'},
-            {'k': 'Agency', 'v': 'Add agency'},
-            {'k': 'Director', 'v': 'Add director name'},
-            {'k': 'Notable Talent', 'v': 'Add talent'},
-        ]
+    raw_credits = p.get('overrideCredits') or []
     linked = with_links(raw_credits, title)
 
     gallery_source = p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u]
@@ -227,10 +212,10 @@ def detail_data(p):
         gallery[1], gallery[3] = gallery[3], gallery[1]
 
     return {
-        'creditGroups': group_credits(linked),
-        'pressQuotes': press_quotes(linked),
+        'creditGroups': group_credits(linked) if linked else [],
+        'pressQuotes': press_quotes(linked) if linked else [],
         'episodes': p.get('episodes') or [],
-        'logline': p.get('logline') or 'Add a one-sentence logline for this project.',
+        'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
         'galleryLeft': gallery[0:3],
         'galleryRight': gallery[3:6],
@@ -592,23 +577,31 @@ def render_detail_page(p, current_folder):
     root = '../'
     dd = detail_data(p)
     aspect = p.get('videoAspect', '16/9')
+
+    left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
+    center_html = render_video_block(p, 'first', aspect)
+    right_parts = []
+    if dd['logline']:
+        right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
+    right_parts.append(render_press_quotes(dd['pressQuotes']))
+    if p.get('watchUrl'):
+        right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
+    right_html = ''.join(right_parts)
+
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
             '<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>',
             '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
-            '</div>',
-            '<div class="detail-grid">',
-            '<div class="detail-col-left"><div>' + render_credit_groups(dd['creditGroups']) + '</div></div>',
-            '<div class="detail-col-center">']
-    body.append(render_video_block(p, 'first', aspect))
-    body.append('</div>')
-    body.append('<div class="detail-col-right"><div>')
-    body.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
-    body.append(render_press_quotes(dd['pressQuotes']))
-    if p.get('watchUrl'):
-        body.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
-    body.append('</div></div>')
-    body.append('</div>')  # /detail-grid
+            '</div>']
+    if left_html or center_html or right_html:
+        body.append('<div class="detail-grid">')
+        if left_html:
+            body.append('<div class="detail-col-left"><div>' + left_html + '</div></div>')
+        if center_html:
+            body.append('<div class="detail-col-center">' + center_html + '</div>')
+        if right_html:
+            body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
+        body.append('</div>')  # /detail-grid
 
     if dd['episodes']:
         body.append('<div class="field-label">Episodes</div><div class="episodes-list">')
@@ -623,7 +616,7 @@ def render_detail_page(p, current_folder):
     body.append('</div>')  # /detail-wrap
 
     return page(root, p['title'] + ' — Bradley Stonesifer',
-                (dd['logline'] if not dd['logline'].startswith('Add a') else p['title'] + ', shot by cinematographer Bradley Stonesifer.'),
+                (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),
                 inner_header(root), ''.join(body))
 
 
