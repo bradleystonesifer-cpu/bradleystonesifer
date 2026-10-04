@@ -63,6 +63,9 @@ CATS = [
                  {"n": "07", "title": "Better World", "synopsis": "A cutting-edge scientist creates two highly advanced AI forms, which quickly turn against him."},
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
+            # No poster/images yet — still-with-title fallback tile until artwork is supplied.
+            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
+            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": ""},
         ],
     },
     {
@@ -277,6 +280,28 @@ OVERRIDES = {
             {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
+        "creditLine": "Cinematographer, 7 of 8 episodes",
+    },
+    "narrative-11": {  # Back in the Day
+        "creditLine": "Cinematographer, Co-Producer",
+        "overrideCredits": [
+            {"k": "Director", "v": "Michael Rosenbaum"},
+            {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
+            {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa"},
+        ],
+        "logline": "Disenchanted with his Hollywood career, Jim Owens returns to his Indiana hometown for his high school reunion, hoping to relive the glory days and win back the one who got away.",
+        # todo: festivals, press still needed
+    },
+    "narrative-12": {  # Midnight in the Switchgrass
+        "creditLine": "Director of Photography, Los Angeles unit",
+        "overrideCredits": [
+            {"k": "Director", "v": "Randall Emmett"},
+            {"k": "Production Company", "v": "Emmett Furla Oasis Films; The Pimienta Film Co."},
+            {"k": "Lead Actors", "v": "Megan Fox, Bruce Willis, Emile Hirsch, Lukas Haas, Machine Gun Kelly"},
+            {"k": "Notable Festivals", "v": "Gasparilla International Film Festival '21 (Closing Night Film)"},
+        ],
+        "logline": "Two FBI agents and a Florida state cop chase a string of related murders and are drawn into a deadly cat-and-mouse game with a serial killer.",
+        # todo: press still needed
     },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [

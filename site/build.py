@@ -191,10 +191,11 @@ def category_display_lists(all_projects):
 
 def poster_tile_data(p):
     cs = bool(p.get('comingSoon'))
+    tile_image = '' if cs else (p.get('posterImage') or p.get('image') or '')
     return {
         'comingSoon': cs,
-        'hasTileImage': not cs,
-        'tileImage': '' if cs else (p.get('posterImage') or p.get('image')),
+        'hasTileImage': not cs and bool(tile_image),
+        'tileImage': tile_image,
         'noPoster': (not cs) and not p.get('posterImage'),
         'artImage': p.get('comingSoonImage') or '',
         'laurels': laurels_for(p),
@@ -591,8 +592,10 @@ def render_detail_page(p, current_folder):
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
             '<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>',
-            '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
-            '</div>']
+            '<h1 class="detail-title">' + esc(p['title']) + '</h1>']
+    if p.get('creditLine'):
+        body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
+    body.append('</div>')
     if left_html or center_html or right_html:
         body.append('<div class="detail-grid">')
         if left_html:

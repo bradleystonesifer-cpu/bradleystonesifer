@@ -432,6 +432,12 @@ ul { margin: 0; padding: 0; }
   letter-spacing: -0.015em;
   text-transform: uppercase;
 }
+.detail-credit-line {
+  font: 500 11px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
 
 .detail-grid {
   display: grid;
