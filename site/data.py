@@ -34,11 +34,11 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059129651-9EWJ2MZJAQ97OVMLV9RL/Screen+Shot+2021-01-30+at+6.06.28+PM.png",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172630812-OMJICR9GR8GQCE5O4O7O/D042C001_220624L7_CANON_12213921.JPG"},
-            {"title": "Woman Child", "note": "placeholder",
+            {"title": "Woman Child", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172640305-4XRSDVO9UQYN2O9ZVNHU/A043C001_220624TD_CANON_10230817.JPG",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769188-KFXF422B0X6SKDMHD2WD/A043C001_220624TD_CANON_10230817.JPG"},
-            {"title": "God Bless America", "note": "placeholder",
+            {"title": "God Bless America", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172774120-50FBS2VVPRH40V3360PA/D042C001_220624L7_CANON_12213921.JPG",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173018043-KAQ3V4BVKMU7ZNINCTNX/A043C001_220624TD_CANON_10230817.JPG"},
@@ -46,7 +46,7 @@ CATS = [
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173022957-RT5MKXVYFTUB3NO4V5EZ/D042C001_220624L7_CANON_12213921.JPG",
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123558-5YC8JC9M35CGCBX32L4Z/B043C001_2206249J_CANON_11452309.JPG"},
-            {"title": "Misfits & Monsters", "note": "only 2 images available on site",
+            {"title": "Misfits & Monsters", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123775-64XEY101U48YCZTZDQVF/A043C001_220624TD_CANON_10230817.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173128740-GS6D33PVUZ3X3KFRFCL4/D042C001_220624L7_CANON_12213921.JPG",
              "image3": "",
@@ -60,6 +60,9 @@ CATS = [
                  {"n": "07", "title": "Better World", "synopsis": "A cutting-edge scientist creates two highly advanced AI forms, which quickly turn against him."},
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
+            # No poster/images yet — still-with-title fallback tile until artwork is supplied.
+            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
+            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": ""},
         ],
     },
     {
@@ -95,6 +98,8 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1657831590313-2JHBSRLH1GDDOS0BY8AP/Screen+Shot+2022-07-14+at+1.44.25+PM.png"},
         ],
     },
+    # Music Video detail pages use the simplified video+stills template (no
+    # credits/logline fields) — see render_simple_detail_page in build.py.
     {
         "key": "music_video", "no": "03", "label": "Music Video", "section": "films",
         "projects": [
@@ -124,6 +129,8 @@ CATS = [
              "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612313478656-SGDWQES5YERHWU1DC5RA/Screen+Shot+2021-02-02+at+4.50.04+PM.png"},
         ],
     },
+    # Commercial detail pages use the simplified video+stills template (no
+    # credits/logline fields) — see render_simple_detail_page in build.py.
     {
         "key": "commercial", "no": "01", "label": "Commercial", "section": "commercial",
         "projects": [
@@ -172,19 +179,21 @@ OVERRIDES = {
         "videoAspect": "16/9",
         "overrideCredits": [
             {"k": "Director", "v": "David Palmer, Dax Shepard"},
-            {"k": "Production Company", "v": "Exclusive Media; Panay Films; Open Road Films"},
+            {"k": "Production Company", "v": "Exclusive Media Group"},
             {"k": "Lead Actors", "v": "Dax Shepard, Kristen Bell, Bradley Cooper, Tom Arnold, Kristin Chenoweth"},
             {"k": "Press — Variety", "v": "“An unexpectedly satisfying date-movie spin... this low-budget B movie looks poised to surprise.”", "href": "https://variety.com/2012/film/reviews/hit-run-1117948082/"},
-            {"k": "Press — Rotten Tomatoes", "v": "Camera (color, widescreen), Bradley Stonesifer — crew credit, Rotten Tomatoes critics page", "href": "https://www.rottentomatoes.com/m/hit_and_run_2012"},
         ],
+        "logline": "A former getaway driver in witness protection risks his new identity to get his girlfriend to Los Angeles, with the feds and his old gang on their tail.",
     },
     "narrative-2": {  # Me + Her
         "overrideCredits": [
             {"k": "Director", "v": "Joseph Oxford"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '14 (Shorts Program)"},
+            {"k": "Cast, puppeteers", "v": "Keiko Agena, Todd G. Levin, Will Choi, Farah Griffin, Kelvin Kao"},
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
+        "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
     },
     "narrative-3": {  # Almost Kings
         "overrideCredits": [
@@ -192,7 +201,9 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Aqueous Entertainment"},
             {"k": "Lead Actors", "v": "Lorenzo James Henrie, Alex Frost, Billy Campbell, Haley Ramm, Portia Doubleday"},
             {"k": "Notable Festivals", "v": "Los Angeles Film Festival '10 (Find Your Voice Award)"},
+            {"k": "Press — Kirk Honeycutt, The Hollywood Reporter", "v": "“These two might be the real discoveries in the film.”"},
         ],
+        "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
     },
     "narrative-4": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",
@@ -231,7 +242,7 @@ OVERRIDES = {
             "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421498614-LCKJOXFNK5D6Z39AWBM1/Screen+Shot+2022-11-02+at+1.34.56+PM.png",
         ],
         "overrideCredits": [
-            {"k": "Director", "v": "Lee Krieger"},
+            {"k": "Director", "v": "Lee Toland Krieger"},
             {"k": "Production Company", "v": "Candleridge Entertainment"},
             {"k": "Lead Actors", "v": "Adam Scott, Brittany Snow, Alex Frost, J.K. Simmons"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '09 (Spectrum); 25th Independent Spirit Awards — 2 nominations incl. Best Screenplay"},
@@ -241,23 +252,104 @@ OVERRIDES = {
         "watchLabel": "Watch on Prime Video",
         "watchUrl": "https://www.amazon.com/Vicious-Kind-Adam-Scott/dp/B0037UU848",
     },
-    "narrative-9": {"comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif"},  # House of Ideas
+    "narrative-7": {  # Woman Child
+        "overrideCredits": [
+            {"k": "Director", "v": "Emily Bloom"},
+            {"k": "Writer", "v": "Emily Bloom"},
+            {"k": "Producers", "v": "Jenna Cedicci, Charlie Fonville, Ben Windle"},
+            {"k": "Production Company", "v": "Island Creek Pictures"},
+            {"k": "Lead Actors", "v": "Alexie Gilmore, Tone Bell, Toby Huss, Lynne Marie Stewart, James Handy, Nora Kirkpatrick"},
+        ],
+        "logline": "Fired from her teaching job for becoming pregnant out of wedlock, Malynn and her partner must either concede to the institution's rules or fight for her civil liberties.",
+    },
+    "narrative-5": {  # The Kid
+        "overrideCredits": [
+            {"k": "Director", "v": "Sean Brosnan"},
+            {"k": "Production Company", "v": "KnightMarcher"},
+            {"k": "Lead Actors", "v": "Kalama Epstein, Carlson Young, Gary Stretch, Cade Carradine"},
+            {"k": "Notable Festivals", "v": "Louisville's International Festival of Film '13"},
+        ],
+        "logline": "Two days in the life of a young poet in Venice, California who deals with situations far beyond his years.",
+    },
+    "narrative-6": {  # De Puta Madre: A Love Story
+        "overrideCredits": [
+            {"k": "Director", "v": "Catherine Black"},
+            {"k": "Lead Actors", "v": "Catherine Black"},
+            {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
+            {"k": "Press — Bern Euler, Festival Director, Canadian Film Fest", "v": "“Sexy & Surreal”"},
+        ],
+        "logline": "What begins as a picnic becomes a hostage situation, as a woman held by her unstable ex-lover is forced to reckon with obsession and letting go.",
+    },
+    "narrative-8": {  # God Bless America
+        "overrideCredits": [
+            {"k": "Director", "v": "Bobcat Goldthwait"},
+            {"k": "Production Company", "v": "Darko Entertainment"},
+            {"k": "Lead Actors", "v": "Joel Murray, Tara Lynne Barr, Melinda Page Hamilton"},
+            {"k": "Notable Festivals", "v": "Toronto International Film Festival '11 (World Premiere); SXSW Film Festival '12"},
+        ],
+        "logline": "Fired, divorced, and facing a terminal diagnosis, Frank joins a teenager who shares his disgust, and together they go after the culture's cruelest voices.",
+    },
+    "narrative-9": {  # House of Ideas
+        "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
+        "overrideCredits": [
+            {"k": "Director", "v": "Gabriel Hardman"},
+            {"k": "Writers", "v": "Ian Brill, Gabriel Hardman"},
+            {"k": "Producers", "v": "Clinton Trucks, Toni Trucks"},
+            {"k": "Production Company", "v": "Session Zero Media"},
+            {"k": "Lead Actors", "v": "James Wolk, David Alan Basche, Eric Satterberg, Barry Shabaka Henley, Avital Ash, Andrew Leeds, Jonathan Sadowski"},
+        ],
+        "logline": "New York, 1964: during a recording session for a fan-club album, Stan Lee clashes with artists Jack Kirby and Steve Ditko over credit and control.",
+    },
+    "narrative-10": {  # Misfits & Monsters
+        "overrideCredits": [
+            {"k": "Director", "v": "Bobcat Goldthwait"},
+            {"k": "Production Company", "v": "Left/Right Productions"},
+            {"k": "Network", "v": "truTV (2018)"},
+            {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
+        ],
+        "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
+        "creditLine": "Cinematographer, 7 of 8 episodes",
+    },
+    "narrative-11": {  # Back in the Day
+        "creditLine": "Cinematographer, Co-Producer",
+        "overrideCredits": [
+            {"k": "Director", "v": "Michael Rosenbaum"},
+            {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
+            {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa"},
+        ],
+        "logline": "Disenchanted with his Hollywood career, Jim Owens returns to his Indiana hometown for his high school reunion, hoping to relive the glory days and win back the one who got away.",
+        # todo: festivals, press still needed
+    },
+    "narrative-12": {  # Midnight in the Switchgrass
+        "creditLine": "Director of Photography, Los Angeles unit",
+        "overrideCredits": [
+            {"k": "Director", "v": "Randall Emmett"},
+            {"k": "Production Company", "v": "Emmett Furla Oasis Films; The Pimienta Film Co."},
+            {"k": "Lead Actors", "v": "Megan Fox, Bruce Willis, Emile Hirsch, Lukas Haas, Machine Gun Kelly"},
+            {"k": "Notable Festivals", "v": "Gasparilla International Film Festival '21 (Closing Night Film)"},
+        ],
+        "logline": "Two FBI agents and a Florida state cop chase a string of related murders and are drawn into a deadly cat-and-mouse game with a serial killer.",
+        # todo: press still needed
+    },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [
             {"k": "Director", "v": "Nenad Cicin-Sain"},
             {"k": "Production Company", "v": "Pearl Street Films; Fifth Season; In Cahoots Productions"},
             {"k": "Notable Talent", "v": "Bono, The Edge, Adam Clayton, Bill Clinton, Christiane Amanpour"},
-            {"k": "Notable Festivals", "v": "Berlin Film Festival '23 (Berlinale Special); Tribeca Film Festival '23 (Opening Film)"},
+            {"k": "Notable Festivals", "v": "Berlinale '23 (Berlinale Special, World Premiere); Tribeca Festival '23 (Opening Film); Sarajevo Film Festival '23 (Open Air)"},
             {"k": "Press — The Hollywood Reporter", "v": "“This moving and inspirational film... would have the same power anytime in a world perpetually marked by armed conflict.”", "href": "https://www.hollywoodreporter.com/movies/movie-reviews/kiss-the-future-review-u2-sarajevo-1235327880/"},
         ],
+        "logline": "An American aid worker in besieged Sarajevo persuades U2 to spotlight the city, and the band promises to play there once the war ends.",
     },
     "documentary-2": {  # Fire on the Hill
         "overrideCredits": [
             {"k": "Director", "v": "Brett Fallentine"},
-            {"k": "Production Company", "v": "Independent"},
-            {"k": "Notable Festivals", "v": "LA Film Festival '18 (LA Muse Documentary Award); Big Sky Documentary Film Festival (Artistic Vision Award); Heartland International Film Festival (Jimmy Stewart Legacy Award)"},
+            {"k": "Production Company", "v": "Preamble Pictures, in association with RYOT, Contend and Enzo"},
+            {"k": "Notable Talent", "v": "William Bias, Chris Byrd, Ghuan Featherstone"},
+            {"k": "Notable Festivals", "v": "LA Film Festival '18 (LA Muse Documentary Award); Big Sky Documentary Film Festival '19 (Artistic Vision Award); Heartland International Film Festival '19 (Jimmy Stewart Legacy Award); Portland Film Festival '19 (Best Documentary Feature)"},
             {"k": "Press — The Hollywood Reporter", "v": "“This modern-day buckaroo, like Brett Fallentine’s well-observed film, embraces a burnished Wild West archetype while redefining it.”", "href": "https://www.hollywoodreporter.com/review/fire-hill-1157020"},
         ],
+        "logline": "Three Black cowboys in Compton and South LA fight to keep their riding culture alive after arson destroys their historic stable.",
     },
     "documentary-3": {  # Call Me Lucky
         "overrideCredits": [
@@ -267,6 +359,23 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Sundance Film Festival '15 (U.S. Documentary Competition)"},
             {"k": "Press — Variety", "v": "“A terrifically engaging surprise... among the most devastating of numerous 2015 Sundance titles.”", "href": "https://variety.com/2015/film/reviews/sundance-film-review-call-me-lucky-1201422008/"},
         ],
+        "logline": "Bobcat Goldthwait's portrait of comedian Barry Crimmins, whose ferocious stand-up and painful past fueled a life-changing campaign of activism.",
+    },
+    "documentary-4": {  # Microsoft Philanthropies - Mary Mwende
+        "overrideCredits": [
+            {"k": "Subject", "v": "Mary Mwende"},
+            {"k": "Client", "v": "Microsoft Philanthropies"},
+        ],
+        # todo: director, logline still needed
+    },
+    "documentary-1": {  # The Youth Governor
+        "overrideCredits": [
+            {"k": "Director", "v": "Matthew Halmy, Jaron Halmy"},
+            {"k": "Production Company", "v": "Blumhouse Television; Red Earth"},
+            {"k": "Notable Talent", "v": "Aidan Blain, Bayo Collins, Piper Samuels"},
+            {"k": "Notable Festivals", "v": "Cleveland International Film Festival; Milwaukee Film Festival; Phoenix Film Festival"},
+        ],
+        "logline": "Inside a California program where thousands of teens run a simulated state government, three finalists campaign to become the 72nd Youth Governor.",
     },
     "documentary-5": {  # Re:Purpose - Afro Beat
         "videoEmbed": "https://player.vimeo.com/video/140062680?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -274,6 +383,7 @@ OVERRIDES = {
             {"k": "Director", "v": "Emily Bloom"},
             {"k": "Subject", "v": "Brandie Randolph"},
         ],
+        # todo: production company, logline still needed
     },
     "documentary-6": {  # Re:Purpose - Farriers
         "videoEmbed": "https://player.vimeo.com/video/50266043?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -282,6 +392,7 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Subjects", "v": "Bob and Brant Phalen"},
         ],
+        # todo: logline still needed
     },
 }
 

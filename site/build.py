@@ -23,6 +23,10 @@ PRESS_DOMAINS = {
     'vulture': 'vulture.com', 'deadline': 'deadline.com', 'rolling stone': 'rollingstone.com',
 }
 CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html', 'music_video': 'music-video.html'}
+# Commercial pages that are video-only — no gallery section/heading even if
+# still images exist in their data (those are used by the triptych thumbnail
+# on the Commercial category page, not shown as a stills gallery here).
+VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-presentation'}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -191,10 +195,11 @@ def category_display_lists(all_projects):
 
 def poster_tile_data(p):
     cs = bool(p.get('comingSoon'))
+    tile_image = '' if cs else (p.get('posterImage') or p.get('image') or '')
     return {
         'comingSoon': cs,
-        'hasTileImage': not cs,
-        'tileImage': '' if cs else (p.get('posterImage') or p.get('image')),
+        'hasTileImage': not cs and bool(tile_image),
+        'tileImage': tile_image,
         'noPoster': (not cs) and not p.get('posterImage'),
         'artImage': p.get('comingSoonImage') or '',
         'laurels': laurels_for(p),
@@ -203,22 +208,7 @@ def poster_tile_data(p):
 
 def detail_data(p):
     title = p['title']
-    if p.get('overrideCredits'):
-        raw_credits = p['overrideCredits']
-    elif p['section'] == 'films':
-        raw_credits = [
-            {'k': 'Director', 'v': 'Add director name'},
-            {'k': 'Lead Actors', 'v': 'Add lead cast'},
-            {'k': 'Notable Festivals', 'v': p.get('note') or 'Add festival selections'},
-            {'k': 'Press', 'v': 'Add press quote'},
-        ]
-    else:
-        raw_credits = [
-            {'k': 'Client', 'v': title.split(' - ')[0] if title else 'Add client'},
-            {'k': 'Agency', 'v': 'Add agency'},
-            {'k': 'Director', 'v': 'Add director name'},
-            {'k': 'Notable Talent', 'v': 'Add talent'},
-        ]
+    raw_credits = p.get('overrideCredits') or []
     linked = with_links(raw_credits, title)
 
     gallery_source = p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u]
@@ -227,10 +217,10 @@ def detail_data(p):
         gallery[1], gallery[3] = gallery[3], gallery[1]
 
     return {
-        'creditGroups': group_credits(linked),
-        'pressQuotes': press_quotes(linked),
+        'creditGroups': group_credits(linked) if linked else [],
+        'pressQuotes': press_quotes(linked) if linked else [],
         'episodes': p.get('episodes') or [],
-        'logline': p.get('logline') or 'Add a one-sentence logline for this project.',
+        'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
         'galleryLeft': gallery[0:3],
         'galleryRight': gallery[3:6],
@@ -357,7 +347,12 @@ def asset(root, path):
 def img(src, alt, cls='', extra='', lazy=True):
     loading = ' loading="lazy" decoding="async"' if lazy else ''
     cls_attr = ' class="' + cls + '"' if cls else ''
-    return '<img src="' + esc(src) + '" alt="' + esc(alt) + '"' + cls_attr + loading + extra + '>'
+    # draggable="false": images are draggable by default, and a real mouse
+    # almost always drifts a pixel between press and release — enough for
+    # the browser to start a native image-drag gesture instead of firing a
+    # click, which silently eats real clicks on <a><img></a> tiles (only a
+    # perfectly still synthetic click would "work").
+    return '<img src="' + esc(src) + '" alt="' + esc(alt) + '"' + cls_attr + loading + ' draggable="false"' + extra + '>'
 
 
 # --------------------------------------------------------------- fragments --
@@ -475,7 +470,7 @@ def render_collage_tile(current_folder, item):
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
     return (
-        '<a class="collage-tile" href="' + href + '" style="' + style + '">'
+        '<a class="collage-tile" href="' + href + '" style="' + style + '" draggable="false">'
         + img(item['url'], item['title']) +
         '<div class="collage-scrim"><span>' + esc(item['title']) + '</span></div>'
         '</a>'
@@ -507,7 +502,7 @@ def render_poster_tile(current_folder, p):
     root = '' if current_folder == '' else '../'
     href = page_rel(current_folder, p['href'])
     d = poster_tile_data(p)
-    out = ['<a class="poster-tile" href="' + href + '">']
+    out = ['<a class="poster-tile" href="' + href + '" draggable="false">']
     if d['hasTileImage']:
         out.append(img(asset(root, d['tileImage']), p['title']))
     if d['comingSoon']:
@@ -535,7 +530,7 @@ def render_triptych_block(current_folder, p):
     imgs = [u for u in (p.get('image'), p.get('image2'), p.get('image3')) if u]
     cells = []
     for u in imgs:
-        cells.append('<a class="triptych-img-wrap" href="' + href + '">' + img(u, p['title']) + '<div class="triptych-hover"></div></a>')
+        cells.append('<a class="triptych-img-wrap" href="' + href + '" draggable="false">' + img(u, p['title']) + '<div class="triptych-hover"></div></a>')
     note = ''
     if p.get('note'):
         note = ' <span class="triptych-note">&mdash; ' + esc(p['note']) + '</span>'
@@ -587,23 +582,33 @@ def render_detail_page(p, current_folder):
     root = '../'
     dd = detail_data(p)
     aspect = p.get('videoAspect', '16/9')
+
+    left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
+    center_html = render_video_block(p, 'first', aspect)
+    right_parts = []
+    if dd['logline']:
+        right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
+    right_parts.append(render_press_quotes(dd['pressQuotes']))
+    if p.get('watchUrl'):
+        right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
+    right_html = ''.join(right_parts)
+
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
             '<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>',
-            '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
-            '</div>',
-            '<div class="detail-grid">',
-            '<div class="detail-col-left"><div>' + render_credit_groups(dd['creditGroups']) + '</div></div>',
-            '<div class="detail-col-center">']
-    body.append(render_video_block(p, 'first', aspect))
+            '<h1 class="detail-title">' + esc(p['title']) + '</h1>']
+    if p.get('creditLine'):
+        body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
     body.append('</div>')
-    body.append('<div class="detail-col-right"><div>')
-    body.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
-    body.append(render_press_quotes(dd['pressQuotes']))
-    if p.get('watchUrl'):
-        body.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
-    body.append('</div></div>')
-    body.append('</div>')  # /detail-grid
+    if left_html or center_html or right_html:
+        body.append('<div class="detail-grid">')
+        if left_html:
+            body.append('<div class="detail-col-left"><div>' + left_html + '</div></div>')
+        if center_html:
+            body.append('<div class="detail-col-center">' + center_html + '</div>')
+        if right_html:
+            body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
+        body.append('</div>')  # /detail-grid
 
     if dd['episodes']:
         body.append('<div class="field-label">Episodes</div><div class="episodes-list">')
@@ -618,7 +623,37 @@ def render_detail_page(p, current_folder):
     body.append('</div>')  # /detail-wrap
 
     return page(root, p['title'] + ' — Bradley Stonesifer',
-                (dd['logline'] if not dd['logline'].startswith('Add a') else p['title'] + ', shot by cinematographer Bradley Stonesifer.'),
+                (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),
+                inner_header(root), ''.join(body))
+
+
+def render_simple_detail_page(p, current_folder, video_only=False):
+    """Music Video / Commercial detail pages: back link, title, a single
+    full-width 16:9 video player, and a stills gallery — no credits sidebar."""
+    root = '../'
+    aspect = p.get('videoAspect', '16/9')
+    back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
+    back_label = '← Back' if p['section'] == 'films' else '← All commercial'
+
+    video_html = render_video_block(p, 'first', aspect)
+    stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
+
+    body = ['<div class="detail-wrap">',
+            '<div class="detail-head">',
+            '<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>',
+            '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
+            '</div>']
+    if video_html:
+        body.append(video_html)
+    if stills:
+        body.append('<div class="field-label" style="margin-top: 34px;">Gallery</div><div class="stills-grid">')
+        for u in stills:
+            body.append('<div class="gallery-bottom-cell">' + img(u, p['title']) + '</div>')
+        body.append('</div>')
+    body.append('</div>')  # /detail-wrap
+
+    return page(root, p['title'] + ' — Bradley Stonesifer',
+                p['title'] + ', shot by cinematographer Bradley Stonesifer.',
                 inner_header(root), ''.join(body))
 
 
@@ -661,16 +696,19 @@ def render_about():
         '<div class="about-section">'
         '<div class="about-section-label">Award-Winning Films, Major Festivals, Theatrical Releases</div>'
         '<ul class="award-list">'
-        '<li>&ldquo;Kiss the Future&rdquo; &mdash; Official Selection, Berlinale 2023</li>'
-        '<li>&ldquo;Fire on the Hill&rdquo; &mdash; Winner, LAFF Documentary 2020</li>'
-        '<li>&ldquo;Call Me Lucky&rdquo; &mdash; Sundance Documentary Competition 2015</li>'
-        '<li>&ldquo;De Puta Madre&rdquo; &mdash; Best Cinematography 2014, Nom. Best Cinematography 2015, '
+        '<li><em>Kiss the Future</em> &mdash; Official Selection, Berlinale 2023</li>'
+        '<li><em>Fire on the Hill</em> &mdash; Winner, LA Film Festival Documentary 2018 (LA Muse Documentary Award)</li>'
+        '<li><em>Call Me Lucky</em> &mdash; Sundance Documentary Competition 2015</li>'
+        '<li><em>Me + Her</em> &mdash; Sundance Film Festival 2014</li>'
+        '<li><em>De Puta Madre</em> &mdash; Best Cinematography 2014, Nom. Best Cinematography 2015, '
         'Columbia Gorge International Film Festival</li>'
-        '<li>&ldquo;Hit &amp; Run&rdquo; &mdash; opened to over 2,800 theaters, Oct. 2012</li>'
-        '<li>&ldquo;God Bless America&rdquo; &mdash; Toronto and SXSW ’11 &amp; ’12</li>'
-        '<li>&ldquo;Spork&rdquo; &mdash; Tribeca 2010; Winner, Best Feature (Virtual Category)</li>'
-        '<li>&ldquo;Almost Kings&rdquo; &mdash; LAFF 2010</li>'
-        '<li>&ldquo;The Vicious Kind&rdquo; &mdash; Sundance 2009; Nom. Best Cinematography, Strasbourg '
+        # todo: Hit & Run theater count — prose above says "over 3,000 theaters,"
+        # this line says "over 2,800" — needs reconciling with a verified source.
+        '<li><em>Hit &amp; Run</em> &mdash; opened to over 2,800 theaters, Oct. 2012</li>'
+        '<li><em>God Bless America</em> &mdash; Toronto and SXSW ’11 &amp; ’12</li>'
+        '<li><em>Spork</em> &mdash; Tribeca 2010; Winner, Best Feature (Virtual Category)</li>'
+        '<li><em>Almost Kings</em> &mdash; LAFF 2010</li>'
+        '<li><em>The Vicious Kind</em> &mdash; Sundance 2009; Nom. Best Cinematography, Strasbourg '
         'International Film Festival</li>'
         '</ul></div>'
         '<div class="contact-section">'
@@ -766,7 +804,12 @@ def main():
         folder = 'films' if cat['section'] == 'films' else 'commercial'
         for i in range(len(cat['projects'])):
             p = all_projects[cat['key'] + '-' + str(i)]
-            write(p['href'], render_detail_page(p, folder))
+            if cat['key'] == 'music_video':
+                write(p['href'], render_simple_detail_page(p, folder))
+            elif cat['key'] == 'commercial':
+                write(p['href'], render_simple_detail_page(p, folder, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
+            else:
+                write(p['href'], render_detail_page(p, folder))
 
     copy_assets()
     print('Built', 6 + len(all_projects), 'pages for', len(all_projects), 'projects.')
