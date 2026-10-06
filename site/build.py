@@ -195,12 +195,17 @@ def category_display_lists(all_projects):
 
 def poster_tile_data(p):
     cs = bool(p.get('comingSoon'))
-    tile_image = '' if cs else (p.get('posterImage') or p.get('image') or '')
+    # "poster" is the same kind of real-poster-file field as "posterImage"
+    # (which comes from the POSTERS/OVERRIDES map) — just settable directly
+    # on a project's own data entry. Either one switches the tile off the
+    # still-with-title fallback with no layout changes.
+    poster_file = p.get('poster') or p.get('posterImage') or ''
+    tile_image = '' if cs else (poster_file or p.get('image') or '')
     return {
         'comingSoon': cs,
         'hasTileImage': not cs and bool(tile_image),
         'tileImage': tile_image,
-        'noPoster': (not cs) and not p.get('posterImage'),
+        'noPoster': (not cs) and not poster_file,
         'artImage': p.get('comingSoonImage') or '',
         'laurels': laurels_for(p),
     }
@@ -774,7 +779,7 @@ def rewrite_upload_paths(all_projects):
     """Local project image fields reference 'uploads/<name>' (design-tool
     relative path) — repoint them at assets/images/<clean-name> in the new site."""
     for p in all_projects.values():
-        for field in ('posterImage', 'comingSoonImage'):
+        for field in ('posterImage', 'comingSoonImage', 'poster'):
             v = p.get(field)
             if v and v.startswith('uploads/'):
                 orig_name = v[len('uploads/'):]

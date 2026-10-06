@@ -61,8 +61,12 @@ CATS = [
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
             # No poster/images yet — still-with-title fallback tile until artwork is supplied.
-            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
-            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": ""},
+            # "poster" is empty until Bradley supplies the file path for
+            # back-in-the-day-poster.jpg — once set, the poster wall tile
+            # switches from the still-with-title fallback automatically.
+            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
+            # Same deal — midnight-in-the-switchgrass-poster.jpg.
+            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
         ],
     },
     {
@@ -314,8 +318,10 @@ OVERRIDES = {
         "creditLine": "Cinematographer, Co-Producer",
         "overrideCredits": [
             {"k": "Director", "v": "Michael Rosenbaum"},
+            {"k": "Writers", "v": "Michael Rosenbaum"},
+            {"k": "Producers", "v": "Kim Waltrip"},
             {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
-            {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa"},
+            {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa, Kristoffer Polaha, Jay R. Ferguson, Emma Caulfield"},
         ],
         "logline": "Disenchanted with his Hollywood career, Jim Owens returns to his Indiana hometown for his high school reunion, hoping to relive the glory days and win back the one who got away.",
         # todo: festivals, press still needed
@@ -324,11 +330,13 @@ OVERRIDES = {
         "creditLine": "Director of Photography, Los Angeles unit",
         "overrideCredits": [
             {"k": "Director", "v": "Randall Emmett"},
+            {"k": "Writers", "v": "Alan Horsnail"},
             {"k": "Production Company", "v": "Emmett Furla Oasis Films; The Pimienta Film Co."},
             {"k": "Lead Actors", "v": "Megan Fox, Bruce Willis, Emile Hirsch, Lukas Haas, Machine Gun Kelly"},
             {"k": "Notable Festivals", "v": "Gasparilla International Film Festival '21 (Closing Night Film)"},
         ],
-        "logline": "Two FBI agents and a Florida state cop chase a string of related murders and are drawn into a deadly cat-and-mouse game with a serial killer.",
+        # Sources disagree on the setting, so the logline stays neutral.
+        "logline": "When a young woman goes missing at a truck stop, two FBI agents and a local lawman race to stop a serial killer before he claims another victim.",
         # todo: press still needed
     },
     "documentary-0": {  # Kiss the Future
