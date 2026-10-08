@@ -206,7 +206,7 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Aqueous Entertainment"},
             {"k": "Lead Actors", "v": "Lorenzo James Henrie, Alex Frost, Billy Campbell, Haley Ramm, Portia Doubleday"},
             {"k": "Notable Festivals", "v": "Los Angeles Film Festival '10 (Find Your Voice Award)"},
-            {"k": "Press — Richard Propes, The Independent Critic", "v": "“Bradley Stonesifer’s camera work is pristine…”", "href": "https://theindependentcritic.com/almost_kings"},
+            {"k": "Press — Richard Propes, The Independent Critic", "v": "“Bradley Stonesifer’s camera work is pristine while never becoming so pristine that the imagery overwhelms.”", "href": "https://theindependentcritic.com/almost_kings"},
         ],
         "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
         # 27 processed stills (site/assets/images/almost-kings/), replacing
