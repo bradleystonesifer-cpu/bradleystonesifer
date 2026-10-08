@@ -415,7 +415,10 @@ def render_video_block(p, which, aspect='16/9'):
     if not embed:
         return ''
     vid = vimeo_id(embed)
-    thumb_url = p.get('image')
+    # videoThumb (per-project, i.vimeocdn.com) wins when set; falls back to
+    # the original p.get('image') otherwise — the-vicious-kind never sets
+    # videoThumb, so its output is byte-for-byte unchanged.
+    thumb_url = p.get('videoThumb') or p.get('image')
     if which == 'first':
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
@@ -458,13 +461,18 @@ def render_video_player(p, aspect='16/9'):
     videos = VIDEOS.get(p.get('slug'))
     if not videos:
         return ''
-    thumb_url = p.get('image')
+    # Each video carries its own Vimeo thumbnail (i.vimeocdn.com); falls
+    # back to the project's existing still only if one wasn't supplied.
+    thumb_url = videos[0].get('thumb') or p.get('image')
     main_src = vimeo_dnt_url(videos[0]['url'])
+    play_label = 'Play ' + p['title']
     out = [
-        '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title']) + '" style="aspect-ratio: ' + aspect + ';" data-vimeo-src="' + esc(main_src) + '">',
+        '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title'])
+        + '" data-vimeo-play-label="' + esc(play_label) + '" style="aspect-ratio: ' + aspect
+        + ';" data-vimeo-src="' + esc(main_src) + '">',
         '<div class="video-thumb-overlay">',
         img(thumb_url, p['title']),
-        '<button type="button" class="video-click-btn" data-vimeo-play aria-label="' + esc('Play ' + p['title']) + '">',
+        '<button type="button" class="video-click-btn" data-vimeo-play aria-label="' + esc(play_label) + '">',
         '<div class="play-btn"><div class="play-btn-tri"></div></div>',
         '</button>',
         '</div></div>',
@@ -473,9 +481,11 @@ def render_video_player(p, aspect='16/9'):
         out.append('<div class="video-select-row">')
         for i, v in enumerate(videos):
             cls = 'video-select-btn active' if i == 0 else 'video-select-btn'
+            thumb = v.get('thumb') or p.get('image') or ''
             out.append(
                 '<button type="button" class="' + cls + '" data-vimeo-select="'
-                + esc(vimeo_dnt_url(v['url'])) + '">' + esc(v.get('label', '')) + '</button>'
+                + esc(vimeo_dnt_url(v['url'])) + '" data-vimeo-select-thumb="' + esc(thumb) + '">'
+                + esc(v.get('label', '')) + '</button>'
             )
         out.append('</div>')
     return ''.join(out)
