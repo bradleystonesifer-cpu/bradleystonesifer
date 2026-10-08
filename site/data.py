@@ -209,6 +209,42 @@ OVERRIDES = {
             {"k": "Press — Kirk Honeycutt, The Hollywood Reporter", "v": "“These two might be the real discoveries in the film.”"},
         ],
         "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
+        # 27 processed stills (site/assets/images/almost-kings/), replacing
+        # the old Squarespace image2/image3 gallery fallback. Stored already
+        # root-prefixed (../assets/images/...) since render_gallery() uses
+        # galleryImages URLs as-is rather than routing them through asset().
+        "galleryImages": [
+            "../assets/images/almost-kings/almost-kings-%02d.jpg" % i for i in range(1, 28)
+        ],
+        "galleryAlts": [
+            "Backlit brush with lens flare, boys walking",
+            "Jeep crossing a valley",
+            "Garage workout",
+            "Boy in dark hoodie, close",
+            "Man in red shirt, close",
+            "Man at garage door by a stop sign",
+            "Jeep at the school fence",
+            "Ambulance seen through a truck window",
+            "Locker room",
+            "Library",
+            "School hallway",
+            "Rifle in a golden field",
+            "Boy asleep, bokeh",
+            "Four boys by the garage",
+            "Boy by a lamp",
+            "Girl, close-up",
+            "Boy, face close-up",
+            "Blonde girl in a truck",
+            "Bedroom in red light",
+            "Man shouting",
+            "Classroom",
+            "Legs on a bed",
+            "Overhead, sink",
+            "Overhead, man on couch",
+            "Overhead, boy on couch",
+            "Night, distant fire",
+            "Fire",
+        ],
     },
     "narrative-4": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",

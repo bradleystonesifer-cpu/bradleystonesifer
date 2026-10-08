@@ -217,6 +217,12 @@ def detail_data(p):
     linked = with_links(raw_credits, title)
 
     gallery_source = p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u]
+    gallery_alts = p.get('galleryAlts')
+    if gallery_alts:
+        # (url, alt) pairs when per-image alt text is supplied; every other
+        # project keeps plain URL strings, unaffected.
+        gallery_source = [(u, gallery_alts[i] if i < len(gallery_alts) else title)
+                           for i, u in enumerate(gallery_source)]
     gallery = list(gallery_source)
     if len(gallery) > 3:
         gallery[1], gallery[3] = gallery[3], gallery[1]
@@ -491,11 +497,19 @@ def render_video_player(p, aspect='16/9'):
     return ''.join(out)
 
 
+def _gallery_item(item, title):
+    """A gallery slot is either a plain URL string (title used as alt, the
+    original behavior) or an (url, alt) pair when the project supplies
+    per-image alt text via galleryAlts."""
+    return item if isinstance(item, tuple) else (item, title)
+
+
 def render_gallery(root, dd, title):
-    def cell(url):
-        return '<div class="gallery-cell">' + img(url, title) + '</div>'
-    left = ''.join(cell(u) for u in dd['galleryLeft'] if u)
-    right = ''.join(cell(u) for u in dd['galleryRight'] if u)
+    def cell(item):
+        url, alt = _gallery_item(item, title)
+        return '<div class="gallery-cell">' + img(url, alt) + '</div>'
+    left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
+    right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
     out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>', '<div class="gallery-main">']
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + left + '</div></div>')
@@ -506,9 +520,10 @@ def render_gallery(root, dd, title):
     bottom = dd['galleryBottom']
     if bottom:
         out.append('<div class="gallery-bottom">')
-        for u in bottom:
-            if u:
-                out.append('<div class="gallery-bottom-cell">' + img(u, title) + '</div>')
+        for item in bottom:
+            url, alt = _gallery_item(item, title)
+            if url:
+                out.append('<div class="gallery-bottom-cell">' + img(url, alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -682,9 +697,17 @@ def render_detail_page(p, current_folder):
     body.append(render_video_block(p, 'second'))
     body.append('</div>')  # /detail-wrap
 
+    extra_head = ''
+    if p.get('slug') == 'almost-kings':
+        # 21 bottom-grid stills don't divide evenly into the default 4
+        # columns (a ragged last row of 1) — 3 columns gives exactly 7 full
+        # rows. Scoped to this page only via an inline <style>, so no other
+        # page's CSS or output changes.
+        extra_head = '<style>@media (min-width: 901px) {.gallery-bottom{grid-template-columns:repeat(3,minmax(0,1fr));}}</style>'
+
     return page(root, p['title'] + ' — Bradley Stonesifer',
                 (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),
-                inner_header(root), ''.join(body))
+                inner_header(root), ''.join(body), extra_head)
 
 
 def render_simple_detail_page(p, current_folder, video_only=False):
