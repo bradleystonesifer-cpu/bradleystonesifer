@@ -11,7 +11,7 @@ import re
 import shutil
 import urllib.parse
 
-from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER
+from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER, VIDEOS
 
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 FESTIVAL_DOMAINS = {
@@ -436,6 +436,51 @@ def render_video_block(p, which, aspect='16/9'):
     )
 
 
+def vimeo_dnt_url(url):
+    """Vimeo's "do not track" param — ?dnt=1 if the URL has no query yet,
+    &dnt=1 if it already carries ?h=HASH."""
+    return url + ('&dnt=1' if '?' in url else '?dnt=1')
+
+
+def render_video_player(p, aspect='16/9'):
+    """Vimeo facade player for every detail page except the five that
+    already have one via the older videoEmbed/secondVideoEmbed mechanism
+    (the-vicious-kind, hit-and-run, spork, both Re:Purpose titles) — those
+    are left completely alone by checking for videoEmbed first.
+
+    Separate markup/data-attributes/JS from render_video_block() above on
+    purpose, so this never touches those five pages' elements or behavior.
+    Reuses the same .video-wrap / .video-thumb-overlay / .play-btn /
+    .play-btn-tri CSS classes for visual consistency.
+    """
+    if p.get('videoEmbed'):
+        return render_video_block(p, 'first', aspect)
+    videos = VIDEOS.get(p.get('slug'))
+    if not videos:
+        return ''
+    thumb_url = p.get('image')
+    main_src = vimeo_dnt_url(videos[0]['url'])
+    out = [
+        '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title']) + '" style="aspect-ratio: ' + aspect + ';" data-vimeo-src="' + esc(main_src) + '">',
+        '<div class="video-thumb-overlay">',
+        img(thumb_url, p['title']),
+        '<button type="button" class="video-click-btn" data-vimeo-play aria-label="' + esc('Play ' + p['title']) + '">',
+        '<div class="play-btn"><div class="play-btn-tri"></div></div>',
+        '</button>',
+        '</div></div>',
+    ]
+    if len(videos) > 1:
+        out.append('<div class="video-select-row">')
+        for i, v in enumerate(videos):
+            cls = 'video-select-btn active' if i == 0 else 'video-select-btn'
+            out.append(
+                '<button type="button" class="' + cls + '" data-vimeo-select="'
+                + esc(vimeo_dnt_url(v['url'])) + '">' + esc(v.get('label', '')) + '</button>'
+            )
+        out.append('</div>')
+    return ''.join(out)
+
+
 def render_gallery(root, dd, title):
     def cell(url):
         return '<div class="gallery-cell">' + img(url, title) + '</div>'
@@ -589,7 +634,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_block(p, 'first', aspect)
+    center_html = render_video_player(p, aspect)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -640,7 +685,7 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
     back_label = '← Back' if p['section'] == 'films' else '← All commercial'
 
-    video_html = render_video_block(p, 'first', aspect)
+    video_html = render_video_player(p, aspect)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
     body = ['<div class="detail-wrap">',

@@ -62,4 +62,55 @@
       });
     }
   }
+
+  // Vimeo facade player (added for new video pages) — same lazy-load-on-
+  // click pattern as the one above, but on its own data attributes so it
+  // never touches that original mechanism's elements or behavior.
+  document.querySelectorAll('[data-vimeo-wrap]').forEach(function (wrap) {
+    function loadVideo(src) {
+      var iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.title = wrap.getAttribute('data-vimeo-title') || 'Video player';
+      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.style.cssText = 'position:absolute;top:0;left:-1px;width:calc(100% + 2px);height:100%;border:0;display:block;';
+      wrap.innerHTML = '';
+      wrap.appendChild(iframe);
+    }
+    var playBtn = wrap.querySelector('[data-vimeo-play]');
+    if (playBtn) {
+      playBtn.addEventListener('click', function () {
+        var src = wrap.getAttribute('data-vimeo-src');
+        if (!src) return;
+        loadVideo(src + (src.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1');
+      });
+    }
+    wrap.parentElement.querySelectorAll('[data-vimeo-select]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var src = btn.getAttribute('data-vimeo-select');
+        if (!src) return;
+        wrap.parentElement.querySelectorAll('.video-select-btn').forEach(function (b) {
+          b.classList.toggle('active', b === btn);
+        });
+        loadVideo(src + (src.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1');
+      });
+    });
+  });
+
+  // Preconnect to player.vimeo.com on first hover/focus of any play
+  // control (old or new) rather than on page load, so visitors who never
+  // touch a player never pay for that connection.
+  var vimeoPreconnected = false;
+  function preconnectVimeo() {
+    if (vimeoPreconnected) return;
+    vimeoPreconnected = true;
+    var link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = 'https://player.vimeo.com';
+    document.head.appendChild(link);
+  }
+  document.querySelectorAll('[data-video-thumb], [data-vimeo-play], [data-vimeo-select]').forEach(function (el) {
+    el.addEventListener('mouseenter', preconnectVimeo, { once: true });
+    el.addEventListener('focus', preconnectVimeo, { once: true });
+  });
 })();

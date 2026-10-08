@@ -471,3 +471,64 @@ CATEGORY_ORDER = {
     "narrative": [0, 1, 2, 4, 7, 8, 9, 10, 5, 6, 3],
     "documentary": [0, 3, 2, 1],
 }
+
+# Vimeo facade-player map, keyed by project slug. One list entry per video,
+# in display order; a single-entry list renders just the main player, more
+# than one adds a row of labeled buttons that swap the active video. Add a
+# new video by adding one line here — no template changes needed.
+#
+# the-vicious-kind is intentionally NOT here (it's the locked benchmark
+# layout and keeps its own videoEmbed/secondVideoEmbed wiring in OVERRIDES,
+# untouched). hit-and-run, spork, and both Re:Purpose titles are also left
+# out on purpose — they already have a working Vimeo facade player via that
+# same older OVERRIDES mechanism (render_video_player() checks for that
+# first and leaves those five pages completely alone).
+VIDEOS = {
+    # commercial
+    "alibaba-get-to-yes": [{"url": "https://player.vimeo.com/video/120442778?h=90ca36f7b9"}],
+    "quaker-who-do-you-put-1st": [{"url": "https://player.vimeo.com/video/386291990?h=5e1564d3e7"}],
+    "asus-a-fathers-touch": [{"url": "https://player.vimeo.com/video/69845771"}],
+    "subaru-andres-amador": [{"url": "https://player.vimeo.com/video/68196804"}],
+    "dodgers-stadium-intro": [{"url": "https://player.vimeo.com/video/65534785?h=4fd5147d83"}],
+    "google-the-big-presentation": [{"url": "https://player.vimeo.com/video/53464864?h=f34b684aa9"}],
+    "triller-tyson-vs-jones": [{"url": "https://player.vimeo.com/video/666047289?h=27dfea3259"}],
+    "google-samsung-passport": [{"url": "https://player.vimeo.com/video/642047310?h=46dbcdf87d"}],
+    "carnival-cruise-funderstruck": [
+        {"label": "30", "url": "https://player.vimeo.com/video/666041671?h=3a36c908a8"},
+        {"label": "Slo-Mo", "url": "https://player.vimeo.com/video/666064374?h=4c7b88fef2"},
+    ],
+    "microsoft-estellas-brilliant-bus": [{"url": "https://player.vimeo.com/video/120444332?h=47179f22d3"}],
+    "kiwico-believe": [{"url": "https://player.vimeo.com/video/477279998"}],
+    "apple-iphone-11": [{"url": "https://player.vimeo.com/video/362713995?h=d5ff3c4b29"}],
+    "t-mobile-iphone-14": [
+        {"label": "iPhone 14", "url": "https://player.vimeo.com/video/751891092?h=c1688d82d5"},
+        {"label": "Lamp-post", "url": "https://player.vimeo.com/video/778198316?h=20468a9164"},
+    ],
+    "t-mobile-zach-and-donald": [
+        {"label": "Super Bowl", "url": "https://player.vimeo.com/video/727570279?h=918ee5cd36"},
+        {"label": "Gratitude", "url": "https://player.vimeo.com/video/778198653?h=8ee8e6b959"},
+    ],
+    "t-mobile-audition": [{"url": "https://player.vimeo.com/video/916036068?h=b3e3d48d1a"}],
+    "t-mobile-misunderstandings": [
+        {"label": "Brady", "url": "https://player.vimeo.com/video/577008475?h=8ba48f46bb"},
+        {"label": "Gwen", "url": "https://player.vimeo.com/video/577008598?h=c08104dd2c"},
+        {"label": "Judge Giancarlo", "url": "https://player.vimeo.com/video/577008735?h=fe64bb2827"},
+    ],
+    # films — scripted (the-vicious-kind / hit-and-run / spork excluded, see note above)
+    "me-plus-her": [{"url": "https://player.vimeo.com/video/84247438"}],
+    "the-kid": [{"url": "https://player.vimeo.com/video/74362737"}],
+    "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997"}],
+    "almost-kings": [{"url": "https://player.vimeo.com/video/128559140?h=1f36124341"}],
+    # films — documentary (re-purpose-afro-beat / re-purpose-farriers excluded, see note above)
+    "call-me-lucky": [{"url": "https://player.vimeo.com/video/135433937?h=c4e54b27a5"}],
+    "fire-on-the-hill": [{"url": "https://player.vimeo.com/video/325276727"}],
+    "microsoft-philanthropies-mary-mwende": [{"url": "https://player.vimeo.com/video/264378235"}],
+    # films — music video (each already has its own detail page from earlier
+    # work; this just populates the player on those existing pages)
+    "m-rivers-champion": [{"url": "https://player.vimeo.com/video/264373271?h=e6724e4c51"}],
+    "lissie-go-your-own-way": [{"url": "https://player.vimeo.com/video/58595302"}],
+    "train-bulletproof-picasso": [{"url": "https://player.vimeo.com/video/127318141?h=c028971530"}],
+    "jamie-joseph-hit-the-ground-running": [{"url": "https://player.vimeo.com/video/110971280"}],
+    "the-lady-tigra-thing-a-ling": [{"url": "https://player.vimeo.com/video/69778090"}],
+    "awolnation-burn-it-down": [{"url": "https://player.vimeo.com/video/69775509"}],
+}

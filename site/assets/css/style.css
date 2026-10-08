@@ -585,6 +585,31 @@ ul { margin: 0; padding: 0; }
 @media (max-width: 900px) { .stills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .stills-grid { grid-template-columns: 1fr; } }
 
+/* Vimeo facade player (new pages only — reuses .video-wrap/.video-thumb-
+   overlay/.play-btn/.play-btn-tri above as-is for the thumb+icon look). */
+.video-click-btn {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.video-select-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.video-select-btn {
+  font: 600 11px/1 'Inter', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.video-select-btn.active { color: var(--ink); border-color: var(--accent); }
+
 .selects-wrap { max-width: 1100px; margin: 40px auto 0; }
 .selects-video { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: 2.35 / 1; background: #000; }
 .selects-thumb {
