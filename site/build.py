@@ -11,7 +11,7 @@ import re
 import shutil
 import urllib.parse
 
-from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER
+from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER, VIDEOS
 
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 FESTIVAL_DOMAINS = {
@@ -217,6 +217,12 @@ def detail_data(p):
     linked = with_links(raw_credits, title)
 
     gallery_source = p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u]
+    gallery_alts = p.get('galleryAlts')
+    if gallery_alts:
+        # (url, alt) pairs when per-image alt text is supplied; every other
+        # project keeps plain URL strings, unaffected.
+        gallery_source = [(u, gallery_alts[i] if i < len(gallery_alts) else title)
+                           for i, u in enumerate(gallery_source)]
     gallery = list(gallery_source)
     if len(gallery) > 3:
         gallery[1], gallery[3] = gallery[3], gallery[1]
@@ -415,7 +421,10 @@ def render_video_block(p, which, aspect='16/9'):
     if not embed:
         return ''
     vid = vimeo_id(embed)
-    thumb_url = p.get('image')
+    # videoThumb (per-project, i.vimeocdn.com) wins when set; falls back to
+    # the original p.get('image') otherwise — the-vicious-kind never sets
+    # videoThumb, so its output is byte-for-byte unchanged.
+    thumb_url = p.get('videoThumb') or p.get('image')
     if which == 'first':
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
@@ -425,22 +434,88 @@ def render_video_block(p, which, aspect='16/9'):
             '<div class="play-btn"><div class="play-btn-tri"></div></div>'
             '</div></div>'
         )
-    # second / "Selects" player
+    # second / "Selects" player. secondVideoThumb is optional — when unset
+    # (the-vicious-kind never sets it) this renders exactly as before, a
+    # plain gradient card with no image, byte-for-byte unchanged.
+    second_thumb = p.get('secondVideoThumb')
+    thumb_html = img(second_thumb, p['title'] + ' — Selects', cls='selects-bg-img') if second_thumb else ''
+    thumb_cls = ' has-thumb' if second_thumb else ''
     return (
         '<div class="selects-wrap">'
         '<div class="selects-video" data-video-wrap data-embed-src="' + esc(embed) + '">'
-        '<div class="selects-thumb" data-video-thumb>'
+        + thumb_html +
+        '<div class="selects-thumb' + thumb_cls + '" data-video-thumb>'
         '<div class="selects-inner"><span class="selects-label">Selects</span>'
         '<div class="play-btn"><div class="play-btn-tri"></div></div></div>'
         '</div></div></div>'
     )
 
 
+def vimeo_dnt_url(url):
+    """Vimeo's "do not track" param — ?dnt=1 if the URL has no query yet,
+    &dnt=1 if it already carries ?h=HASH."""
+    return url + ('&dnt=1' if '?' in url else '?dnt=1')
+
+
+def render_video_player(p, aspect='16/9'):
+    """Vimeo facade player for every detail page except the five that
+    already have one via the older videoEmbed/secondVideoEmbed mechanism
+    (the-vicious-kind, hit-and-run, spork, both Re:Purpose titles) — those
+    are left completely alone by checking for videoEmbed first.
+
+    Separate markup/data-attributes/JS from render_video_block() above on
+    purpose, so this never touches those five pages' elements or behavior.
+    Reuses the same .video-wrap / .video-thumb-overlay / .play-btn /
+    .play-btn-tri CSS classes for visual consistency.
+    """
+    if p.get('videoEmbed'):
+        return render_video_block(p, 'first', aspect)
+    videos = VIDEOS.get(p.get('slug'))
+    if not videos:
+        return ''
+    # Each video carries its own Vimeo thumbnail (i.vimeocdn.com); falls
+    # back to the project's existing still only if one wasn't supplied.
+    thumb_url = videos[0].get('thumb') or p.get('image')
+    main_src = vimeo_dnt_url(videos[0]['url'])
+    play_label = 'Play ' + p['title']
+    out = [
+        '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title'])
+        + '" data-vimeo-play-label="' + esc(play_label) + '" style="aspect-ratio: ' + aspect
+        + ';" data-vimeo-src="' + esc(main_src) + '">',
+        '<div class="video-thumb-overlay">',
+        img(thumb_url, p['title']),
+        '<button type="button" class="video-click-btn" data-vimeo-play aria-label="' + esc(play_label) + '">',
+        '<div class="play-btn"><div class="play-btn-tri"></div></div>',
+        '</button>',
+        '</div></div>',
+    ]
+    if len(videos) > 1:
+        out.append('<div class="video-select-row">')
+        for i, v in enumerate(videos):
+            cls = 'video-select-btn active' if i == 0 else 'video-select-btn'
+            thumb = v.get('thumb') or p.get('image') or ''
+            out.append(
+                '<button type="button" class="' + cls + '" data-vimeo-select="'
+                + esc(vimeo_dnt_url(v['url'])) + '" data-vimeo-select-thumb="' + esc(thumb) + '">'
+                + esc(v.get('label', '')) + '</button>'
+            )
+        out.append('</div>')
+    return ''.join(out)
+
+
+def _gallery_item(item, title):
+    """A gallery slot is either a plain URL string (title used as alt, the
+    original behavior) or an (url, alt) pair when the project supplies
+    per-image alt text via galleryAlts."""
+    return item if isinstance(item, tuple) else (item, title)
+
+
 def render_gallery(root, dd, title):
-    def cell(url):
-        return '<div class="gallery-cell">' + img(url, title) + '</div>'
-    left = ''.join(cell(u) for u in dd['galleryLeft'] if u)
-    right = ''.join(cell(u) for u in dd['galleryRight'] if u)
+    def cell(item):
+        url, alt = _gallery_item(item, title)
+        return '<div class="gallery-cell">' + img(url, alt) + '</div>'
+    left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
+    right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
     out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>', '<div class="gallery-main">']
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + left + '</div></div>')
@@ -451,9 +526,10 @@ def render_gallery(root, dd, title):
     bottom = dd['galleryBottom']
     if bottom:
         out.append('<div class="gallery-bottom">')
-        for u in bottom:
-            if u:
-                out.append('<div class="gallery-bottom-cell">' + img(u, title) + '</div>')
+        for item in bottom:
+            url, alt = _gallery_item(item, title)
+            if url:
+                out.append('<div class="gallery-bottom-cell">' + img(url, alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -589,7 +665,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_block(p, 'first', aspect)
+    center_html = render_video_player(p, aspect)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -627,9 +703,17 @@ def render_detail_page(p, current_folder):
     body.append(render_video_block(p, 'second'))
     body.append('</div>')  # /detail-wrap
 
+    extra_head = ''
+    if p.get('slug') == 'almost-kings':
+        # 21 bottom-grid stills don't divide evenly into the default 4
+        # columns (a ragged last row of 1) — 3 columns gives exactly 7 full
+        # rows. Scoped to this page only via an inline <style>, so no other
+        # page's CSS or output changes.
+        extra_head = '<style>@media (min-width: 901px) {.gallery-bottom{grid-template-columns:repeat(3,minmax(0,1fr));}}</style>'
+
     return page(root, p['title'] + ' — Bradley Stonesifer',
                 (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),
-                inner_header(root), ''.join(body))
+                inner_header(root), ''.join(body), extra_head)
 
 
 def render_simple_detail_page(p, current_folder, video_only=False):
@@ -640,7 +724,7 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
     back_label = '← Back' if p['section'] == 'films' else '← All commercial'
 
-    video_html = render_video_block(p, 'first', aspect)
+    video_html = render_video_player(p, aspect)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
     body = ['<div class="detail-wrap">',

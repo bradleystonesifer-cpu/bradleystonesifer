@@ -180,6 +180,7 @@ CATS = [
 OVERRIDES = {
     "narrative-1": {  # Hit & Run
         "videoEmbed": "https://player.vimeo.com/video/65530619?badge=0&autopause=0&player_id=0&app_id=58479",
+        "videoThumb": "https://i.vimeocdn.com/video/2204378513-cba8040177cdf184ed4881a696c42eb0be4b5932c3c7d68d902bdd309bb0c328-d_1280",
         "videoAspect": "16/9",
         "overrideCredits": [
             {"k": "Director", "v": "David Palmer, Dax Shepard"},
@@ -200,14 +201,56 @@ OVERRIDES = {
         "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
     },
     "narrative-3": {  # Almost Kings
+        # The video that used to be the main player, moved to a "Selects"
+        # card at the bottom of the gallery (same mechanism the-vicious-kind
+        # uses for its own Selects video) when the main player switched to
+        # a new video.
+        "secondVideoEmbed": "https://player.vimeo.com/video/128559140?h=1f36124341",
+        "secondVideoThumb": "https://i.vimeocdn.com/video/519737074-bddd3e519323e4befc6e046de3802a8c17bae92a4a87fac2d4126e947e31397a-d_1280",
         "overrideCredits": [
             {"k": "Director", "v": "Philip G. Flores"},
             {"k": "Production Company", "v": "Aqueous Entertainment"},
             {"k": "Lead Actors", "v": "Lorenzo James Henrie, Alex Frost, Billy Campbell, Haley Ramm, Portia Doubleday"},
             {"k": "Notable Festivals", "v": "Los Angeles Film Festival '10 (Find Your Voice Award)"},
-            {"k": "Press — Kirk Honeycutt, The Hollywood Reporter", "v": "“These two might be the real discoveries in the film.”"},
+            {"k": "Press — Richard Propes, The Independent Critic", "v": "“Bradley Stonesifer’s camera work is pristine while never becoming so pristine that the imagery overwhelms.”", "href": "https://theindependentcritic.com/almost_kings"},
         ],
         "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
+        # 27 processed stills (site/assets/images/almost-kings/), replacing
+        # the old Squarespace image2/image3 gallery fallback. Stored already
+        # root-prefixed (../assets/images/...) since render_gallery() uses
+        # galleryImages URLs as-is rather than routing them through asset().
+        "galleryImages": [
+            "../assets/images/almost-kings/almost-kings-%02d.jpg" % i for i in range(1, 28)
+        ],
+        "galleryAlts": [
+            "Backlit brush with lens flare, boys walking",
+            "Jeep crossing a valley",
+            "Garage workout",
+            "Boy in dark hoodie, close",
+            "Man in red shirt, close",
+            "Man at garage door by a stop sign",
+            "Jeep at the school fence",
+            "Ambulance seen through a truck window",
+            "Locker room",
+            "Library",
+            "School hallway",
+            "Rifle in a golden field",
+            "Boy asleep, bokeh",
+            "Four boys by the garage",
+            "Boy by a lamp",
+            "Girl, close-up",
+            "Boy, face close-up",
+            "Blonde girl in a truck",
+            "Bedroom in red light",
+            "Man shouting",
+            "Classroom",
+            "Legs on a bed",
+            "Overhead, sink",
+            "Overhead, man on couch",
+            "Overhead, boy on couch",
+            "Night, distant fire",
+            "Fire",
+        ],
     },
     "narrative-4": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",
@@ -387,6 +430,7 @@ OVERRIDES = {
     },
     "documentary-5": {  # Re:Purpose - Afro Beat
         "videoEmbed": "https://player.vimeo.com/video/140062680?badge=0&autopause=0&player_id=0&app_id=58479",
+        "videoThumb": "https://i.vimeocdn.com/video/536467857-25cc8687bcb676e0c60e71ab551e00cd3c4fa0d4b67c3f4db6d361b438b46f86-d_1280",
         "overrideCredits": [
             {"k": "Director", "v": "Emily Bloom"},
             {"k": "Subject", "v": "Brandie Randolph"},
@@ -395,6 +439,7 @@ OVERRIDES = {
     },
     "documentary-6": {  # Re:Purpose - Farriers
         "videoEmbed": "https://player.vimeo.com/video/50266043?badge=0&autopause=0&player_id=0&app_id=58479",
+        "videoThumb": "https://i.vimeocdn.com/video/518113682-046663fd2e800c1df730eefc8188451bd76a37424ff2e7436efdd05c73e0a0f6-d_1280",
         "overrideCredits": [
             {"k": "Director", "v": "Emily Bloom"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
@@ -470,4 +515,103 @@ COLLAGE_SPEC = [
 CATEGORY_ORDER = {
     "narrative": [0, 1, 2, 4, 7, 8, 9, 10, 5, 6, 3],
     "documentary": [0, 3, 2, 1],
+}
+
+# Vimeo facade-player map, keyed by project slug. One list entry per video,
+# in display order; a single-entry list renders just the main player, more
+# than one adds a row of labeled buttons that swap the active video. Add a
+# new video by adding one line here — no template changes needed.
+#
+# the-vicious-kind is intentionally NOT here (it's the locked benchmark
+# layout and keeps its own videoEmbed/secondVideoEmbed wiring in OVERRIDES,
+# untouched). hit-and-run, spork, and both Re:Purpose titles are also left
+# out on purpose — they already have a working Vimeo facade player via that
+# same older OVERRIDES mechanism (render_video_player() checks for that
+# first and leaves those five pages completely alone).
+def _vt(video_id):
+    """https://i.vimeocdn.com/video/<ID>-d_1280 thumbnail URL."""
+    return "https://i.vimeocdn.com/video/" + video_id + "-d_1280"
+
+
+VIDEOS = {
+    # commercial
+    "alibaba-get-to-yes": [{"url": "https://player.vimeo.com/video/120442778?h=90ca36f7b9",
+                             "thumb": _vt("517762416-c6f52ea5e4da64792ddb4aca137d5e8c1ae15e56439b26589c31a12db8ce677f")}],
+    "quaker-who-do-you-put-1st": [{"url": "https://player.vimeo.com/video/386291990?h=5e1564d3e7",
+                                    "thumb": _vt("848806293-01e4721cdcf6031d9ccd56b27ca67bee98efaa3901c200d13e04f279b586fe00")}],
+    "asus-a-fathers-touch": [{"url": "https://player.vimeo.com/video/69845771",
+                               "thumb": _vt("443132752-1e9bd40332167f6b6b57c5c771e01f51998ba0792693f219e33a94adf652a17c")}],
+    "subaru-andres-amador": [{"url": "https://player.vimeo.com/video/68196804",
+                               "thumb": _vt("517764597-b4d188995a74ded9bead82dc5decf164b331cb8ed43142ad689f8d9da9a07952")}],
+    "dodgers-stadium-intro": [{"url": "https://player.vimeo.com/video/65534785?h=4fd5147d83",
+                                "thumb": _vt("438916241-1e6f6b98607e12c6418219cc9f4351831046ddf553aad53641fec165ed6ccebe")}],
+    "google-the-big-presentation": [{"url": "https://player.vimeo.com/video/53464864?h=f34b684aa9",
+                                      "thumb": _vt("698569592-c35299b64beb62a20abd42d2e08d6a04c713435c3a19757ed4d17c5f7d30ac2c")}],
+    "triller-tyson-vs-jones": [{"url": "https://player.vimeo.com/video/666047289?h=27dfea3259",
+                                 "thumb": _vt("1348229648-24d5aef2fd9d02dd64d1024d532aea23a83748161f762f2cccdff6029b0e82b1")}],
+    "google-samsung-passport": [{"url": "https://player.vimeo.com/video/642047310?h=46dbcdf87d",
+                                  "thumb": _vt("1375971480-4056bba9b2f2a5f658a8d170738cefc632b5c2f58a6cff47fd472f54bf0015b1")}],
+    "carnival-cruise-funderstruck": [
+        {"label": "30", "url": "https://player.vimeo.com/video/666041671?h=3a36c908a8",
+         "thumb": _vt("1348168045-1fbdfc21ceaef5f3fd872e9ad6d1a4c4a848667294bbc9262b17e952566ae5a6")},
+        {"label": "Slo-Mo", "url": "https://player.vimeo.com/video/666064374?h=4c7b88fef2",
+         "thumb": _vt("1348213141-f21fe98d05edf89ce4fc38741840055c6c7943c3949c14141244aa8e7870481d")},
+    ],
+    "microsoft-estellas-brilliant-bus": [{"url": "https://player.vimeo.com/video/120444332?h=47179f22d3",
+                                           "thumb": _vt("517761266-5536b3e3dac105c67a3599f723e84e731839cc11d13744f05097432077294597")}],
+    "kiwico-believe": [{"url": "https://player.vimeo.com/video/477279998",
+                         "thumb": _vt("1375966459-059a9db35112183e6679cfb75084cfa5558d4157559ca4a8d81e641a65d38c6a")}],
+    "apple-iphone-11": [{"url": "https://player.vimeo.com/video/362713995?h=d5ff3c4b29",
+                          "thumb": _vt("817644780-58c2be22c59490808a8648c65906453b95d3184a924748a6a9c74f5d044c5fc6")}],
+    "t-mobile-iphone-14": [
+        {"label": "iPhone 14", "url": "https://player.vimeo.com/video/751891092?h=c1688d82d5",
+         "thumb": _vt("1526359310-babff58503f5b903a64b4023cd2bcba8d5091aa5b6cb686dd5504ef36d479c50")},
+        {"label": "Lamp-post", "url": "https://player.vimeo.com/video/778198316?h=20468a9164",
+         "thumb": _vt("1561784711-2e1921f9e51a5b0eee69c4918775746132f195111a3e7cd6ec92edb4069b4bdc")},
+    ],
+    "t-mobile-zach-and-donald": [
+        {"label": "Super Bowl", "url": "https://player.vimeo.com/video/727570279?h=918ee5cd36",
+         "thumb": _vt("1464594194-a7068ea89e5087e6e3511900ed38c3ad906f9a3f53b8d283f327419ebdf0bd0d")},
+        {"label": "Gratitude", "url": "https://player.vimeo.com/video/778198653?h=8ee8e6b959",
+         "thumb": _vt("1561893053-fef0384b64b3c9b4b0aa2ad9adde04b693997f16bb656b9129e4c1b6526d939b")},
+    ],
+    "t-mobile-audition": [{"url": "https://player.vimeo.com/video/916036068?h=b3e3d48d1a",
+                            "thumb": _vt("1803442507-3c04184ee09a9e51bd62fe0cb7de3fb74287fd29f4d48eaa5f0d858d02090f6b")}],
+    "t-mobile-misunderstandings": [
+        {"label": "Brady", "url": "https://player.vimeo.com/video/577008475?h=8ba48f46bb",
+         "thumb": _vt("1193597690-6382e0d617780510c7e68bf028ae3f77444eca09d4b223581c2efc1368c7bcf2")},
+        {"label": "Gwen", "url": "https://player.vimeo.com/video/577008598?h=c08104dd2c",
+         "thumb": _vt("1193597998-54ec4e6ee039fb9419771a0ac65a835b27810b39a3fdda1ae5e3aba2d0555fd7")},
+        {"label": "Judge Giancarlo", "url": "https://player.vimeo.com/video/577008735?h=fe64bb2827",
+         "thumb": _vt("1375959044-e6add64ae7a825c567f1d878748ab64118097694ec3922f875253e5fb14357a8")},
+    ],
+    # films — scripted (the-vicious-kind / hit-and-run / spork excluded, see note above)
+    "me-plus-her": [{"url": "https://player.vimeo.com/video/84247438",
+                      "thumb": _vt("461045520-c5b0c102b79df337d0cdcb75b623189d8da44e6e97a6592b0044c8e4349cfde7")}],
+    "the-kid": [{"url": "https://player.vimeo.com/video/74362737",
+                  "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
+    "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997",
+                                     "thumb": _vt("519906211-506cfcf7540e141336a6d4a8ec90725f8f1d1af897db2d372ec018578f3c6a4d")}],
+    # Old video (128559140) moved to the "Selects" card — see
+    # OVERRIDES["narrative-3"].secondVideoEmbed. No thumbnail ID supplied
+    # yet for this new video, so the facade falls back to the project's
+    # still (p.get('image')) until one is provided.
+    "almost-kings": [{"url": "https://player.vimeo.com/video/1234196372?h=0267df5bf3"}],
+    # films — documentary (re-purpose-afro-beat / re-purpose-farriers excluded, see note above)
+    "call-me-lucky": [{"url": "https://player.vimeo.com/video/135433937?h=c4e54b27a5",
+                        "thumb": _vt("529370370-05cddb21a30bd1109b08cec21aa0897daa834706fbe71203f2e0b05f16f9a93d")}],
+    "fire-on-the-hill": [{"url": "https://player.vimeo.com/video/325276727",
+                           "thumb": _vt("768960835-ae521a2df0bf6bfd3de928b1224fc5c4dd80e583aec1c8fa04509f4708791acf")}],
+    "microsoft-philanthropies-mary-mwende": [{"url": "https://player.vimeo.com/video/264378235",
+                                               "thumb": _vt("694143610-9e37b63a80b3e4e015916d95644815820c4cd9b6a86c74e7df576ce83f41e655")}],
+    # films — music video (each already has its own detail page from earlier
+    # work; this just populates the player on those existing pages). No
+    # thumbnail IDs were supplied for these — still using the project's
+    # Squarespace still as the facade image until Bradley provides them.
+    "m-rivers-champion": [{"url": "https://player.vimeo.com/video/264373271?h=e6724e4c51"}],
+    "lissie-go-your-own-way": [{"url": "https://player.vimeo.com/video/58595302"}],
+    "train-bulletproof-picasso": [{"url": "https://player.vimeo.com/video/127318141?h=c028971530"}],
+    "jamie-joseph-hit-the-ground-running": [{"url": "https://player.vimeo.com/video/110971280"}],
+    "the-lady-tigra-thing-a-ling": [{"url": "https://player.vimeo.com/video/69778090"}],
+    "awolnation-burn-it-down": [{"url": "https://player.vimeo.com/video/69775509"}],
 }
