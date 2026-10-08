@@ -201,6 +201,12 @@ OVERRIDES = {
         "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
     },
     "narrative-3": {  # Almost Kings
+        # The video that used to be the main player, moved to a "Selects"
+        # card at the bottom of the gallery (same mechanism the-vicious-kind
+        # uses for its own Selects video) when the main player switched to
+        # a new video.
+        "secondVideoEmbed": "https://player.vimeo.com/video/128559140?h=1f36124341",
+        "secondVideoThumb": "https://i.vimeocdn.com/video/519737074-bddd3e519323e4befc6e046de3802a8c17bae92a4a87fac2d4126e947e31397a-d_1280",
         "overrideCredits": [
             {"k": "Director", "v": "Philip G. Flores"},
             {"k": "Production Company", "v": "Aqueous Entertainment"},
@@ -586,8 +592,11 @@ VIDEOS = {
                   "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
     "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997",
                                      "thumb": _vt("519906211-506cfcf7540e141336a6d4a8ec90725f8f1d1af897db2d372ec018578f3c6a4d")}],
-    "almost-kings": [{"url": "https://player.vimeo.com/video/128559140?h=1f36124341",
-                       "thumb": _vt("519737074-bddd3e519323e4befc6e046de3802a8c17bae92a4a87fac2d4126e947e31397a")}],
+    # Old video (128559140) moved to the "Selects" card — see
+    # OVERRIDES["narrative-3"].secondVideoEmbed. No thumbnail ID supplied
+    # yet for this new video, so the facade falls back to the project's
+    # still (p.get('image')) until one is provided.
+    "almost-kings": [{"url": "https://player.vimeo.com/video/1234196372?h=0267df5bf3"}],
     # films — documentary (re-purpose-afro-beat / re-purpose-farriers excluded, see note above)
     "call-me-lucky": [{"url": "https://player.vimeo.com/video/135433937?h=c4e54b27a5",
                         "thumb": _vt("529370370-05cddb21a30bd1109b08cec21aa0897daa834706fbe71203f2e0b05f16f9a93d")}],

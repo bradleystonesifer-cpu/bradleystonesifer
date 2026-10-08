@@ -434,11 +434,17 @@ def render_video_block(p, which, aspect='16/9'):
             '<div class="play-btn"><div class="play-btn-tri"></div></div>'
             '</div></div>'
         )
-    # second / "Selects" player
+    # second / "Selects" player. secondVideoThumb is optional — when unset
+    # (the-vicious-kind never sets it) this renders exactly as before, a
+    # plain gradient card with no image, byte-for-byte unchanged.
+    second_thumb = p.get('secondVideoThumb')
+    thumb_html = img(second_thumb, p['title'] + ' — Selects', cls='selects-bg-img') if second_thumb else ''
+    thumb_cls = ' has-thumb' if second_thumb else ''
     return (
         '<div class="selects-wrap">'
         '<div class="selects-video" data-video-wrap data-embed-src="' + esc(embed) + '">'
-        '<div class="selects-thumb" data-video-thumb>'
+        + thumb_html +
+        '<div class="selects-thumb' + thumb_cls + '" data-video-thumb>'
         '<div class="selects-inner"><span class="selects-label">Selects</span>'
         '<div class="play-btn"><div class="play-btn-tri"></div></div></div>'
         '</div></div></div>'

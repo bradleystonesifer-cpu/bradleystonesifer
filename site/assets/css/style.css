@@ -623,6 +623,13 @@ ul { margin: 0; padding: 0; }
 }
 .selects-inner { display: flex; flex-direction: column; align-items: center; gap: 20px; }
 .selects-label { font: 600 34px/1 'Inter', sans-serif; letter-spacing: -0.01em; text-transform: uppercase; color: var(--accent); }
+/* Optional real thumbnail behind the Selects card (secondVideoThumb) — the
+   plain gradient above stays the default; these only apply when a project
+   supplies one, so the-vicious-kind's Selects card is unaffected. */
+.selects-bg-img { position: absolute; inset: 0; }
+.selects-thumb.has-thumb {
+  background: linear-gradient(to top, rgba(14, 12, 10, 0.88), rgba(14, 12, 10, 0.3) 60%);
+}
 
 /* ============ about ============ */
 .about-wrap { padding: 0 20% 90px; margin-top: 12px; width: 100%; }
