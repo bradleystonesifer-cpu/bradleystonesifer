@@ -692,17 +692,17 @@ ul { margin: 0; padding: 0; }
   .gallery-mobile { display: block; }
 }
 
-/* Episode selector (Misfits & Monsters only) — lives in the detail
-   page's logline/watch column, between the series logline and the
-   Watch button. Reuses the .video-select-btn look. */
-.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+/* Episode selector (Misfits & Monsters only) — its own full-width row
+   directly below the detail-grid, aligned to the same edges as the
+   gallery below it. Reuses the .video-select-btn look. */
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 34px; }
 
-/* Episode panels — full width, below the whole detail-grid, matching
-   every other film page's gallery position/width exactly. Reuses
-   .gm-cell/.gm-more/.gm-lightbox wiring for each panel's grid — only
-   the row's own layout (justified flex rows on desktop, a 2-col grid on
-   mobile) and its show-more/less + episode-switch behavior are new. */
-.episode-panels { margin-top: 34px; }
+/* Episode panels — full width, below the selector row, matching every
+   other film page's gallery position/width exactly. Reuses .gm-cell/
+   .gm-more/.gm-lightbox wiring for each panel's grid — only the row's
+   own layout (justified flex rows on desktop, a 2-col grid on mobile)
+   and its show-more/less + episode-switch behavior are new. */
+.episode-panels { margin-top: 24px; }
 .episode-info { margin-bottom: 14px; }
 .ep-active-title {
   font: 500 11px/1 'IBM Plex Mono', monospace;
@@ -721,17 +721,25 @@ ul { margin: 0; padding: 0; }
    ratio (that would letterbox inside the cell) and the last, sparser
    row stays left-aligned instead of being forced to fill the row.
    max-width: 100% is only a safety clamp for a narrow viewport, not the
-   normal case. */
-.ep-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-.ep-grid .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
-.ep-grid .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
+   normal case.
+
+   The 16:9 and 4:3 stills are two separate flex-wrap rows (.ep-grid-row),
+   not one — narrower 4:3 cells otherwise pack one extra per row and
+   that row runs wider than the 16:9 rows above it. main.js measures the
+   16:9 row's actual achieved width and applies it as the 4:3 row's
+   max-width, so it wraps at that same boundary instead of the full
+   container width. */
+.ep-grid { display: flex; flex-direction: column; gap: 12px; }
+.ep-grid-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.ep-grid-row .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+.ep-grid-row .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
 
 @media (max-width: 600px) {
   .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
   .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
-  .episode-panels { margin-top: 26px; }
-  .ep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .ep-grid .gm-cell { height: auto; width: auto; }
+  .episode-panels { margin-top: 20px; }
+  .ep-grid-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-width: none !important; }
+  .ep-grid-row .gm-cell { height: auto; width: auto; }
 }
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */

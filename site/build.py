@@ -788,14 +788,14 @@ def _episode_gallery_default(p):
 
 
 def render_episode_selector(p):
-    """Episode selector buttons for Misfits & Monsters — lives in the
-    detail page's right (logline/watch) column, between the series
-    logline and the Watch button. Styled like the commercial pages'
-    multi-video selector. The panels it controls (title, synopsis,
-    gallery) live separately, full-width, below the whole detail-grid —
-    see render_episode_panels() — wired together in main.js by their own
-    top-level selectors (data-episode-select-row / data-episode-panels),
-    not by DOM nesting, since they're no longer in the same column."""
+    """Episode selector buttons for Misfits & Monsters — its own
+    full-width row directly below the detail-grid (credits | key art |
+    logline+press), above the episode panels it controls. Styled like
+    the commercial pages' multi-video selector. The panels (title,
+    synopsis, gallery) render separately via render_episode_panels(),
+    wired together in main.js by their own top-level selectors
+    (data-episode-select-row / data-episode-panels), not by DOM nesting,
+    since they're not DOM siblings."""
     galleries = p.get('episodeGalleries') or []
     if not galleries:
         return ''
@@ -819,17 +819,19 @@ def render_episode_selector(p):
 
 def render_episode_panels(root, p):
     """Full-width episode panels for Misfits & Monsters — one per
-    episode, swapped by the selector buttons above (JS, no reload), each
-    its own justified-row (desktop, via CSS flex + aspect-ratio so a 4:3
-    frame sits beside 16:9 ones with no cropping) / 2-column (mobile)
-    grid, reusing the same .gm-cell/.gm-more/.gm-data wiring and shared
-    lightbox as every other gallery page, just with its own collapse-on-
-    episode-switch behavior layered on in main.js. Episode titles/
-    synopses are reused from the existing "episodes" list by matching
-    "n" — never duplicated here. Episodes with no folder yet (1 and 8)
-    still get a real, clickable panel — title, synopsis, and a "Stills
-    coming soon" note — rather than being disabled or hidden, so the
-    full 8-episode structure and every #ep-NN hash link works."""
+    episode, swapped by the selector buttons above (JS, no reload). Each
+    panel's stills are grouped into up to two justified-row flex groups
+    (desktop) — all 16:9 first, then the 4:3 ones (episode 2's news-
+    broadcast frames) in their own row group, capped by JS to the 16:9
+    rows' own width so they wrap sooner rather than running wider — or a
+    2-column grid (mobile), reusing the same .gm-cell/.gm-more/.gm-data
+    wiring and shared lightbox as every other gallery page, just with
+    its own collapse-on-episode-switch behavior layered on in main.js.
+    Episode titles/synopses are reused from the existing "episodes" list
+    by matching "n" — never duplicated here. Episodes with no folder yet
+    (1 and 8) still get a real, clickable panel — title, synopsis, and a
+    "Stills coming soon" note — rather than being disabled or hidden, so
+    the full 8-episode structure and every #ep-NN hash link works."""
     galleries = p.get('episodeGalleries') or []
     if not galleries:
         return ''
@@ -858,7 +860,7 @@ def render_episode_panels(root, p):
             # order; threshold of 1.5 cleanly separates 16:9 (1.78) from
             # 4:3 (1.33).
             files = sorted(manifest.get(folder, []), key=lambda f: 0 if (f['w'] / f['h']) > 1.5 else 1)
-            items, cells = [], []
+            items, wide_cells, narrow_cells = [], [], []
             for i, f in enumerate(files):
                 url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
                 alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
@@ -875,7 +877,8 @@ def render_episode_panels(root, p):
                 else:
                     inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
                 hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
-                cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
+                cell = ('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
+                (wide_cells if ar > 1.5 else narrow_cells).append(cell)
 
             more_btn = ''
             rest = len(files) - EPISODE_FEATURED_COUNT
@@ -885,8 +888,17 @@ def render_episode_panels(root, p):
                              'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
                              + esc(more_label) + '</button>')
 
+            # Two separate flex-wrap rows, not one, so JS can cap the 4:3
+            # row's width to whatever the 16:9 row actually achieves —
+            # otherwise narrower 4:3 cells pack one extra per row and the
+            # row runs wider than the 16:9 rows above it (see main.js
+            # syncNarrowRowWidth). Only emitted if this episode actually
+            # has any of that shape.
+            rows_html = '<div class="ep-grid-row" data-ep-row-wide>' + ''.join(wide_cells) + '</div>'
+            if narrow_cells:
+                rows_html += '<div class="ep-grid-row" data-ep-row-narrow>' + ''.join(narrow_cells) + '</div>'
             data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
-            gallery_html = ('<div class="ep-grid">' + ''.join(cells) + '</div>' + more_btn
+            gallery_html = ('<div class="ep-grid">' + rows_html + '</div>' + more_btn
                              + '<script type="application/json" class="gm-data">' + data_json + '</script>')
         else:
             gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
@@ -1101,7 +1113,6 @@ def render_detail_page(p, current_folder):
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
-    right_parts.append(render_episode_selector(p))
     right_parts.append(render_press_quotes(dd['pressQuotes']))
     if p.get('watchUrl'):
         right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
@@ -1135,6 +1146,7 @@ def render_detail_page(p, current_folder):
         body.append('</div>')  # /detail-grid
 
     if p.get('episodeGalleries'):
+        body.append(render_episode_selector(p))
         body.append(render_episode_panels(root, p))
     else:
         body.append(render_gallery(root, dd, p['title']))

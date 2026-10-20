@@ -292,6 +292,25 @@
       }
     }
 
+    // The 4:3 row (narrower cells, so more would naturally fit per row)
+    // must never run wider than the 16:9 row above it. Measures the
+    // 16:9 row's actual achieved width — not the full container, which
+    // it rarely fills exactly — and caps the 4:3 row to that, so it
+    // wraps at the same boundary instead of the full container width.
+    function syncNarrowRowWidth(panel) {
+      var wideRow = panel.querySelector('[data-ep-row-wide]');
+      var narrowRow = panel.querySelector('[data-ep-row-narrow]');
+      if (!wideRow || !narrowRow) return;
+      var wideCells = wideRow.querySelectorAll('.gm-cell:not(.gm-hidden)');
+      if (!wideCells.length) { narrowRow.style.maxWidth = ''; return; }
+      var left = wideRow.getBoundingClientRect().left;
+      var maxRight = 0;
+      wideCells.forEach(function (cell) {
+        maxRight = Math.max(maxRight, cell.getBoundingClientRect().right - left);
+      });
+      narrowRow.style.maxWidth = maxRight + 'px';
+    }
+
     // Only called from a selector click, not the initial/hash-driven
     // activation — scrolls section C into view, but only if it isn't
     // already (fully in view above, or starting below the fold).
@@ -346,6 +365,7 @@
           });
           moreBtn.textContent = moreBtn.getAttribute(expanded ? 'data-show-less-label' : 'data-show-more-label');
           moreBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+          syncNarrowRowWidth(panel);
         });
       }
       cells.forEach(function (cell) {
@@ -367,6 +387,17 @@
     window.addEventListener('hashchange', function () {
       var n = (location.hash || '').indexOf('#ep-') === 0 ? location.hash.slice(4) : null;
       if (n && panels[n]) activate(n, false);
+    });
+
+    // Re-measure on resize (debounced) — the 16:9 row's achieved width
+    // changes with viewport width, so the 4:3 row's cap has to follow.
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        var activePanel = epPanelsWrap.querySelector('[data-episode-panel]:not([hidden])');
+        if (activePanel) syncNarrowRowWidth(activePanel);
+      }, 150);
     });
   }
 })();
