@@ -194,6 +194,8 @@ OVERRIDES = {
         "galleryImages": [
             "assets/images/hit-and-run/hit-and-run-%02d.jpg" % i for i in range(1, 71)
         ],
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/hit-and-run-2012",
     },
     "narrative-2": {  # Me + Her
         "overrideCredits": [
@@ -220,6 +222,12 @@ OVERRIDES = {
             {"k": "Press — Richard Propes, The Independent Critic", "v": "“Bradley Stonesifer’s camera work is pristine while never becoming so pristine that the imagery overwhelms.”", "href": "https://theindependentcritic.com/almost_kings"},
         ],
         "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
+        # NOT independently HTTP-verified from this environment (JustWatch
+        # is network-blocked here) — confirm this resolves to the real
+        # Almost Kings title page before relying on it; remove watchLabel/
+        # watchUrl if it doesn't.
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/almost-kings",
         # 27 processed stills (site/assets/images/almost-kings/), replacing
         # the old Squarespace image2/image3 gallery fallback. Root-relative,
         # same as every other local image field — render_gallery() routes
@@ -260,7 +268,7 @@ OVERRIDES = {
     "narrative-4": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",
         "logline": "SPORK is a feature film about an adolescent “inter-sexed” kid who identifies as a female. Not a spoon. Not a fork. Spork! A dark musical comedy aimed at self love and acceptance.",
-        "watchLabel": "Watch Now",
+        "watchLabel": "Watch",
         "watchUrl": "https://www.youtube.com/watch?v=WkTD4-xR8xQ",
         "videoAspect": "16/9",
         "secondVideoEmbed": "https://player.vimeo.com/video/15131157?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -293,8 +301,8 @@ OVERRIDES = {
             {"k": "Press — Filmmaker Magazine", "v": "“Shot in cinemascope 35mm, it has a widescreen expressiveness that is rare in low budget work.”", "href": "https://filmmakermagazine.com/1398-lee-toland-krieger-the-vicious-kind/"},
         ],
         "logline": "A man tries to warn his brother away from the new girlfriend he brings home during Thanksgiving, but ends up becoming infatuated with her in the process.",
-        "watchLabel": "Watch on Prime Video",
-        "watchUrl": "https://www.amazon.com/Vicious-Kind-Adam-Scott/dp/B0037UU848",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/the-vicious-kind",
     },
     "narrative-7": {  # Woman Child
         "overrideCredits": [
@@ -367,9 +375,13 @@ OVERRIDES = {
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
         "creditLine": "Cinematographer, 7 of 8 episodes",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/tv-show/bobcat-goldthwaits-misfits-and-monsters",
     },
     "narrative-11": {  # Back in the Day
         "creditLine": "Cinematographer, Co-Producer",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/back-in-the-day",
         "overrideCredits": [
             {"k": "Director", "v": "Michael Rosenbaum"},
             {"k": "Writers", "v": "Michael Rosenbaum"},
@@ -382,6 +394,8 @@ OVERRIDES = {
     },
     "narrative-12": {  # Midnight in the Switchgrass
         "creditLine": "Director of Photography, Los Angeles unit",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
             {"k": "Director", "v": "Randall Emmett"},
             {"k": "Writers", "v": "Alan Horsnail"},
@@ -402,6 +416,8 @@ OVERRIDES = {
             {"k": "Press — The Hollywood Reporter", "v": "“This moving and inspirational film... would have the same power anytime in a world perpetually marked by armed conflict.”", "href": "https://www.hollywoodreporter.com/movies/movie-reviews/kiss-the-future-review-u2-sarajevo-1235327880/"},
         ],
         "logline": "An American aid worker in besieged Sarajevo persuades U2 to spotlight the city, and the band promises to play there once the war ends.",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/kiss-the-future",
     },
     "documentary-2": {  # Fire on the Hill
         "overrideCredits": [
@@ -422,6 +438,8 @@ OVERRIDES = {
             {"k": "Press — Variety", "v": "“A terrifically engaging surprise... among the most devastating of numerous 2015 Sundance titles.”", "href": "https://variety.com/2015/film/reviews/sundance-film-review-call-me-lucky-1201422008/"},
         ],
         "logline": "Bobcat Goldthwait's portrait of comedian Barry Crimmins, whose ferocious stand-up and painful past fueled a life-changing campaign of activism.",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/call-me-lucky",
     },
     "documentary-4": {  # Microsoft Philanthropies - Mary Mwende
         "overrideCredits": [
