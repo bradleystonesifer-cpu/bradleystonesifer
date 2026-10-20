@@ -189,6 +189,11 @@ OVERRIDES = {
             {"k": "Press — Variety", "v": "“An unexpectedly satisfying date-movie spin... this low-budget B movie looks poised to surprise.”", "href": "https://variety.com/2012/film/reviews/hit-run-1117948082/"},
         ],
         "logline": "A former getaway driver in witness protection risks his new identity to get his girlfriend to Los Angeles, with the feds and his old gang on their tail.",
+        # 70 processed stills (site/assets/images/hit-and-run/), ordered
+        # best-first, replacing the old image2/image3 gallery fallback.
+        "galleryImages": [
+            "assets/images/hit-and-run/hit-and-run-%02d.jpg" % i for i in range(1, 71)
+        ],
     },
     "narrative-2": {  # Me + Her
         "overrideCredits": [
@@ -216,11 +221,11 @@ OVERRIDES = {
         ],
         "logline": "A freshman who idolizes his older brother seeks initiation into a school clique called The Kings and slowly uncovers its corruption.",
         # 27 processed stills (site/assets/images/almost-kings/), replacing
-        # the old Squarespace image2/image3 gallery fallback. Stored already
-        # root-prefixed (../assets/images/...) since render_gallery() uses
-        # galleryImages URLs as-is rather than routing them through asset().
+        # the old Squarespace image2/image3 gallery fallback. Root-relative,
+        # same as every other local image field — render_gallery() routes
+        # it through asset() to prefix it correctly per page.
         "galleryImages": [
-            "../assets/images/almost-kings/almost-kings-%02d.jpg" % i for i in range(1, 28)
+            "assets/images/almost-kings/almost-kings-%02d.jpg" % i for i in range(1, 28)
         ],
         "galleryAlts": [
             "Backlit brush with lens flare, boys walking",
@@ -272,21 +277,13 @@ OVERRIDES = {
         "posterImage": "uploads/posters-1787856825910-69yy.jpg",
         "videoEmbed": "https://player.vimeo.com/video/1218379599?badge=0&autopause=0&player_id=0&app_id=58479",
         "secondVideoEmbed": "https://player.vimeo.com/video/15057181?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1",
+        # 50 processed stills (site/assets/images/the-vicious-kind/), ordered
+        # best-first — replaces the old 14-image Squarespace gallery.
+        # Note: COLLAGE_SPEC's ("narrative-0", "gallery:2", ...) homepage
+        # tile reads galleryImages[2] dynamically, so that tile now shows
+        # the new gallery's 3rd image instead of the old one.
         "galleryImages": [
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1606870601284-3XH975IHJ8SS1H0FC9HZ/Screen+Shot+2020-12-01+at+4.52.58+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1606870618396-NJG97KNAETC7QQ757K38/Screen+Shot+2020-12-01+at+4.54.50+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421474979-9I51N1GKQKG31OB32RRU/Screen+Shot+2022-11-02+at+1.36.43+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421496292-WZV8LV936ODW1C6LG5GM/Screen+Shot+2022-11-02+at+1.33.16+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421474563-GKGQFY7X1HK05Z1CFFAX/Screen+Shot+2022-11-02+at+1.36.35+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421477351-WNDO9S5SOAAW5AL2CNGK/Screen+Shot+2022-11-02+at+1.36.25+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421483746-P0EUTTQY06YEHO1M1YXL/Screen+Shot+2022-11-02+at+1.35.31+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421486507-PVXGAHA5VWWEO2RKH3MN/Screen+Shot+2022-11-02+at+1.35.41+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1606870612590-F8REVNHHL6L82X3JIZH6/Screen+Shot+2020-12-01+at+4.54.36+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421521379-0JTI2PSIU3AUW4F3DU3D/Screen+Shot+2022-11-02+at+1.35.26+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421488768-JDGNDVY003GQFRJV39YS/Screen+Shot+2022-11-02+at+1.34.28+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421490906-JVZ2SPU0XK4GKNM6UEIY/Screen+Shot+2022-11-02+at+1.34.21+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421493794-WD2D3Z4HKEEOKNKL9E5N/Screen+Shot+2022-11-02+at+1.33.28+PM.png",
-            "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667421498614-LCKJOXFNK5D6Z39AWBM1/Screen+Shot+2022-11-02+at+1.34.56+PM.png",
+            "assets/images/the-vicious-kind/the-vicious-kind-%02d.jpg" % i for i in range(1, 51)
         ],
         "overrideCredits": [
             {"k": "Director", "v": "Lee Toland Krieger"},

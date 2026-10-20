@@ -511,9 +511,16 @@ def _gallery_item(item, title):
 
 
 def render_gallery(root, dd, title):
+    # asset(root, url) root-prefixes a local path (no-op for absolute
+    # http(s) URLs, e.g. the legacy Squarespace-hosted galleries) — same
+    # treatment the poster image already gets, so galleryImages can store
+    # plain root-relative paths like every other local image field instead
+    # of a hardcoded '../' that breaks when the same path is reused
+    # elsewhere (e.g. a COLLAGE_SPEC "gallery:N" homepage tile, which sits
+    # at site root rather than inside /films/ or /commercial/).
     def cell(item):
         url, alt = _gallery_item(item, title)
-        return '<div class="gallery-cell">' + img(url, alt) + '</div>'
+        return '<div class="gallery-cell">' + img(asset(root, url), alt) + '</div>'
     left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
     right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
@@ -529,7 +536,7 @@ def render_gallery(root, dd, title):
         for item in bottom:
             url, alt = _gallery_item(item, title)
             if url:
-                out.append('<div class="gallery-bottom-cell">' + img(url, alt) + '</div>')
+                out.append('<div class="gallery-bottom-cell">' + img(asset(root, url), alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
