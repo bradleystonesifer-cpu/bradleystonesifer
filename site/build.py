@@ -6,6 +6,7 @@ project/Bradley Stonesifer Site.dc.html — same visual system, real
 multi-page URLs instead of the design tool's client-side view switching.
 Run `python3 build.py` from this directory to (re)generate every page.
 """
+import json
 import os
 import re
 import shutil
@@ -325,6 +326,76 @@ def slot_url(all_projects, key, slot):
     return ''
 
 
+# ------------------------------------------------------ homepage collage --
+
+SCRIPTED_POOL_MIN_GALLERY = 8    # narrative projects need this many galleryImages to join the pool
+SCRIPTED_POOL_MIN_WIDTH = 1500   # skip frames narrower than this (low-res / 2.35 reel scans)
+
+
+def collage_tile_type(key, slot, ratio):
+    """Classify a COLLAGE_SPEC entry for rendering: posters are fixed and
+    unchanged; a scripted project's own gallery-sourced scope tile stays
+    scripted; everything else (every non-scripted tile, and every scripted
+    tile that was pointing at a Squarespace image/image2/image3 field —
+    not allowed for scripted projects) is reassigned by shape to the
+    matching non-scripted pool."""
+    if slot == 'poster':
+        return 'poster'
+    if key.startswith('narrative-') and slot.startswith('gallery:') and ratio.startswith('2.35'):
+        return 'scripted-scope'
+    return '16x9' if ratio == '16/9' else 'scope'
+
+
+def build_collage_pools(all_projects):
+    """Three image pools for the randomized homepage collage, keyed by
+    tile type. Scripted pool: every gallery image (real width >= 1500px)
+    from narrative projects with 8+ galleryImages — automatic, so a film
+    that gets a gallery later joins with no spec edit. Non-scripted pools:
+    the (key, slot) pairs COLLAGE_SPEC already uses at that ratio today —
+    those are the only non-scripted images anyone has actually vetted at
+    that shape (Squarespace URLs can't be dimension-checked locally)."""
+    scripted = []
+    for key, p in all_projects.items():
+        if not key.startswith('narrative-'):
+            continue
+        gallery = p.get('galleryImages') or []
+        if len(gallery) < SCRIPTED_POOL_MIN_GALLERY:
+            continue
+        for item in gallery:
+            url = item[0] if isinstance(item, tuple) else item
+            path = local_image_path(url)
+            if not path:
+                continue
+            try:
+                from PIL import Image
+                with Image.open(path) as im:
+                    w = im.size[0]
+            except Exception:
+                continue
+            if w < SCRIPTED_POOL_MIN_WIDTH:
+                continue
+            scripted.append({'url': url, 'href': p['href'], 'title': p['title']})
+
+    non_scripted_16x9 = []
+    non_scripted_scope = []
+    seen = set()
+    for key, slot, ratio, _span in COLLAGE_SPEC:
+        ttype = collage_tile_type(key, slot, ratio)
+        if ttype not in ('16x9', 'scope') or key.startswith('narrative-'):
+            continue
+        if (key, slot) in seen:
+            continue
+        seen.add((key, slot))
+        p = all_projects[key]
+        url = slot_url(all_projects, key, slot)
+        if not url:
+            continue
+        item = {'url': url, 'href': p['href'], 'title': p['title']}
+        (non_scripted_16x9 if ttype == '16x9' else non_scripted_scope).append(item)
+
+    return {'scripted': scripted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
+
+
 # ------------------------------------------------------------------ head --
 
 FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -638,6 +709,7 @@ def page_rel(current_folder, target_href):
 # ---------------------------------------------------------------- pages --
 
 def render_collage_tile(current_folder, item):
+    """Fixed tile — posters only; never randomized."""
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
     return (
@@ -648,14 +720,79 @@ def render_collage_tile(current_folder, item):
     )
 
 
+def render_random_collage_tile(default_item, ratio, span, pool_key):
+    """Randomizable tile — server renders a deterministic default (real
+    href, no img src) plus a <noscript> fallback image, so the page works
+    and links correctly with JS off or for crawlers. main.js replaces the
+    src/href/alt on load from the matching pool, picking something new on
+    every page view."""
+    style = 'grid-column: span ' + str(span) + '; aspect-ratio: ' + ratio + ';'
+    alt = esc(default_item['title'])
+    return (
+        '<a class="collage-tile" href="' + esc(default_item['href']) + '" data-pool="' + pool_key
+        + '" style="' + style + '" draggable="false">'
+        '<img alt="' + alt + '" decoding="async" draggable="false">'
+        '<noscript>' + img(default_item['url'], default_item['title']) + '</noscript>'
+        '<div class="collage-scrim"><span>' + alt + '</span></div>'
+        '</a>'
+    )
+
+
 def render_home(all_projects):
+    pools = build_collage_pools(all_projects)
+    counters = {'scripted': 0, '16x9': 0, 'scope': 0}
     tiles = []
     for key, slot, ratio, span in COLLAGE_SPEC:
-        p = all_projects[key]
-        url = slot_url(all_projects, key, slot)
-        tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
+        ttype = collage_tile_type(key, slot, ratio)
+        if ttype == 'poster':
+            p = all_projects[key]
+            url = slot_url(all_projects, key, slot)
+            tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
+            continue
+        pool_key = 'scripted' if ttype == 'scripted-scope' else ttype
+        pool = pools[pool_key]
+        if pool:
+            idx = counters[pool_key] % len(pool)
+            counters[pool_key] += 1
+            default_item = pool[idx]
+        else:
+            default_item = {'url': '', 'href': '#', 'title': ''}
+        tiles.append(render_random_collage_tile(default_item, ratio, span, pool_key))
+
+    # Escaped so a stray "</script>" inside any title/url can't prematurely
+    # close the data block.
+    pools_json = json.dumps(pools, separators=(',', ':')).replace('</', '<\\/')
+
+    collage_script = (
+        '<script>(function(){'
+        'var data=document.getElementById("collage-pools");'
+        'if(!data)return;'
+        'var pools;try{pools=JSON.parse(data.textContent);}catch(e){return;}'
+        'var tiles=document.querySelectorAll(".collage-tile[data-pool]");'
+        'var used={};Object.keys(pools).forEach(function(k){used[k]=[];});'
+        'var lastTitle=null;'
+        'tiles.forEach(function(tile,i){'
+        'var key=tile.getAttribute("data-pool");'
+        'var pool=pools[key];'
+        'if(!pool||!pool.length)return;'
+        'var avail=pool.filter(function(it){return used[key].indexOf(it.url)===-1;});'
+        'if(!avail.length){used[key]=[];avail=pool;}'
+        'var preferred=avail.filter(function(it){return it.title!==lastTitle;});'
+        'var choices=preferred.length?preferred:avail;'
+        'var item=choices[Math.floor(Math.random()*choices.length)];'
+        'used[key].push(item.url);lastTitle=item.title;'
+        'var img=tile.querySelector("img");'
+        'if(img){img.src=item.url;img.alt=item.title;if(i>3)img.loading="lazy";}'
+        'tile.href=item.href;'
+        'var scrim=tile.querySelector(".collage-scrim span");'
+        'if(scrim)scrim.textContent=item.title;'
+        '});'
+        '})();</script>'
+    )
     body = (
         '<div class="collage-outer"><div class="collage-grid">' + ''.join(tiles) + '</div></div>'
+        '<script type="application/json" id="collage-pools">' + pools_json + '</script>'
+        + collage_script +
         '<div class="home-intro">'
         '<p>Bradley Stonesifer is a Los Angeles-based cinematographer shooting narrative, documentary, '
         'and music video work &mdash; light-led, patient, and image-first. Available for select commercial work.</p>'
