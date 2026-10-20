@@ -296,7 +296,6 @@ def detail_data(p):
     return {
         'creditGroups': group_credits(linked) if linked else [],
         'pressQuotes': press_quotes(linked) if linked else [],
-        'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
         'galleryLeft': gallery_left,
@@ -762,23 +761,29 @@ def load_misfits_manifest():
 
 def render_episode_gallery(root, p):
     """Per-episode gallery selector for Misfits & Monsters (the only
-    project with an "episodeGalleries" field) — replaces render_gallery/
-    render_gallery_mobile entirely for this one page. A row of selector
-    buttons (styled like the commercial pages' multi-video selector)
-    swaps between per-episode panels (JS, no reload); each panel is its
-    own justified-row (desktop, via CSS flex + aspect-ratio so a 4:3
-    frame sits beside 16:9 ones with no cropping) / 2-column (mobile)
-    grid, reusing the same .gm-cell/.gm-more/.gm-data wiring and shared
-    lightbox as every other gallery page, just with its own collapse-on-
-    episode-switch behavior layered on in main.js. Episode titles/
-    synopses are reused from the existing "episodes" list by matching
-    "n" — never duplicated here."""
+    project with an "episodeGalleries" field) — lives inline in the
+    detail page's right (logline/watch) column, between the series
+    logline and the Watch button, replacing render_gallery/
+    render_gallery_mobile and the old standalone Episodes list entirely
+    for this one page. A row of selector buttons (styled like the
+    commercial pages' multi-video selector) swaps between per-episode
+    panels (JS, no reload); each panel with stills is its own justified-
+    row (desktop, via CSS flex + aspect-ratio so a 4:3 frame sits beside
+    16:9 ones with no cropping) / 2-column (mobile) grid, reusing the
+    same .gm-cell/.gm-more/.gm-data wiring and shared lightbox as every
+    other gallery page, just with its own collapse-on-episode-switch
+    behavior layered on in main.js. Episode titles/synopses are reused
+    from the existing "episodes" list by matching "n" — never duplicated
+    here. Episodes with no folder yet (1 and 8) still get a real,
+    clickable panel — title, synopsis, and a "Stills coming soon" note —
+    rather than being disabled or hidden, so the full 8-episode
+    structure and every #ep-NN hash link works."""
     galleries = p.get('episodeGalleries') or []
     if not galleries:
         return ''
     episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
     manifest = load_misfits_manifest()
-    default_n = next((g['n'] for g in galleries if g.get('folder')), None)
+    default_n = next((g['n'] for g in galleries if g.get('folder')), None) or (galleries[0]['n'] if galleries else None)
 
     buttons = []
     panels = []
@@ -787,62 +792,61 @@ def render_episode_gallery(root, p):
         folder = g.get('folder')
         info = episodes_by_n.get(n, {})
         title = info.get('title', '')
+        synopsis = info.get('synopsis', '')
         has_images = bool(folder) and manifest.get(folder)
-        is_default = has_images and n == default_n
+        is_default = n == default_n
 
         btn_cls = 'video-select-btn ep-select-btn' + (' active' if is_default else '')
-        btn_attrs = '' if has_images else ' disabled aria-disabled="true"'
-        if has_images:
-            btn_attrs += ' aria-pressed="' + ('true' if is_default else 'false') + '"'
         buttons.append(
-            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n) + '"' + btn_attrs + '>'
+            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n)
+            + '" aria-pressed="' + ('true' if is_default else 'false') + '">'
             + esc(n) + ' ' + esc(title) + '</button>'
         )
-        if not has_images:
-            continue
 
-        files = manifest.get(folder, [])
-        items, cells = [], []
-        for i, f in enumerate(files):
-            url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
-            alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
-            ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
-            items.append({'url': url, 'alt': alt})
-            style = ' style="--ar: %.4f"' % ar
-            if i < EPISODE_FEATURED_COUNT:
-                # Only the default/visible-on-load episode gets its first
-                # couple of images eager — every other panel (hidden until
-                # its selector button is clicked) stays fully lazy even
-                # for its "featured" cells, since nothing in it is on
-                # screen yet.
-                inner = img(url, alt, lazy=(not is_default) or i > 1)
-            else:
-                inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
-            hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
-            cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
+        info_html = ('<div class="episode-info"><div class="ep-active-title">' + esc(n) + ' · ' + esc(title) + '</div>'
+                      + ('<p class="logline-text">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>')
 
-        more_btn = ''
-        rest = len(files) - EPISODE_FEATURED_COUNT
-        if rest > 0:
-            more_label = 'Show more (' + str(rest) + ')'
-            more_btn = ('<button type="button" class="gm-more" data-gm-more aria-expanded="false" '
-                         'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
-                         + esc(more_label) + '</button>')
+        if has_images:
+            files = manifest.get(folder, [])
+            items, cells = [], []
+            for i, f in enumerate(files):
+                url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
+                alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
+                ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
+                items.append({'url': url, 'alt': alt})
+                style = ' style="--ar: %.4f"' % ar
+                if i < EPISODE_FEATURED_COUNT:
+                    # Only the default/visible-on-load episode gets its
+                    # first couple of images eager — every other panel
+                    # (hidden until its selector button is clicked) stays
+                    # fully lazy even for its "featured" cells, since
+                    # nothing in it is on screen yet.
+                    inner = img(url, alt, lazy=(not is_default) or i > 1)
+                else:
+                    inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
+                hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
+                cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
 
-        data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
-        synopsis = info.get('synopsis', '')
+            more_btn = ''
+            rest = len(files) - EPISODE_FEATURED_COUNT
+            if rest > 0:
+                more_label = 'Show more (' + str(rest) + ')'
+                more_btn = ('<button type="button" class="gm-more" data-gm-more aria-expanded="false" '
+                             'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
+                             + esc(more_label) + '</button>')
+
+            data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
+            gallery_html = ('<div class="ep-grid">' + ''.join(cells) + '</div>' + more_btn
+                             + '<script type="application/json" class="gm-data">' + data_json + '</script>')
+        else:
+            gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
+
         panels.append(
             '<div class="episode-panel" data-episode-panel="' + esc(n) + '"' + ('' if is_default else ' hidden') + '>'
-            + '<div class="episode-info"><h3 class="episode-title">' + esc(n) + ' ' + esc(title) + '</h3>'
-            + ('<p class="episode-synopsis">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>'
-            + '<div class="ep-grid">' + ''.join(cells) + '</div>'
-            + more_btn
-            + '<script type="application/json" class="gm-data">' + data_json + '</script>'
-            + '</div>'
+            + info_html + gallery_html + '</div>'
         )
 
     return (
-        '<div class="field-label" style="margin-top: 34px;">Episode Gallery</div>'
         '<div class="episode-gallery" data-episode-gallery data-default-episode="' + esc(default_n or '') + '">'
         '<div class="episode-select-row">' + ''.join(buttons) + '</div>'
         + ''.join(panels) +
@@ -1051,6 +1055,7 @@ def render_detail_page(p, current_folder):
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
+    right_parts.append(render_episode_gallery(root, p))
     right_parts.append(render_press_quotes(dd['pressQuotes']))
     if p.get('watchUrl'):
         right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
@@ -1073,17 +1078,7 @@ def render_detail_page(p, current_folder):
             body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
         body.append('</div>')  # /detail-grid
 
-    if dd['episodes']:
-        body.append('<div class="field-label">Episodes</div><div class="episodes-list">')
-        for ep in dd['episodes']:
-            body.append('<div class="episode-row"><div class="episode-n">' + esc(ep['n']) + '</div>'
-                         '<div class="episode-title">' + esc(ep['title']) + '</div>'
-                         '<div class="episode-synopsis">' + esc(ep['synopsis']) + '</div></div>')
-        body.append('</div>')
-
-    if p.get('episodeGalleries'):
-        body.append(render_episode_gallery(root, p))
-    else:
+    if not p.get('episodeGalleries'):
         body.append(render_gallery(root, dd, p['title']))
         body.append(render_gallery_mobile(root, dd, p['title']))
     body.append(render_video_block(p, 'second'))

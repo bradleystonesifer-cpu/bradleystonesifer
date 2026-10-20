@@ -543,18 +543,6 @@ ul { margin: 0; padding: 0; }
   border-radius: 2px;
 }
 
-.episodes-list { display: grid; gap: 0; margin-bottom: 46px; border-top: 1px solid var(--hair); }
-.episode-row {
-  display: grid;
-  grid-template-columns: 48px 1fr 2fr;
-  gap: 20px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--hair);
-}
-.episode-n { font: 500 13px/1.4 'IBM Plex Mono', monospace; color: var(--accent); }
-.episode-title { font: 600 15px/1.4 'Inter', sans-serif; text-transform: uppercase; }
-.episode-synopsis { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); }
-
 .gallery-main {
   display: grid;
   /* --pc carries its own fr suffix (e.g. "1.1333fr") so this is a plain
@@ -691,33 +679,42 @@ ul { margin: 0; padding: 0; }
   .gallery-mobile { display: block; }
 }
 
-/* Per-episode gallery selector (Misfits & Monsters only). Reuses the
-   .video-select-btn look for the selector row, and .gm-cell/.gm-more/
-   .gm-lightbox wiring for each panel's grid — only the row's own layout
-   (justified flex rows on desktop, a 2-col grid on mobile) and its
-   show-more/less + episode-switch behavior are new. */
-.episode-gallery { margin-top: 10px; }
-.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
-.ep-select-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.episode-info { margin-bottom: 16px; }
-.episode-info .episode-title { margin-bottom: 6px; }
-.episode-info .episode-synopsis { max-width: 640px; }
+/* Per-episode gallery selector (Misfits & Monsters only) — lives inline
+   in the detail page's logline/watch column, between the series logline
+   and the Watch button. Reuses the .video-select-btn look for the
+   selector row, and .gm-cell/.gm-more/.gm-lightbox wiring for each
+   panel's grid — only the row's own layout (justified flex rows on
+   desktop, a 2-col grid on mobile) and its show-more/less + episode-
+   switch behavior are new. Row height is kept modest since this column
+   is the narrow (~0.85fr) one at wide desktop widths; the detail-grid's
+   own breakpoints already give it the full page width below 1150px,
+   where justified rows naturally pack more per row. */
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.episode-info { margin-bottom: 14px; }
+.ep-active-title {
+  font: 500 11px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.episode-info .logline-text { margin-bottom: 0; }
+.ep-coming-soon { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); font-style: italic; margin: 0; }
 
 /* Justified rows: a fixed row height + each cell's own --ar (from the
-   image's real w/h) gives the cell its correct width with zero crop;
-   flex-grow lets the last, sparser row stretch evenly instead of
-   leaving a ragged gap. object-fit: contain is a no-op in the normal
-   case (the box is already shaped to the image) and a safety net
-   otherwise. */
-.ep-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-.ep-grid .gm-cell { height: 230px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+   image's real w/h) gives the cell its correct width with zero crop —
+   no flex-grow, so a width is never stretched past its true ratio
+   (that would letterbox inside the cell); max-width: 100% is only a
+   safety clamp for an unusually narrow column, not the normal case. */
+.ep-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.ep-grid .gm-cell { height: 150px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
 .ep-grid .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
 
-@media (max-width: 900px) {
-  .ep-grid .gm-cell { height: 170px; }
+@media (max-width: 1150px) {
+  .ep-grid .gm-cell { height: 190px; }
 }
 @media (max-width: 600px) {
-  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-bottom: 18px; }
+  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-bottom: 16px; }
   .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
   .ep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .ep-grid .gm-cell { height: auto; width: auto; }
