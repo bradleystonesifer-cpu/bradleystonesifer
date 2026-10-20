@@ -377,6 +377,13 @@ OVERRIDES = {
         "creditLine": "Cinematographer, 7 of 8 episodes",
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/tv-show/bobcat-goldthwaits-misfits-and-monsters",
+        # Center-column fallback (no VIDEOS entry for this project) — the
+        # show's official key art, linked out to its truTV watch page.
+        # TODO(Bradley): keyArtUrl is a placeholder — trutv.com is
+        # network-blocked from this sandbox so it couldn't be verified;
+        # confirm/replace before this goes live.
+        "keyArtImage": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
+        "keyArtUrl": "https://www.trutv.com/shows/misfits-and-monsters",
         # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
         # ep-NN/, manifest.json for each still's real w/h). "folder": None for
         # episodes 1 and 8, which have no stills yet. Titles/synopses are

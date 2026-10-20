@@ -642,6 +642,24 @@ def render_video_player(p, aspect='16/9', root=''):
     return ''.join(out)
 
 
+def render_key_art(p, root, aspect='16/9'):
+    """Fallback for the detail page's center column when a project has no
+    VIDEOS entry (no trailer/clip to play) — a plain hyperlinked key-art
+    image instead of an empty slot, sized the same as the video player it
+    stands in for. Opt-in via keyArtImage/keyArtUrl so every other
+    project's output is unaffected."""
+    url = p.get('keyArtImage')
+    link = p.get('keyArtUrl')
+    if not url or not link:
+        return ''
+    return (
+        '<a class="key-art-link" href="' + esc(link) + '" target="_blank" rel="noopener" '
+        'style="aspect-ratio: ' + aspect + ';">'
+        + img(asset(root, url), p['title'] + ' key art', lazy=False) +
+        '</a>'
+    )
+
+
 def _gallery_item(item, title):
     """A gallery slot is either a plain URL string (title used as alt, the
     original behavior) or an (url, alt) pair when the project supplies
@@ -1073,7 +1091,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_player(p, aspect, root)
+    center_html = render_video_player(p, aspect, root) or render_key_art(p, root, aspect)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')

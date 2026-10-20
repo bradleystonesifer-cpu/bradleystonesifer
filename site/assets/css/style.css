@@ -483,6 +483,13 @@ ul { margin: 0; padding: 0; }
 .credit-val a, .credit-actors a { color: var(--ink); }
 
 .video-wrap { position: relative; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+
+/* Center-column fallback when a project has no trailer/clip to play
+   (render_key_art) — a plain hyperlinked key-art image, sized like the
+   video player it stands in for. */
+.key-art-link { position: relative; display: block; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+.key-art-link img { transition: opacity 0.2s; }
+.key-art-link:hover img { opacity: 0.85; }
 .video-wrap iframe {
   position: absolute;
   top: 0;
