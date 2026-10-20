@@ -596,7 +596,7 @@ def vimeo_dnt_url(url):
     return url + ('&dnt=1' if '?' in url else '?dnt=1')
 
 
-def render_video_player(p, aspect='16/9'):
+def render_video_player(p, aspect='16/9', root=''):
     """Vimeo facade player for every detail page except the five that
     already have one via the older videoEmbed/secondVideoEmbed mechanism
     (the-vicious-kind, hit-and-run, spork, both Re:Purpose titles) — those
@@ -612,9 +612,10 @@ def render_video_player(p, aspect='16/9'):
     videos = VIDEOS.get(p.get('slug'))
     if not videos:
         return ''
-    # Each video carries its own Vimeo thumbnail (i.vimeocdn.com); falls
-    # back to the project's existing still only if one wasn't supplied.
-    thumb_url = videos[0].get('thumb') or p.get('image')
+    # Each video carries its own Vimeo thumbnail (i.vimeocdn.com, or a
+    # local root-relative still routed through asset()); falls back to
+    # the project's existing still only if one wasn't supplied.
+    thumb_url = asset(root, videos[0].get('thumb') or p.get('image'))
     main_src = vimeo_dnt_url(videos[0]['url'])
     play_label = 'Play ' + p['title']
     out = [
@@ -632,7 +633,7 @@ def render_video_player(p, aspect='16/9'):
         out.append('<div class="video-select-row">')
         for i, v in enumerate(videos):
             cls = 'video-select-btn active' if i == 0 else 'video-select-btn'
-            thumb = v.get('thumb') or p.get('image') or ''
+            thumb = asset(root, v.get('thumb') or p.get('image') or '')
             out.append(
                 '<button type="button" class="' + cls + '" data-vimeo-select="'
                 + esc(vimeo_dnt_url(v['url'])) + '" data-vimeo-select-thumb="' + esc(thumb) + '">'
@@ -935,7 +936,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_player(p, aspect)
+    center_html = render_video_player(p, aspect, root)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -998,7 +999,7 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
     back_label = '← Back' if p['section'] == 'films' else '← All commercial'
 
-    video_html = render_video_player(p, aspect)
+    video_html = render_video_player(p, aspect, root)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
     body = ['<div class="detail-wrap">',

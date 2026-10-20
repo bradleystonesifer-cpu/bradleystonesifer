@@ -337,6 +337,15 @@ OVERRIDES = {
         "galleryImages": [
             "assets/images/god-bless-america/god-bless-america-%02d.jpg" % i for i in range(1, 82)
         ],
+        # Real stills in place of the three recycled Canon-camera-test
+        # Squarespace placeholder frames (B043C001/D042C001/A043C001) this
+        # project shared with Woman Child, House of Ideas and others.
+        "image": "assets/images/god-bless-america/god-bless-america-02.jpg",
+        "image2": "assets/images/god-bless-america/god-bless-america-03.jpg",
+        "image3": "assets/images/god-bless-america/god-bless-america-04.jpg",
+        "videoAspect": "2.4/1",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.justwatch.com/us/movie/god-bless-america",
     },
     "narrative-9": {  # House of Ideas
         "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
@@ -594,7 +603,8 @@ VIDEOS = {
                   "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
     # No hash in the share URL Bradley sent, so no h= param. No thumbnail ID
     # supplied yet — facade falls back to the project's still.
-    "god-bless-america": [{"url": "https://player.vimeo.com/video/65878287"}],
+    "god-bless-america": [{"url": "https://player.vimeo.com/video/65878287",
+                            "thumb": "assets/images/god-bless-america/god-bless-america-01.jpg"}],
     "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997",
                                      "thumb": _vt("519906211-506cfcf7540e141336a6d4a8ec90725f8f1d1af897db2d372ec018578f3c6a4d")}],
     # Old video (128559140) moved to the "Selects" card — see
