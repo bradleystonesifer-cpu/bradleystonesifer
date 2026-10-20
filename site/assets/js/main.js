@@ -145,4 +145,106 @@
       btn.addEventListener('focus', preconnectVimeo, { once: true });
     });
   });
+
+  // Mobile gallery (<=600px): "Show more" reveals the next batch of
+  // still-unfetched cells, and tapping any cell opens a shared
+  // full-screen lightbox with swipe/arrow navigation across every still
+  // (including ones never revealed in the grid — those fetch on demand).
+  var GM_BATCH = 16;
+  var gmLightbox = null;
+  function gmOpenLightbox(items, index) {
+    if (!items.length) return;
+    if (!gmLightbox) {
+      gmLightbox = document.createElement('div');
+      gmLightbox.className = 'gm-lightbox';
+      gmLightbox.innerHTML =
+        '<button type="button" class="gm-lb-close" aria-label="Close">&times;</button>' +
+        '<button type="button" class="gm-lb-prev" aria-label="Previous">&#8249;</button>' +
+        '<img alt="">' +
+        '<button type="button" class="gm-lb-next" aria-label="Next">&#8250;</button>';
+      document.body.appendChild(gmLightbox);
+      gmLightbox.querySelector('.gm-lb-close').addEventListener('click', gmCloseLightbox);
+      gmLightbox.addEventListener('click', function (e) {
+        if (e.target === gmLightbox) gmCloseLightbox();
+      });
+      gmLightbox.querySelector('.gm-lb-prev').addEventListener('click', function () { gmStep(-1); });
+      gmLightbox.querySelector('.gm-lb-next').addEventListener('click', function () { gmStep(1); });
+      document.addEventListener('keydown', function (e) {
+        if (gmLightbox.style.display !== 'flex') return;
+        if (e.key === 'Escape') gmCloseLightbox();
+        if (e.key === 'ArrowLeft') gmStep(-1);
+        if (e.key === 'ArrowRight') gmStep(1);
+      });
+      var touchX = null;
+      gmLightbox.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+      gmLightbox.addEventListener('touchend', function (e) {
+        if (touchX === null) return;
+        var dx = e.changedTouches[0].clientX - touchX;
+        if (Math.abs(dx) > 40) gmStep(dx < 0 ? 1 : -1);
+        touchX = null;
+      }, { passive: true });
+    }
+    gmLightbox.dataset.items = JSON.stringify(items);
+    gmLightbox.dataset.index = index;
+    gmRenderLightbox();
+    gmLightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  function gmRenderLightbox() {
+    var list = JSON.parse(gmLightbox.dataset.items);
+    var i = parseInt(gmLightbox.dataset.index, 10);
+    var item = list[i];
+    var img = gmLightbox.querySelector('img');
+    img.src = item.url;
+    img.alt = item.alt || '';
+  }
+  function gmStep(dir) {
+    var list = JSON.parse(gmLightbox.dataset.items);
+    var i = parseInt(gmLightbox.dataset.index, 10);
+    i = (i + dir + list.length) % list.length;
+    gmLightbox.dataset.index = i;
+    gmRenderLightbox();
+  }
+  function gmCloseLightbox() {
+    if (gmLightbox) gmLightbox.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-gallery-mobile]').forEach(function (wrap) {
+    var dataEl = wrap.querySelector('.gm-data');
+    var items = [];
+    if (dataEl) {
+      try { items = JSON.parse(dataEl.textContent); } catch (e) {}
+    }
+    var cells = wrap.querySelectorAll('.gm-cell');
+    var moreBtn = wrap.querySelector('[data-gm-more]');
+    var revealed = GM_BATCH;
+
+    if (moreBtn) {
+      moreBtn.addEventListener('click', function () {
+        var upTo = revealed + GM_BATCH;
+        cells.forEach(function (cell) {
+          var idx = parseInt(cell.getAttribute('data-gm-index'), 10);
+          if (idx < upTo) {
+            cell.classList.remove('gm-hidden');
+            var img = cell.querySelector('img[data-gm-src]');
+            if (img) {
+              img.src = img.getAttribute('data-gm-src');
+              img.loading = 'lazy';
+              img.removeAttribute('data-gm-src');
+            }
+          }
+        });
+        revealed = upTo;
+        if (revealed >= cells.length) moreBtn.remove();
+      });
+    }
+
+    cells.forEach(function (cell) {
+      cell.addEventListener('click', function () {
+        var idx = parseInt(cell.getAttribute('data-gm-index'), 10);
+        gmOpenLightbox(items, idx);
+      });
+    });
+  });
 })();

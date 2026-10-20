@@ -304,6 +304,7 @@ def detail_data(p):
         'galleryBottom': gallery_bottom,
         'galleryAr': gallery_ar,
         'galleryPc': gallery_pc,
+        'galleryFlat': gallery,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -695,6 +696,48 @@ def render_gallery(root, dd, title):
     return ''.join(out)
 
 
+GALLERY_MOBILE_INITIAL = 16
+GALLERY_MOBILE_BATCH = 16
+
+
+def render_gallery_mobile(root, dd, title):
+    """Phone-width (<=600px) gallery: poster full-width first, then every
+    still in the same order used elsewhere (the 8 featured/interleaved
+    stills, then the rest) in a 2-column grid. Only the first 16 cells get
+    a real src; the rest carry data-gm-src and stay empty until "Show
+    more" reveals the next 16 — so nothing past the first batch is
+    fetched up front. A shared JSON blob of every still (including ones
+    never revealed in the grid) feeds the tap-to-enlarge lightbox, which
+    fetches on demand as the visitor swipes/arrows through it."""
+    items = [_gallery_item(it, title) for it in dd['galleryFlat']]
+    items = [(url, alt) for url, alt in items if url]
+    if not items:
+        return ''
+    ar = dd.get('galleryAr') or 2.35
+    cell_style = ' style="aspect-ratio: %.4f;"' % ar
+    cells = []
+    for i, (url, alt) in enumerate(items):
+        full_url = asset(root, url)
+        if i < GALLERY_MOBILE_INITIAL:
+            inner = img(full_url, alt, lazy=(i > 1))
+        else:
+            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="'
+                      + esc(full_url) + '">')
+        hidden = ' gm-hidden' if i >= GALLERY_MOBILE_INITIAL else ''
+        cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i)
+                      + '"' + cell_style + '>' + inner + '</button>')
+    more_btn = '<button type="button" class="gm-more" data-gm-more>Show more</button>' if len(items) > GALLERY_MOBILE_INITIAL else ''
+    poster = asset(root, dd['posterImage'])
+    poster_html = '<div class="gm-poster">' + img(poster, title + ' poster', lazy=False) + '</div>' if poster else ''
+    data_json = json.dumps([{'url': asset(root, u), 'alt': a} for u, a in items], separators=(',', ':')).replace('</', '<\\/')
+    return (
+        '<div class="gallery-mobile" data-gallery-mobile>' + poster_html
+        + '<div class="gm-grid">' + ''.join(cells) + '</div>' + more_btn
+        + '<script type="application/json" class="gm-data">' + data_json + '</script>'
+        '</div>'
+    )
+
+
 def page_rel(current_folder, target_href):
     """Resolve a root-relative href ('films/x.html') for a page sitting in
     current_folder ('' | 'films' | 'commercial')."""
@@ -927,6 +970,7 @@ def render_detail_page(p, current_folder):
         body.append('</div>')
 
     body.append(render_gallery(root, dd, p['title']))
+    body.append(render_gallery_mobile(root, dd, p['title']))
     body.append(render_video_block(p, 'second'))
     body.append('</div>')  # /detail-wrap
 
