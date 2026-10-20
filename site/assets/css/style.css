@@ -691,6 +691,38 @@ ul { margin: 0; padding: 0; }
   .gallery-mobile { display: block; }
 }
 
+/* Per-episode gallery selector (Misfits & Monsters only). Reuses the
+   .video-select-btn look for the selector row, and .gm-cell/.gm-more/
+   .gm-lightbox wiring for each panel's grid — only the row's own layout
+   (justified flex rows on desktop, a 2-col grid on mobile) and its
+   show-more/less + episode-switch behavior are new. */
+.episode-gallery { margin-top: 10px; }
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.ep-select-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.episode-info { margin-bottom: 16px; }
+.episode-info .episode-title { margin-bottom: 6px; }
+.episode-info .episode-synopsis { max-width: 640px; }
+
+/* Justified rows: a fixed row height + each cell's own --ar (from the
+   image's real w/h) gives the cell its correct width with zero crop;
+   flex-grow lets the last, sparser row stretch evenly instead of
+   leaving a ragged gap. object-fit: contain is a no-op in the normal
+   case (the box is already shaped to the image) and a safety net
+   otherwise. */
+.ep-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.ep-grid .gm-cell { height: 230px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+.ep-grid .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
+
+@media (max-width: 900px) {
+  .ep-grid .gm-cell { height: 170px; }
+}
+@media (max-width: 600px) {
+  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-bottom: 18px; }
+  .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
+  .ep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ep-grid .gm-cell { height: auto; width: auto; }
+}
+
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
 .stills-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .stills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

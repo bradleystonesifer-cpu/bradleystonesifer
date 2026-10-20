@@ -152,11 +152,17 @@
   // (including ones never revealed in the grid — those fetch on demand).
   var GM_BATCH = 16;
   var gmLightbox = null;
+  var gmLastFocused = null;
   function gmOpenLightbox(items, index) {
     if (!items.length) return;
+    gmLastFocused = document.activeElement;
     if (!gmLightbox) {
       gmLightbox = document.createElement('div');
       gmLightbox.className = 'gm-lightbox';
+      gmLightbox.setAttribute('role', 'dialog');
+      gmLightbox.setAttribute('aria-modal', 'true');
+      gmLightbox.setAttribute('aria-label', 'Image viewer');
+      gmLightbox.tabIndex = -1;
       gmLightbox.innerHTML =
         '<button type="button" class="gm-lb-close" aria-label="Close">&times;</button>' +
         '<button type="button" class="gm-lb-prev" aria-label="Previous">&#8249;</button>' +
@@ -189,6 +195,7 @@
     gmRenderLightbox();
     gmLightbox.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    gmLightbox.querySelector('.gm-lb-close').focus();
   }
   function gmRenderLightbox() {
     var list = JSON.parse(gmLightbox.dataset.items);
@@ -208,6 +215,8 @@
   function gmCloseLightbox() {
     if (gmLightbox) gmLightbox.style.display = 'none';
     document.body.style.overflow = '';
+    if (gmLastFocused && typeof gmLastFocused.focus === 'function') gmLastFocused.focus();
+    gmLastFocused = null;
   }
 
   document.querySelectorAll('[data-gallery-mobile]').forEach(function (wrap) {
@@ -245,6 +254,100 @@
         var idx = parseInt(cell.getAttribute('data-gm-index'), 10);
         gmOpenLightbox(items, idx);
       });
+    });
+  });
+
+  // Per-episode gallery selector (Misfits & Monsters). Separate from the
+  // generic [data-gallery-mobile] wiring above — behavior genuinely
+  // differs (featured count of 8 not 16, a real show-more/less toggle,
+  // and switching episodes resets that toggle) — but reuses the same
+  // .gm-cell/.gm-data/.gm-more markup inside each panel, and opens the
+  // same shared lightbox, scoped to just that panel's own stills.
+  var EP_FEATURED = 8;
+  document.querySelectorAll('[data-episode-gallery]').forEach(function (root) {
+    var panels = {};
+    root.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
+      panels[panel.getAttribute('data-episode-panel')] = panel;
+    });
+    var buttons = root.querySelectorAll('[data-ep-select]');
+
+    function collapsePanel(panel) {
+      var moreBtn = panel.querySelector('[data-gm-more]');
+      panel.querySelectorAll('.gm-cell').forEach(function (cell) {
+        if (parseInt(cell.getAttribute('data-gm-index'), 10) >= EP_FEATURED) {
+          cell.classList.add('gm-hidden');
+        }
+      });
+      if (moreBtn) {
+        moreBtn.textContent = moreBtn.getAttribute('data-show-more-label');
+        moreBtn.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    function activate(n, updateHash) {
+      var panel = panels[n];
+      if (!panel) return;
+      Object.keys(panels).forEach(function (k) {
+        panels[k].hidden = (k !== n);
+      });
+      collapsePanel(panel);
+      buttons.forEach(function (b) {
+        var active = b.getAttribute('data-ep-select') === n;
+        b.classList.toggle('active', active);
+        if (!b.disabled) b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      if (updateHash && history.replaceState) {
+        history.replaceState(null, '', '#ep-' + n);
+      }
+    }
+
+    root.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
+      var dataEl = panel.querySelector('.gm-data');
+      var items = [];
+      if (dataEl) {
+        try { items = JSON.parse(dataEl.textContent); } catch (e) {}
+      }
+      var cells = panel.querySelectorAll('.gm-cell');
+      var moreBtn = panel.querySelector('[data-gm-more]');
+      var expanded = false;
+      if (moreBtn) {
+        moreBtn.addEventListener('click', function () {
+          expanded = !expanded;
+          cells.forEach(function (cell) {
+            if (parseInt(cell.getAttribute('data-gm-index'), 10) < EP_FEATURED) return;
+            cell.classList.toggle('gm-hidden', !expanded);
+            if (expanded) {
+              var img = cell.querySelector('img[data-gm-src]');
+              if (img) {
+                img.src = img.getAttribute('data-gm-src');
+                img.loading = 'lazy';
+                img.removeAttribute('data-gm-src');
+              }
+            }
+          });
+          moreBtn.textContent = moreBtn.getAttribute(expanded ? 'data-show-less-label' : 'data-show-more-label');
+          moreBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        });
+      }
+      cells.forEach(function (cell) {
+        cell.addEventListener('click', function () {
+          gmOpenLightbox(items, parseInt(cell.getAttribute('data-gm-index'), 10));
+        });
+      });
+    });
+
+    buttons.forEach(function (btn) {
+      if (btn.disabled) return;
+      btn.addEventListener('click', function () {
+        activate(btn.getAttribute('data-ep-select'), true);
+      });
+    });
+
+    var fromHash = (location.hash || '').indexOf('#ep-') === 0 ? location.hash.slice(4) : null;
+    activate(panels[fromHash] ? fromHash : root.getAttribute('data-default-episode'), false);
+    window.addEventListener('hashchange', function () {
+      var n = (location.hash || '').indexOf('#ep-') === 0 ? location.hash.slice(4) : null;
+      if (n && panels[n]) activate(n, false);
     });
   });
 })();

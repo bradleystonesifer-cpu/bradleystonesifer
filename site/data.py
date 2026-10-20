@@ -377,6 +377,21 @@ OVERRIDES = {
         "creditLine": "Cinematographer, 7 of 8 episodes",
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/tv-show/bobcat-goldthwaits-misfits-and-monsters",
+        # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
+        # ep-NN/, manifest.json for each still's real w/h). "folder": None for
+        # episodes 1 and 8, which have no stills yet. Titles/synopses are
+        # reused from the "episodes" list above by matching "n" — not
+        # duplicated here.
+        "episodeGalleries": [
+            {"n": "01", "folder": None},
+            {"n": "02", "folder": "ep-02"},
+            {"n": "03", "folder": "ep-03"},
+            {"n": "04", "folder": "ep-04"},
+            {"n": "05", "folder": "ep-05"},
+            {"n": "06", "folder": "ep-06"},
+            {"n": "07", "folder": "ep-07"},
+            {"n": "08", "folder": None},
+        ],
     },
     "narrative-11": {  # Back in the Day
         "creditLine": "Cinematographer, Co-Producer",
