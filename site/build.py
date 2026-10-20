@@ -6,12 +6,13 @@ project/Bradley Stonesifer Site.dc.html — same visual system, real
 multi-page URLs instead of the design tool's client-side view switching.
 Run `python3 build.py` from this directory to (re)generate every page.
 """
+import json
 import os
 import re
 import shutil
 import urllib.parse
 
-from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER
+from data import CATS, OVERRIDES, POSTERS, COLLAGE_SPEC, CATEGORY_ORDER, VIDEOS
 
 SITE_DIR = os.path.dirname(os.path.abspath(__file__))
 FESTIVAL_DOMAINS = {
@@ -27,6 +28,16 @@ CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html',
 # still images exist in their data (those are used by the triptych thumbnail
 # on the Commercial category page, not shown as a stills gallery here).
 VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-presentation'}
+# Per-page .gallery-bottom column override (desktop only) for pages whose
+# bottom-grid image count doesn't divide evenly into the default 4 columns,
+# picked so it divides evenly instead — see render_detail_page(). Only
+# applies to pages still on the old fixed-crop gallery layout (currently
+# just almost-kings, which is excluded from the new native-aspect-ratio
+# engine — see GALLERY_NEW_LAYOUT_EXCLUDE in detail_data()); pages on the
+# new engine always keep 4 columns regardless of row evenness, per Bradley.
+GALLERY_BOTTOM_COLS = {
+    'almost-kings': 3,  # 21 images: 7 rows of 3
+}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -211,15 +222,76 @@ def poster_tile_data(p):
     }
 
 
+def local_image_path(url):
+    """Absolute filesystem path for a root-relative local image path, or
+    None for an external (http/https) URL — those can't be read with PIL
+    without a network fetch, so callers fall back to a default ratio."""
+    if not url or url.startswith('http://') or url.startswith('https://'):
+        return None
+    return os.path.join(SITE_DIR, url)
+
+
+def image_aspect_ratio(url, default):
+    """width/height of a local image via PIL, or `default` if the path is
+    external, missing, or unreadable."""
+    path = local_image_path(url)
+    if not path:
+        return default
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            w, h = im.size
+            if h:
+                return w / h
+    except Exception:
+        pass
+    return default
+
+
+# Slugs explicitly kept on the old fixed-crop 3-per-side gallery layout even
+# though they have 8+ galleryImages — Almost Kings already has its own
+# hand-tuned bottom-grid column count (GALLERY_BOTTOM_COLS) for its
+# processed-to-2.35:1 stills, so it's excluded from the new native-aspect-
+# ratio engine to avoid relayouting an already-finished page.
+GALLERY_NEW_LAYOUT_EXCLUDE = {'almost-kings'}
+
+
 def detail_data(p):
     title = p['title']
     raw_credits = p.get('overrideCredits') or []
     linked = with_links(raw_credits, title)
 
     gallery_source = p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u]
+    gallery_alts = p.get('galleryAlts')
+    if gallery_alts:
+        # (url, alt) pairs when per-image alt text is supplied; every other
+        # project keeps plain URL strings, unaffected.
+        gallery_source = [(u, gallery_alts[i] if i < len(gallery_alts) else title)
+                           for i, u in enumerate(gallery_source)]
     gallery = list(gallery_source)
-    if len(gallery) > 3:
-        gallery[1], gallery[3] = gallery[3], gallery[1]
+
+    # 8+ galleryImages: stills keep their native aspect ratio (4 per side,
+    # interleaved 1/3/5/7 left, 2/4/6/8 right) and the poster column is
+    # sized to match the resulting side-stack height, instead of the old
+    # fixed 3-per-side layout that force-cropped every still to whatever
+    # shape fit the poster's height.
+    gallery_ar = None
+    gallery_pc = None
+    use_new_layout = len(gallery) >= 8 and p.get('slug') not in GALLERY_NEW_LAYOUT_EXCLUDE
+    if use_new_layout:
+        first_url = _gallery_item(gallery[0], title)[0]
+        gallery_ar = image_aspect_ratio(first_url, 2.39)
+        poster_ar = image_aspect_ratio(p.get('posterImage') or p.get('image'), 2 / 3)
+        gallery_pc = 4 * poster_ar / gallery_ar if gallery_ar else 1.1
+        gallery_left = gallery[0:8:2]   # images 1,3,5,7
+        gallery_right = gallery[1:8:2]  # images 2,4,6,8
+        gallery_bottom = gallery[8:]
+    else:
+        if len(gallery) > 3:
+            gallery[1], gallery[3] = gallery[3], gallery[1]
+        gallery_left = gallery[0:3]
+        gallery_right = gallery[3:6]
+        gallery_bottom = gallery[6:]
 
     return {
         'creditGroups': group_credits(linked) if linked else [],
@@ -227,9 +299,12 @@ def detail_data(p):
         'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
-        'galleryLeft': gallery[0:3],
-        'galleryRight': gallery[3:6],
-        'galleryBottom': gallery[6:],
+        'galleryLeft': gallery_left,
+        'galleryRight': gallery_right,
+        'galleryBottom': gallery_bottom,
+        'galleryAr': gallery_ar,
+        'galleryPc': gallery_pc,
+        'galleryFlat': gallery,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -250,6 +325,76 @@ def slot_url(all_projects, key, slot):
     if slot == 'poster':
         return p.get('posterImage') or p.get('image', '')
     return ''
+
+
+# ------------------------------------------------------ homepage collage --
+
+SCRIPTED_POOL_MIN_GALLERY = 8    # narrative projects need this many galleryImages to join the pool
+SCRIPTED_POOL_MIN_WIDTH = 1500   # skip frames narrower than this (low-res / 2.35 reel scans)
+
+
+def collage_tile_type(key, slot, ratio):
+    """Classify a COLLAGE_SPEC entry for rendering: posters are fixed and
+    unchanged; a scripted project's own gallery-sourced scope tile stays
+    scripted; everything else (every non-scripted tile, and every scripted
+    tile that was pointing at a Squarespace image/image2/image3 field —
+    not allowed for scripted projects) is reassigned by shape to the
+    matching non-scripted pool."""
+    if slot == 'poster':
+        return 'poster'
+    if key.startswith('narrative-') and slot.startswith('gallery:') and ratio.startswith('2.35'):
+        return 'scripted-scope'
+    return '16x9' if ratio == '16/9' else 'scope'
+
+
+def build_collage_pools(all_projects):
+    """Three image pools for the randomized homepage collage, keyed by
+    tile type. Scripted pool: every gallery image (real width >= 1500px)
+    from narrative projects with 8+ galleryImages — automatic, so a film
+    that gets a gallery later joins with no spec edit. Non-scripted pools:
+    the (key, slot) pairs COLLAGE_SPEC already uses at that ratio today —
+    those are the only non-scripted images anyone has actually vetted at
+    that shape (Squarespace URLs can't be dimension-checked locally)."""
+    scripted = []
+    for key, p in all_projects.items():
+        if not key.startswith('narrative-'):
+            continue
+        gallery = p.get('galleryImages') or []
+        if len(gallery) < SCRIPTED_POOL_MIN_GALLERY:
+            continue
+        for item in gallery:
+            url = item[0] if isinstance(item, tuple) else item
+            path = local_image_path(url)
+            if not path:
+                continue
+            try:
+                from PIL import Image
+                with Image.open(path) as im:
+                    w = im.size[0]
+            except Exception:
+                continue
+            if w < SCRIPTED_POOL_MIN_WIDTH:
+                continue
+            scripted.append({'url': url, 'href': p['href'], 'title': p['title']})
+
+    non_scripted_16x9 = []
+    non_scripted_scope = []
+    seen = set()
+    for key, slot, ratio, _span in COLLAGE_SPEC:
+        ttype = collage_tile_type(key, slot, ratio)
+        if ttype not in ('16x9', 'scope') or key.startswith('narrative-'):
+            continue
+        if (key, slot) in seen:
+            continue
+        seen.add((key, slot))
+        p = all_projects[key]
+        url = slot_url(all_projects, key, slot)
+        if not url:
+            continue
+        item = {'url': url, 'href': p['href'], 'title': p['title']}
+        (non_scripted_16x9 if ttype == '16x9' else non_scripted_scope).append(item)
+
+    return {'scripted': scripted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
 
 
 # ------------------------------------------------------------------ head --
@@ -415,7 +560,10 @@ def render_video_block(p, which, aspect='16/9'):
     if not embed:
         return ''
     vid = vimeo_id(embed)
-    thumb_url = p.get('image')
+    # videoThumb (per-project, i.vimeocdn.com) wins when set; falls back to
+    # the original p.get('image') otherwise — the-vicious-kind never sets
+    # videoThumb, so its output is byte-for-byte unchanged.
+    thumb_url = p.get('videoThumb') or p.get('image')
     if which == 'first':
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
@@ -425,24 +573,114 @@ def render_video_block(p, which, aspect='16/9'):
             '<div class="play-btn"><div class="play-btn-tri"></div></div>'
             '</div></div>'
         )
-    # second / "Selects" player
+    # second / "Selects" player. secondVideoThumb is optional — when unset
+    # (the-vicious-kind never sets it) this renders exactly as before, a
+    # plain gradient card with no image, byte-for-byte unchanged.
+    second_thumb = p.get('secondVideoThumb')
+    thumb_html = img(second_thumb, p['title'] + ' — Selects', cls='selects-bg-img') if second_thumb else ''
+    thumb_cls = ' has-thumb' if second_thumb else ''
     return (
         '<div class="selects-wrap">'
         '<div class="selects-video" data-video-wrap data-embed-src="' + esc(embed) + '">'
-        '<div class="selects-thumb" data-video-thumb>'
+        + thumb_html +
+        '<div class="selects-thumb' + thumb_cls + '" data-video-thumb>'
         '<div class="selects-inner"><span class="selects-label">Selects</span>'
         '<div class="play-btn"><div class="play-btn-tri"></div></div></div>'
         '</div></div></div>'
     )
 
 
+def vimeo_dnt_url(url):
+    """Vimeo's "do not track" param — ?dnt=1 if the URL has no query yet,
+    &dnt=1 if it already carries ?h=HASH."""
+    return url + ('&dnt=1' if '?' in url else '?dnt=1')
+
+
+def render_video_player(p, aspect='16/9', root=''):
+    """Vimeo facade player for every detail page except the five that
+    already have one via the older videoEmbed/secondVideoEmbed mechanism
+    (the-vicious-kind, hit-and-run, spork, both Re:Purpose titles) — those
+    are left completely alone by checking for videoEmbed first.
+
+    Separate markup/data-attributes/JS from render_video_block() above on
+    purpose, so this never touches those five pages' elements or behavior.
+    Reuses the same .video-wrap / .video-thumb-overlay / .play-btn /
+    .play-btn-tri CSS classes for visual consistency.
+    """
+    if p.get('videoEmbed'):
+        return render_video_block(p, 'first', aspect)
+    videos = VIDEOS.get(p.get('slug'))
+    if not videos:
+        return ''
+    # Each video carries its own Vimeo thumbnail (i.vimeocdn.com, or a
+    # local root-relative still routed through asset()); falls back to
+    # the project's existing still only if one wasn't supplied.
+    thumb_url = asset(root, videos[0].get('thumb') or p.get('image'))
+    main_src = vimeo_dnt_url(videos[0]['url'])
+    play_label = 'Play ' + p['title']
+    out = [
+        '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title'])
+        + '" data-vimeo-play-label="' + esc(play_label) + '" style="aspect-ratio: ' + aspect
+        + ';" data-vimeo-src="' + esc(main_src) + '">',
+        '<div class="video-thumb-overlay">',
+        img(thumb_url, p['title']),
+        '<button type="button" class="video-click-btn" data-vimeo-play aria-label="' + esc(play_label) + '">',
+        '<div class="play-btn"><div class="play-btn-tri"></div></div>',
+        '</button>',
+        '</div></div>',
+    ]
+    if len(videos) > 1:
+        out.append('<div class="video-select-row">')
+        for i, v in enumerate(videos):
+            cls = 'video-select-btn active' if i == 0 else 'video-select-btn'
+            thumb = asset(root, v.get('thumb') or p.get('image') or '')
+            out.append(
+                '<button type="button" class="' + cls + '" data-vimeo-select="'
+                + esc(vimeo_dnt_url(v['url'])) + '" data-vimeo-select-thumb="' + esc(thumb) + '">'
+                + esc(v.get('label', '')) + '</button>'
+            )
+        out.append('</div>')
+    return ''.join(out)
+
+
+def _gallery_item(item, title):
+    """A gallery slot is either a plain URL string (title used as alt, the
+    original behavior) or an (url, alt) pair when the project supplies
+    per-image alt text via galleryAlts."""
+    return item if isinstance(item, tuple) else (item, title)
+
+
 def render_gallery(root, dd, title):
-    def cell(url):
-        return '<div class="gallery-cell">' + img(url, title) + '</div>'
-    left = ''.join(cell(u) for u in dd['galleryLeft'] if u)
-    right = ''.join(cell(u) for u in dd['galleryRight'] if u)
+    # asset(root, url) root-prefixes a local path (no-op for absolute
+    # http(s) URLs, e.g. the legacy Squarespace-hosted galleries) — same
+    # treatment the poster image already gets, so galleryImages can store
+    # plain root-relative paths like every other local image field instead
+    # of a hardcoded '../' that breaks when the same path is reused
+    # elsewhere (e.g. a COLLAGE_SPEC "gallery:N" homepage tile, which sits
+    # at site root rather than inside /films/ or /commercial/).
+    def cell(item):
+        url, alt = _gallery_item(item, title)
+        return '<div class="gallery-cell">' + img(asset(root, url), alt) + '</div>'
+    left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
+    right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
-    out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>', '<div class="gallery-main">']
+
+    # Native-aspect-ratio layout (8+ galleryImages, see detail_data()):
+    # --ar/--pc drive .gallery-main--ar's CSS (scoped so <8-image pages are
+    # untouched). --ar also has to go on .gallery-bottom directly since it
+    # sits outside .gallery-main and CSS custom properties only inherit
+    # down the DOM tree, not across siblings.
+    ar = dd.get('galleryAr')
+    main_cls = 'gallery-main' + (' gallery-main--ar' if ar else '')
+    main_style = ''
+    bottom_style = ''
+    if ar:
+        pc = dd.get('galleryPc') or 1.1
+        main_style = ' style="--ar: %.4f; --pc: %.4ffr;"' % (ar, pc)
+        bottom_style = ' style="--ar: %.4f;"' % ar
+
+    out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>',
+           '<div class="' + main_cls + '"' + main_style + '>']
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + left + '</div></div>')
     if poster:
         out.append('<div class="gallery-poster">' + img(poster, title + ' poster', lazy=False) + '</div>')
@@ -450,12 +688,55 @@ def render_gallery(root, dd, title):
     out.append('</div>')
     bottom = dd['galleryBottom']
     if bottom:
-        out.append('<div class="gallery-bottom">')
-        for u in bottom:
-            if u:
-                out.append('<div class="gallery-bottom-cell">' + img(u, title) + '</div>')
+        out.append('<div class="gallery-bottom"' + bottom_style + '>')
+        for item in bottom:
+            url, alt = _gallery_item(item, title)
+            if url:
+                out.append('<div class="gallery-bottom-cell">' + img(asset(root, url), alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
+
+
+GALLERY_MOBILE_INITIAL = 16
+GALLERY_MOBILE_BATCH = 16
+
+
+def render_gallery_mobile(root, dd, title):
+    """Phone-width (<=600px) gallery: poster full-width first, then every
+    still in the same order used elsewhere (the 8 featured/interleaved
+    stills, then the rest) in a 2-column grid. Only the first 16 cells get
+    a real src; the rest carry data-gm-src and stay empty until "Show
+    more" reveals the next 16 — so nothing past the first batch is
+    fetched up front. A shared JSON blob of every still (including ones
+    never revealed in the grid) feeds the tap-to-enlarge lightbox, which
+    fetches on demand as the visitor swipes/arrows through it."""
+    items = [_gallery_item(it, title) for it in dd['galleryFlat']]
+    items = [(url, alt) for url, alt in items if url]
+    if not items:
+        return ''
+    ar = dd.get('galleryAr') or 2.35
+    cell_style = ' style="aspect-ratio: %.4f;"' % ar
+    cells = []
+    for i, (url, alt) in enumerate(items):
+        full_url = asset(root, url)
+        if i < GALLERY_MOBILE_INITIAL:
+            inner = img(full_url, alt, lazy=(i > 1))
+        else:
+            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="'
+                      + esc(full_url) + '">')
+        hidden = ' gm-hidden' if i >= GALLERY_MOBILE_INITIAL else ''
+        cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i)
+                      + '"' + cell_style + '>' + inner + '</button>')
+    more_btn = '<button type="button" class="gm-more" data-gm-more>Show more</button>' if len(items) > GALLERY_MOBILE_INITIAL else ''
+    poster = asset(root, dd['posterImage'])
+    poster_html = '<div class="gm-poster">' + img(poster, title + ' poster', lazy=False) + '</div>' if poster else ''
+    data_json = json.dumps([{'url': asset(root, u), 'alt': a} for u, a in items], separators=(',', ':')).replace('</', '<\\/')
+    return (
+        '<div class="gallery-mobile" data-gallery-mobile>' + poster_html
+        + '<div class="gm-grid">' + ''.join(cells) + '</div>' + more_btn
+        + '<script type="application/json" class="gm-data">' + data_json + '</script>'
+        '</div>'
+    )
 
 
 def page_rel(current_folder, target_href):
@@ -472,6 +753,7 @@ def page_rel(current_folder, target_href):
 # ---------------------------------------------------------------- pages --
 
 def render_collage_tile(current_folder, item):
+    """Fixed tile — posters only; never randomized."""
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
     return (
@@ -482,14 +764,79 @@ def render_collage_tile(current_folder, item):
     )
 
 
+def render_random_collage_tile(default_item, ratio, span, pool_key):
+    """Randomizable tile — server renders a deterministic default (real
+    href, no img src) plus a <noscript> fallback image, so the page works
+    and links correctly with JS off or for crawlers. main.js replaces the
+    src/href/alt on load from the matching pool, picking something new on
+    every page view."""
+    style = 'grid-column: span ' + str(span) + '; aspect-ratio: ' + ratio + ';'
+    alt = esc(default_item['title'])
+    return (
+        '<a class="collage-tile" href="' + esc(default_item['href']) + '" data-pool="' + pool_key
+        + '" style="' + style + '" draggable="false">'
+        '<img alt="' + alt + '" decoding="async" draggable="false">'
+        '<noscript>' + img(default_item['url'], default_item['title']) + '</noscript>'
+        '<div class="collage-scrim"><span>' + alt + '</span></div>'
+        '</a>'
+    )
+
+
 def render_home(all_projects):
+    pools = build_collage_pools(all_projects)
+    counters = {'scripted': 0, '16x9': 0, 'scope': 0}
     tiles = []
     for key, slot, ratio, span in COLLAGE_SPEC:
-        p = all_projects[key]
-        url = slot_url(all_projects, key, slot)
-        tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
+        ttype = collage_tile_type(key, slot, ratio)
+        if ttype == 'poster':
+            p = all_projects[key]
+            url = slot_url(all_projects, key, slot)
+            tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
+            continue
+        pool_key = 'scripted' if ttype == 'scripted-scope' else ttype
+        pool = pools[pool_key]
+        if pool:
+            idx = counters[pool_key] % len(pool)
+            counters[pool_key] += 1
+            default_item = pool[idx]
+        else:
+            default_item = {'url': '', 'href': '#', 'title': ''}
+        tiles.append(render_random_collage_tile(default_item, ratio, span, pool_key))
+
+    # Escaped so a stray "</script>" inside any title/url can't prematurely
+    # close the data block.
+    pools_json = json.dumps(pools, separators=(',', ':')).replace('</', '<\\/')
+
+    collage_script = (
+        '<script>(function(){'
+        'var data=document.getElementById("collage-pools");'
+        'if(!data)return;'
+        'var pools;try{pools=JSON.parse(data.textContent);}catch(e){return;}'
+        'var tiles=document.querySelectorAll(".collage-tile[data-pool]");'
+        'var used={};Object.keys(pools).forEach(function(k){used[k]=[];});'
+        'var lastTitle=null;'
+        'tiles.forEach(function(tile,i){'
+        'var key=tile.getAttribute("data-pool");'
+        'var pool=pools[key];'
+        'if(!pool||!pool.length)return;'
+        'var avail=pool.filter(function(it){return used[key].indexOf(it.url)===-1;});'
+        'if(!avail.length){used[key]=[];avail=pool;}'
+        'var preferred=avail.filter(function(it){return it.title!==lastTitle;});'
+        'var choices=preferred.length?preferred:avail;'
+        'var item=choices[Math.floor(Math.random()*choices.length)];'
+        'used[key].push(item.url);lastTitle=item.title;'
+        'var img=tile.querySelector("img");'
+        'if(img){img.src=item.url;img.alt=item.title;if(i>3)img.loading="lazy";}'
+        'tile.href=item.href;'
+        'var scrim=tile.querySelector(".collage-scrim span");'
+        'if(scrim)scrim.textContent=item.title;'
+        '});'
+        '})();</script>'
+    )
     body = (
         '<div class="collage-outer"><div class="collage-grid">' + ''.join(tiles) + '</div></div>'
+        '<script type="application/json" id="collage-pools">' + pools_json + '</script>'
+        + collage_script +
         '<div class="home-intro">'
         '<p>Bradley Stonesifer is a Los Angeles-based cinematographer shooting narrative, documentary, '
         'and music video work &mdash; light-led, patient, and image-first. Available for select commercial work.</p>'
@@ -589,7 +936,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_block(p, 'first', aspect)
+    center_html = render_video_player(p, aspect, root)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -624,12 +971,24 @@ def render_detail_page(p, current_folder):
         body.append('</div>')
 
     body.append(render_gallery(root, dd, p['title']))
+    body.append(render_gallery_mobile(root, dd, p['title']))
     body.append(render_video_block(p, 'second'))
     body.append('</div>')  # /detail-wrap
 
+    extra_head = ''
+    bottom_cols = GALLERY_BOTTOM_COLS.get(p.get('slug'))
+    if bottom_cols:
+        # The default 4 columns leaves a ragged last row for this page's
+        # bottom-grid count; this column count divides it evenly instead.
+        # Scoped to this page only via an inline <style> (desktop-only, so
+        # it doesn't interfere with the shared ≤900px collapse-to-1-column
+        # rule) — no other page's CSS or output changes.
+        extra_head = ('<style>@media (min-width: 901px) {.gallery-bottom{grid-template-columns:repeat('
+                       + str(bottom_cols) + ',minmax(0,1fr));}}</style>')
+
     return page(root, p['title'] + ' — Bradley Stonesifer',
                 (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),
-                inner_header(root), ''.join(body))
+                inner_header(root), ''.join(body), extra_head)
 
 
 def render_simple_detail_page(p, current_folder, video_only=False):
@@ -640,7 +999,7 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
     back_label = '← Back' if p['section'] == 'films' else '← All commercial'
 
-    video_html = render_video_block(p, 'first', aspect)
+    video_html = render_video_player(p, aspect, root)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
     body = ['<div class="detail-wrap">',

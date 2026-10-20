@@ -195,6 +195,11 @@ ul { margin: 0; padding: 0; }
   border-radius: 2px;
   cursor: pointer;
   display: block;
+  /* Grid items default to min-width: auto, i.e. their content's
+     min-content size — an unconstrained <img> can report a natural width
+     wide enough to blow out a 1fr track (and the whole grid) at narrow
+     viewports even though the image itself is sized by CSS. */
+  min-width: 0;
 }
 .collage-scrim {
   position: absolute;
@@ -552,7 +557,12 @@ ul { margin: 0; padding: 0; }
 
 .gallery-main {
   display: grid;
-  grid-template-columns: 1fr 1.1fr 1fr;
+  /* --pc carries its own fr suffix (e.g. "1.1333fr") so this is a plain
+     var() substitution, not calc() — calc() doesn't reliably support
+     multiplying a number by an fr unit. Falls back to the original
+     hardcoded 1.1fr middle column when a page doesn't set --pc (every
+     <8-image gallery), so this line alone changes nothing for them. */
+  grid-template-columns: 1fr var(--pc, 1.1fr) 1fr;
   gap: 12px;
   margin-bottom: 12px;
   align-items: stretch;
@@ -577,13 +587,139 @@ ul { margin: 0; padding: 0; }
 .gallery-poster { background: var(--brown); border-radius: 2px; overflow: hidden; display: block; }
 .gallery-poster img { width: 100%; height: auto; object-fit: contain; }
 .gallery-bottom { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: 2.35 / 1; background: #000; }
+/* var(--ar, 2.35/1) falls back to the original fixed ratio when a page
+   doesn't set --ar (every <8-image gallery) — same no-op-by-default
+   reasoning as --pc above. */
+.gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: var(--ar, 2.35 / 1); background: #000; }
 .gallery-bottom-cell img { object-position: center 30%; }
+
+/* Native-aspect-ratio gallery (8+ galleryImages) — scoped to the
+   .gallery-main--ar marker class (only added when build.py computes a real
+   --ar/--pc) so every <8-image page's fixed-crop layout above is completely
+   unaffected. 4 stills per side in normal flow, sized by their own aspect
+   ratio instead of force-cropped into 3 equal absolute-positioned rows. */
+.gallery-main--ar .gallery-side-grid {
+  position: static;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gallery-main--ar .gallery-cell {
+  aspect-ratio: var(--ar);
+  min-height: auto;
+}
+/* Poster stretches to match the side stacks' height and crops (object-fit:
+   cover) rather than letterboxing — desktop only (min-width:901px), where
+   the 3-column row actually gives it a real shared height to stretch into.
+   Below that, .gallery-main collapses to one column (existing ≤900px
+   rule), so the poster falls back to the original width:100%;height:auto;
+   object-fit:contain rule above, which sizes correctly in a single column
+   regardless of sibling heights. */
+@media (min-width: 901px) {
+  .gallery-main--ar .gallery-poster { align-self: stretch; }
+  .gallery-main--ar .gallery-poster img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+/* Phone-width (<=600px) gallery: hidden above that width (the desktop/
+   tablet .gallery-main/.gallery-bottom stay as-is down to 601px). */
+.gallery-mobile { display: none; }
+.gm-poster { border-radius: 2px; overflow: hidden; margin-bottom: 8px; aspect-ratio: 2 / 3; max-width: 240px; }
+.gm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.gm-cell {
+  all: unset;
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--brown);
+  cursor: pointer;
+  min-width: 0;
+}
+.gm-cell.gm-hidden { display: none; }
+.gm-more {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px 0;
+  min-height: 44px;
+  font: 600 12px/1 'Inter', sans-serif;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* Tap-to-enlarge lightbox (mobile gallery only) — built fresh since the
+   site had no existing lightbox to reuse. */
+.gm-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(8, 7, 6, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+.gm-lightbox img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.gm-lb-close, .gm-lb-prev, .gm-lb-next {
+  all: unset;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+}
+.gm-lb-close { top: 8px; right: 8px; font-size: 28px; z-index: 3; }
+.gm-lb-prev, .gm-lb-next { top: 50%; transform: translateY(-50%); width: 56px; height: 72px; font-size: 32px; z-index: 2; }
+.gm-lb-prev { left: 0; }
+.gm-lb-next { right: 0; }
+
+@media (max-width: 600px) {
+  .gallery-main, .gallery-bottom { display: none; }
+  .gallery-mobile { display: block; }
+}
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
 .stills-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .stills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .stills-grid { grid-template-columns: 1fr; } }
+
+/* Vimeo facade player (new pages only — reuses .video-wrap/.video-thumb-
+   overlay/.play-btn/.play-btn-tri above as-is for the thumb+icon look). */
+.video-click-btn {
+  all: unset;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.video-select-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.video-select-btn {
+  font: 600 11px/1 'Inter', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+.video-select-btn.active { color: var(--ink); border-color: var(--accent); }
 
 .selects-wrap { max-width: 1100px; margin: 40px auto 0; }
 .selects-video { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: 2.35 / 1; background: #000; }
@@ -598,6 +734,13 @@ ul { margin: 0; padding: 0; }
 }
 .selects-inner { display: flex; flex-direction: column; align-items: center; gap: 20px; }
 .selects-label { font: 600 34px/1 'Inter', sans-serif; letter-spacing: -0.01em; text-transform: uppercase; color: var(--accent); }
+/* Optional real thumbnail behind the Selects card (secondVideoThumb) — the
+   plain gradient above stays the default; these only apply when a project
+   supplies one, so the-vicious-kind's Selects card is unaffected. */
+.selects-bg-img { position: absolute; inset: 0; }
+.selects-thumb.has-thumb {
+  background: linear-gradient(to top, rgba(14, 12, 10, 0.88), rgba(14, 12, 10, 0.3) 60%);
+}
 
 /* ============ about ============ */
 .about-wrap { padding: 0 20% 90px; margin-top: 12px; width: 100%; }
@@ -711,4 +854,38 @@ ul { margin: 0; padding: 0; }
 
 @media (max-width: 600px) {
   .poster-grid { grid-template-columns: 1fr; }
+
+  /* "Stonesifer" is one unbreakable word; at a fixed 48px it's wider than
+     the available width below ~420px and hangs off the right edge (the
+     line wraps at the space, but the second word still doesn't fit).
+     Scale with viewport so the longest word always fits inside the
+     gutter-constrained content width. */
+  .home-name { font-size: clamp(30px, 11.5vw, 48px); }
+
+  /* Header nav: the name/role block and the nav share one flex row with
+     no wrap, so at phone widths their combined intrinsic width exceeds
+     the viewport and the nav gets pushed off the right edge. Wrapping
+     the row puts the nav on its own line, full width, below the name. */
+  .inner-header-row { flex-wrap: wrap; row-gap: 12px; }
+  .inner-nav { width: 100%; flex-wrap: wrap; gap: 4px 20px; }
+  .home-nav { flex-wrap: wrap; gap: 4px 20px; }
+
+  /* Tap targets >= 44px tall (top-level nav links were plain 12px-line
+     text with no padding). */
+  .inner-nav > a, .inner-nav > .nav-item > a,
+  .home-nav > a, .home-nav > .nav-item > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 4px 0;
+  }
+  .nav-dropdown-inner a { padding: 13px 18px; }
+
+  /* Home collage: a clean 2-column grid (posters stay 1-col/tall; wide
+     16:9 and scope tiles span both columns instead of squeezing into a
+     half-width sliver). Doesn't touch the pool-based randomization —
+     that's all data-driven by main.js, independent of layout. */
+  .collage-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .collage-tile { grid-column: span 1 !important; }
+  .collage-tile[data-pool] { grid-column: span 2 !important; }
 }
