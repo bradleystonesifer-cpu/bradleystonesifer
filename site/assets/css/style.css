@@ -714,19 +714,18 @@ ul { margin: 0; padding: 0; }
 .episode-info .logline-text { margin-bottom: 0; }
 .ep-coming-soon { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); font-style: italic; margin: 0; }
 
-/* Justified rows: a fixed row height + each cell's own --ar (from the
-   image's real w/h) gives the cell its correct width with zero crop —
-   no flex-grow, so a width is never stretched past its true ratio (that
-   would letterbox inside the cell) and the last, sparser row stays
-   left-aligned instead of being forced to fill the row. max-width: 100%
-   is only a safety clamp for a narrow viewport, not the normal case. */
+/* Justified rows: a row height that scales continuously with the
+   viewport (clamp, not a breakpoint jump) + each cell's own --ar (from
+   the image's real w/h) gives the cell its correct width with zero
+   crop — no flex-grow, so a width is never stretched past its true
+   ratio (that would letterbox inside the cell) and the last, sparser
+   row stays left-aligned instead of being forced to fill the row.
+   max-width: 100% is only a safety clamp for a narrow viewport, not the
+   normal case. */
 .ep-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-.ep-grid .gm-cell { height: 220px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+.ep-grid .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
 .ep-grid .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
 
-@media (max-width: 900px) {
-  .ep-grid .gm-cell { height: 160px; }
-}
 @media (max-width: 600px) {
   .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
   .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }

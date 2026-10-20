@@ -851,7 +851,13 @@ def render_episode_panels(root, p):
                       + ('<p class="logline-text">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>')
 
         if has_images:
-            files = manifest.get(folder, [])
+            # Group by shape — every 16:9 still first, then the 4:3 ones
+            # (episode 2's news-broadcast frames) together at the end —
+            # rather than interleaved in whatever order they were shot.
+            # A stable sort keeps each group's own original relative
+            # order; threshold of 1.5 cleanly separates 16:9 (1.78) from
+            # 4:3 (1.33).
+            files = sorted(manifest.get(folder, []), key=lambda f: 0 if (f['w'] / f['h']) > 1.5 else 1)
             items, cells = [], []
             for i, f in enumerate(files):
                 url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
