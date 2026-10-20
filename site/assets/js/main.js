@@ -292,23 +292,77 @@
       }
     }
 
-    // The 4:3 row (narrower cells, so more would naturally fit per row)
-    // must never run wider than the 16:9 row above it. Measures the
-    // 16:9 row's actual achieved width — not the full container, which
-    // it rarely fills exactly — and caps the 4:3 row to that, so it
-    // wraps at the same boundary instead of the full container width.
-    function syncNarrowRowWidth(panel) {
-      var wideRow = panel.querySelector('[data-ep-row-wide]');
-      var narrowRow = panel.querySelector('[data-ep-row-narrow]');
-      if (!wideRow || !narrowRow) return;
-      var wideCells = wideRow.querySelectorAll('.gm-cell:not(.gm-hidden)');
-      if (!wideCells.length) { narrowRow.style.maxWidth = ''; return; }
-      var left = wideRow.getBoundingClientRect().left;
-      var maxRight = 0;
-      wideCells.forEach(function (cell) {
-        maxRight = Math.max(maxRight, cell.getBoundingClientRect().right - left);
-      });
-      narrowRow.style.maxWidth = maxRight + 'px';
+    // True justified-row layout: at a plain CSS clamp()-based height,
+    // flex-wrap packs as many images as fit at that height, but the
+    // count-per-row changes in discrete steps as the viewport narrows —
+    // right at each step-down (e.g. 4 fitting down to 3), the row that
+    // now holds one fewer image leaves a large unused gap on the right,
+    // since cells don't stretch to fill (that would letterbox them).
+    // This computes, per row, the exact height that makes its images +
+    // gaps fill the row's width exactly — every row but the last (which
+    // stays at the natural height and is left-aligned, not stretched)
+    // — so there's never a leftover gap. Applies to each shape group
+    // (.ep-grid-row) independently, which also keeps a 4:3 row from
+    // ever running wider than the 16:9 row above it: both are justified
+    // to the very same container width.
+    var EP_GAP = 12;
+    function desiredRowHeight() {
+      return Math.max(130, Math.min(220, window.innerWidth * 0.135));
+    }
+    function layoutJustifiedRow(rowEl) {
+      var cells = Array.prototype.slice.call(rowEl.querySelectorAll('.gm-cell:not(.gm-hidden)'));
+      if (!cells.length) return;
+      // clientWidth rounds to a whole pixel; the real, sub-pixel layout
+      // width the browser actually wraps against can be a hair under
+      // that (e.g. 655.875 vs clientWidth's 656) — a row computed to
+      // land exactly on the rounded value then overflows the true width
+      // by a fraction of a pixel and silently wraps one cell early. Read
+      // the precise width and knock off another 1px of safety margin.
+      var containerWidth = rowEl.getBoundingClientRect().width - 1;
+      if (containerWidth <= 0) return;
+      var desired = desiredRowHeight();
+      var ars = cells.map(function (c) { return parseFloat(c.style.getPropertyValue('--ar')) || (16 / 9); });
+      var i = 0;
+      while (i < cells.length) {
+        var arSum = 0, n = 0, j = i;
+        while (j < cells.length) {
+          var testArSum = arSum + ars[j];
+          var testN = n + 1;
+          var widthAtDesired = testArSum * desired + (testN - 1) * EP_GAP;
+          if (n > 0 && widthAtDesired > containerWidth) break;
+          arSum = testArSum; n = testN; j++;
+        }
+        var isLastRow = j >= cells.length;
+        var rowHeight = isLastRow ? desired : (containerWidth - (n - 1) * EP_GAP) / arSum;
+        var usedWidth = 0;
+        for (var k = i; k < j; k++) {
+          var w = Math.floor(ars[k] * rowHeight);
+          cells[k].style.height = rowHeight + 'px';
+          cells[k].style.width = w + 'px';
+          usedWidth += w + (k < j - 1 ? EP_GAP : 0);
+        }
+        // Absorb rounding so a filled row lands at (just under)
+        // containerWidth instead of a few px short or over — floor
+        // above guarantees this delta is always >= 0.
+        if (!isLastRow && j > i) {
+          var lastCell = cells[j - 1];
+          var delta = Math.floor(containerWidth - usedWidth);
+          lastCell.style.width = (parseFloat(lastCell.style.width) + delta) + 'px';
+        }
+        i = j;
+      }
+    }
+    function layoutPanelGallery(panel) {
+      if (window.innerWidth <= 600) {
+        // The 2-column CSS grid takes over below 600px — clear any
+        // desktop inline sizing so it doesn't fight the grid's own.
+        panel.querySelectorAll('.gm-cell').forEach(function (cell) {
+          cell.style.width = '';
+          cell.style.height = '';
+        });
+        return;
+      }
+      panel.querySelectorAll('.ep-grid-row').forEach(layoutJustifiedRow);
     }
 
     // Only called from a selector click, not the initial/hash-driven
@@ -329,6 +383,7 @@
         panels[k].hidden = (k !== n);
       });
       collapsePanel(panel);
+      layoutPanelGallery(panel);
       buttons.forEach(function (b) {
         var active = b.getAttribute('data-ep-select') === n;
         b.classList.toggle('active', active);
@@ -365,7 +420,7 @@
           });
           moreBtn.textContent = moreBtn.getAttribute(expanded ? 'data-show-less-label' : 'data-show-more-label');
           moreBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-          syncNarrowRowWidth(panel);
+          layoutPanelGallery(panel);
         });
       }
       cells.forEach(function (cell) {
@@ -389,14 +444,14 @@
       if (n && panels[n]) activate(n, false);
     });
 
-    // Re-measure on resize (debounced) — the 16:9 row's achieved width
-    // changes with viewport width, so the 4:3 row's cap has to follow.
+    // Re-layout on resize (debounced) — the row's achieved width and
+    // the desired height both change with viewport width.
     var resizeTimer = null;
     window.addEventListener('resize', function () {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(function () {
         var activePanel = epPanelsWrap.querySelector('[data-episode-panel]:not([hidden])');
-        if (activePanel) syncNarrowRowWidth(activePanel);
+        if (activePanel) layoutPanelGallery(activePanel);
       }, 150);
     });
   }
