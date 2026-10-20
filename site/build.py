@@ -27,6 +27,13 @@ CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html',
 # still images exist in their data (those are used by the triptych thumbnail
 # on the Commercial category page, not shown as a stills gallery here).
 VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-presentation'}
+# Per-page .gallery-bottom column override (desktop only) for pages whose
+# bottom-grid image count doesn't divide evenly into the default 4 columns,
+# picked so it divides evenly instead — see render_detail_page().
+GALLERY_BOTTOM_COLS = {
+    'almost-kings': 3,       # 21 images: 7 rows of 3
+    'god-bless-america': 5,  # 75 images: 15 rows of 5
+}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -711,12 +718,15 @@ def render_detail_page(p, current_folder):
     body.append('</div>')  # /detail-wrap
 
     extra_head = ''
-    if p.get('slug') == 'almost-kings':
-        # 21 bottom-grid stills don't divide evenly into the default 4
-        # columns (a ragged last row of 1) — 3 columns gives exactly 7 full
-        # rows. Scoped to this page only via an inline <style>, so no other
-        # page's CSS or output changes.
-        extra_head = '<style>@media (min-width: 901px) {.gallery-bottom{grid-template-columns:repeat(3,minmax(0,1fr));}}</style>'
+    bottom_cols = GALLERY_BOTTOM_COLS.get(p.get('slug'))
+    if bottom_cols:
+        # The default 4 columns leaves a ragged last row for this page's
+        # bottom-grid count; this column count divides it evenly instead.
+        # Scoped to this page only via an inline <style> (desktop-only, so
+        # it doesn't interfere with the shared ≤900px collapse-to-1-column
+        # rule) — no other page's CSS or output changes.
+        extra_head = ('<style>@media (min-width: 901px) {.gallery-bottom{grid-template-columns:repeat('
+                       + str(bottom_cols) + ',minmax(0,1fr));}}</style>')
 
     return page(root, p['title'] + ' — Bradley Stonesifer',
                 (dd['logline'] or (p['title'] + ', shot by cinematographer Bradley Stonesifer.')),

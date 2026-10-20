@@ -332,6 +332,11 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Toronto International Film Festival '11 (World Premiere); SXSW Film Festival '12"},
         ],
         "logline": "Fired, divorced, and facing a terminal diagnosis, Frank joins a teenager who shares his disgust, and together they go after the culture's cruelest voices.",
+        # 81 processed stills (site/assets/images/god-bless-america/),
+        # ordered best-first, replacing the image2/image3 gallery fallback.
+        "galleryImages": [
+            "assets/images/god-bless-america/god-bless-america-%02d.jpg" % i for i in range(1, 82)
+        ],
     },
     "narrative-9": {  # House of Ideas
         "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
