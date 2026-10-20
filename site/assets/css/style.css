@@ -458,6 +458,12 @@ ul { margin: 0; padding: 0; }
 }
 .detail-col-left > div, .detail-col-right > div { width: 100%; }
 .detail-col-center { align-self: start; display: flex; flex-direction: column; min-width: 0; }
+/* No video (center_html empty, e.g. Misfits & Monsters): keep the right
+   column in its usual narrow 3rd track instead of grid auto-placement
+   sliding it into the wide 2nd (video) track. The <=1150px breakpoint
+   below still wins at narrower widths (same specificity, later in the
+   cascade), collapsing this back to a full-width row as normal. */
+.detail-col-right--solo { grid-column: 3; }
 
 .credit-groups { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0 0 28px; }
 .credit-group { padding: 16px 0; border-bottom: 1px solid var(--hair); }
@@ -679,17 +685,17 @@ ul { margin: 0; padding: 0; }
   .gallery-mobile { display: block; }
 }
 
-/* Per-episode gallery selector (Misfits & Monsters only) — lives inline
-   in the detail page's logline/watch column, between the series logline
-   and the Watch button. Reuses the .video-select-btn look for the
-   selector row, and .gm-cell/.gm-more/.gm-lightbox wiring for each
-   panel's grid — only the row's own layout (justified flex rows on
-   desktop, a 2-col grid on mobile) and its show-more/less + episode-
-   switch behavior are new. Row height is kept modest since this column
-   is the narrow (~0.85fr) one at wide desktop widths; the detail-grid's
-   own breakpoints already give it the full page width below 1150px,
-   where justified rows naturally pack more per row. */
-.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+/* Episode selector (Misfits & Monsters only) — lives in the detail
+   page's logline/watch column, between the series logline and the
+   Watch button. Reuses the .video-select-btn look. */
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+
+/* Episode panels — full width, below the whole detail-grid, matching
+   every other film page's gallery position/width exactly. Reuses
+   .gm-cell/.gm-more/.gm-lightbox wiring for each panel's grid — only
+   the row's own layout (justified flex rows on desktop, a 2-col grid on
+   mobile) and its show-more/less + episode-switch behavior are new. */
+.episode-panels { margin-top: 34px; }
 .episode-info { margin-bottom: 14px; }
 .ep-active-title {
   font: 500 11px/1 'IBM Plex Mono', monospace;
@@ -703,19 +709,21 @@ ul { margin: 0; padding: 0; }
 
 /* Justified rows: a fixed row height + each cell's own --ar (from the
    image's real w/h) gives the cell its correct width with zero crop —
-   no flex-grow, so a width is never stretched past its true ratio
-   (that would letterbox inside the cell); max-width: 100% is only a
-   safety clamp for an unusually narrow column, not the normal case. */
-.ep-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.ep-grid .gm-cell { height: 150px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+   no flex-grow, so a width is never stretched past its true ratio (that
+   would letterbox inside the cell) and the last, sparser row stays
+   left-aligned instead of being forced to fill the row. max-width: 100%
+   is only a safety clamp for a narrow viewport, not the normal case. */
+.ep-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.ep-grid .gm-cell { height: 220px; width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
 .ep-grid .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
 
-@media (max-width: 1150px) {
-  .ep-grid .gm-cell { height: 190px; }
+@media (max-width: 900px) {
+  .ep-grid .gm-cell { height: 160px; }
 }
 @media (max-width: 600px) {
-  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-bottom: 16px; }
+  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
   .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
+  .episode-panels { margin-top: 26px; }
   .ep-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .ep-grid .gm-cell { height: auto; width: auto; }
 }
@@ -870,6 +878,12 @@ ul { margin: 0; padding: 0; }
 
 @media (max-width: 700px) {
   .detail-grid { grid-template-columns: 1fr; }
+  /* Without this, .detail-col-right--solo's grid-column: 3 still applies
+     (this query only resets grid-template-columns, not an item's own
+     grid-column) and the grid implicitly creates extra columns to
+     satisfy it — right column renders beside the left one instead of
+     stacking below it. */
+  .detail-col-right--solo { grid-column: auto; }
 }
 
 @media (max-width: 900px) {

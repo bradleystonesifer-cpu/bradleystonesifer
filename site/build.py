@@ -759,33 +759,66 @@ def load_misfits_manifest():
     return _MISFITS_MANIFEST
 
 
-def render_episode_gallery(root, p):
-    """Per-episode gallery selector for Misfits & Monsters (the only
-    project with an "episodeGalleries" field) — lives inline in the
+def _episode_gallery_default(p):
+    """The first episode with a stills folder (or just the first entry if
+    somehow none do) — shared between render_episode_selector and
+    render_episode_panels so both agree on which one starts active."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return None
+    return next((g['n'] for g in galleries if g.get('folder')), None) or galleries[0]['n']
+
+
+def render_episode_selector(p):
+    """Episode selector buttons for Misfits & Monsters — lives in the
     detail page's right (logline/watch) column, between the series
-    logline and the Watch button, replacing render_gallery/
-    render_gallery_mobile and the old standalone Episodes list entirely
-    for this one page. A row of selector buttons (styled like the
-    commercial pages' multi-video selector) swaps between per-episode
-    panels (JS, no reload); each panel with stills is its own justified-
-    row (desktop, via CSS flex + aspect-ratio so a 4:3 frame sits beside
-    16:9 ones with no cropping) / 2-column (mobile) grid, reusing the
-    same .gm-cell/.gm-more/.gm-data wiring and shared lightbox as every
-    other gallery page, just with its own collapse-on-episode-switch
-    behavior layered on in main.js. Episode titles/synopses are reused
-    from the existing "episodes" list by matching "n" — never duplicated
-    here. Episodes with no folder yet (1 and 8) still get a real,
-    clickable panel — title, synopsis, and a "Stills coming soon" note —
-    rather than being disabled or hidden, so the full 8-episode
-    structure and every #ep-NN hash link works."""
+    logline and the Watch button. Styled like the commercial pages'
+    multi-video selector. The panels it controls (title, synopsis,
+    gallery) live separately, full-width, below the whole detail-grid —
+    see render_episode_panels() — wired together in main.js by their own
+    top-level selectors (data-episode-select-row / data-episode-panels),
+    not by DOM nesting, since they're no longer in the same column."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return ''
+    episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
+    default_n = _episode_gallery_default(p)
+
+    buttons = []
+    for g in galleries:
+        n = g['n']
+        title = episodes_by_n.get(n, {}).get('title', '')
+        is_default = n == default_n
+        btn_cls = 'video-select-btn ep-select-btn' + (' active' if is_default else '')
+        buttons.append(
+            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n)
+            + '" aria-pressed="' + ('true' if is_default else 'false') + '">'
+            + esc(n) + ' ' + esc(title) + '</button>'
+        )
+
+    return '<div class="episode-select-row" data-episode-select-row>' + ''.join(buttons) + '</div>'
+
+
+def render_episode_panels(root, p):
+    """Full-width episode panels for Misfits & Monsters — one per
+    episode, swapped by the selector buttons above (JS, no reload), each
+    its own justified-row (desktop, via CSS flex + aspect-ratio so a 4:3
+    frame sits beside 16:9 ones with no cropping) / 2-column (mobile)
+    grid, reusing the same .gm-cell/.gm-more/.gm-data wiring and shared
+    lightbox as every other gallery page, just with its own collapse-on-
+    episode-switch behavior layered on in main.js. Episode titles/
+    synopses are reused from the existing "episodes" list by matching
+    "n" — never duplicated here. Episodes with no folder yet (1 and 8)
+    still get a real, clickable panel — title, synopsis, and a "Stills
+    coming soon" note — rather than being disabled or hidden, so the
+    full 8-episode structure and every #ep-NN hash link works."""
     galleries = p.get('episodeGalleries') or []
     if not galleries:
         return ''
     episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
     manifest = load_misfits_manifest()
-    default_n = next((g['n'] for g in galleries if g.get('folder')), None) or (galleries[0]['n'] if galleries else None)
+    default_n = _episode_gallery_default(p)
 
-    buttons = []
     panels = []
     for g in galleries:
         n = g['n']
@@ -795,13 +828,6 @@ def render_episode_gallery(root, p):
         synopsis = info.get('synopsis', '')
         has_images = bool(folder) and manifest.get(folder)
         is_default = n == default_n
-
-        btn_cls = 'video-select-btn ep-select-btn' + (' active' if is_default else '')
-        buttons.append(
-            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n)
-            + '" aria-pressed="' + ('true' if is_default else 'false') + '">'
-            + esc(n) + ' ' + esc(title) + '</button>'
-        )
 
         info_html = ('<div class="episode-info"><div class="ep-active-title">' + esc(n) + ' · ' + esc(title) + '</div>'
                       + ('<p class="logline-text">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>')
@@ -846,12 +872,8 @@ def render_episode_gallery(root, p):
             + info_html + gallery_html + '</div>'
         )
 
-    return (
-        '<div class="episode-gallery" data-episode-gallery data-default-episode="' + esc(default_n or '') + '">'
-        '<div class="episode-select-row">' + ''.join(buttons) + '</div>'
-        + ''.join(panels) +
-        '</div>'
-    )
+    return ('<div class="episode-panels" data-episode-panels data-default-episode="' + esc(default_n or '') + '">'
+            + ''.join(panels) + '</div>')
 
 
 def page_rel(current_folder, target_href):
@@ -1055,7 +1077,7 @@ def render_detail_page(p, current_folder):
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
-    right_parts.append(render_episode_gallery(root, p))
+    right_parts.append(render_episode_selector(p))
     right_parts.append(render_press_quotes(dd['pressQuotes']))
     if p.get('watchUrl'):
         right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
@@ -1069,16 +1091,28 @@ def render_detail_page(p, current_folder):
         body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
     body.append('</div>')
     if left_html or center_html or right_html:
+        # When there's no video (center_html empty — e.g. Misfits &
+        # Monsters has no VIDEOS entry), the right column must still
+        # land in the grid's 3rd (narrow) track explicitly — otherwise
+        # CSS grid auto-placement slides it into the unused 2nd (wide)
+        # track, leaving a blank gap where the video would have been
+        # instead of the page reading like every other film page just
+        # missing its video. A class (not inline style) so the existing
+        # <=1150px breakpoint, which collapses this column to full width
+        # on its own row, still wins on specificity+source order.
+        right_col_cls = 'detail-col-right' + ('' if center_html else ' detail-col-right--solo')
         body.append('<div class="detail-grid">')
         if left_html:
             body.append('<div class="detail-col-left"><div>' + left_html + '</div></div>')
         if center_html:
             body.append('<div class="detail-col-center">' + center_html + '</div>')
         if right_html:
-            body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
+            body.append('<div class="' + right_col_cls + '"><div>' + right_html + '</div></div>')
         body.append('</div>')  # /detail-grid
 
-    if not p.get('episodeGalleries'):
+    if p.get('episodeGalleries'):
+        body.append(render_episode_panels(root, p))
+    else:
         body.append(render_gallery(root, dd, p['title']))
         body.append(render_gallery_mobile(root, dd, p['title']))
     body.append(render_video_block(p, 'second'))

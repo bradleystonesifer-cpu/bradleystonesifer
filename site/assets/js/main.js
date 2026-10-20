@@ -263,13 +263,21 @@
   // and switching episodes resets that toggle) — but reuses the same
   // .gm-cell/.gm-data/.gm-more markup inside each panel, and opens the
   // same shared lightbox, scoped to just that panel's own stills.
+  //
+  // The selector row (in the right/logline column) and the panels it
+  // controls (full-width, below the whole detail-grid) are no longer
+  // DOM siblings, so they're wired together by their own top-level
+  // selectors instead of a shared wrapper — only one of each exists on
+  // the page, so this doesn't need to be a multi-instance loop.
   var EP_FEATURED = 8;
-  document.querySelectorAll('[data-episode-gallery]').forEach(function (root) {
+  var epSelectorRow = document.querySelector('[data-episode-select-row]');
+  var epPanelsWrap = document.querySelector('[data-episode-panels]');
+  if (epSelectorRow && epPanelsWrap) {
     var panels = {};
-    root.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
+    epPanelsWrap.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
       panels[panel.getAttribute('data-episode-panel')] = panel;
     });
-    var buttons = root.querySelectorAll('[data-ep-select]');
+    var buttons = epSelectorRow.querySelectorAll('[data-ep-select]');
 
     function collapsePanel(panel) {
       var moreBtn = panel.querySelector('[data-gm-more]');
@@ -284,6 +292,17 @@
       }
     }
 
+    // Only called from a selector click, not the initial/hash-driven
+    // activation — scrolls section C into view, but only if it isn't
+    // already (fully in view above, or starting below the fold).
+    function scrollPanelsIntoViewIfNeeded() {
+      var rect = epPanelsWrap.getBoundingClientRect();
+      var headerOffset = 90;
+      if (rect.top < headerOffset || rect.top > window.innerHeight) {
+        window.scrollTo({ top: rect.top + window.scrollY - headerOffset, behavior: 'smooth' });
+      }
+    }
+
     function activate(n, updateHash) {
       var panel = panels[n];
       if (!panel) return;
@@ -294,14 +313,14 @@
       buttons.forEach(function (b) {
         var active = b.getAttribute('data-ep-select') === n;
         b.classList.toggle('active', active);
-        if (!b.disabled) b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
       if (updateHash && history.replaceState) {
         history.replaceState(null, '', '#ep-' + n);
       }
     }
 
-    root.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
+    epPanelsWrap.querySelectorAll('[data-episode-panel]').forEach(function (panel) {
       var dataEl = panel.querySelector('.gm-data');
       var items = [];
       if (dataEl) {
@@ -337,17 +356,17 @@
     });
 
     buttons.forEach(function (btn) {
-      if (btn.disabled) return;
       btn.addEventListener('click', function () {
         activate(btn.getAttribute('data-ep-select'), true);
+        scrollPanelsIntoViewIfNeeded();
       });
     });
 
     var fromHash = (location.hash || '').indexOf('#ep-') === 0 ? location.hash.slice(4) : null;
-    activate(panels[fromHash] ? fromHash : root.getAttribute('data-default-episode'), false);
+    activate(panels[fromHash] ? fromHash : epPanelsWrap.getAttribute('data-default-episode'), false);
     window.addEventListener('hashchange', function () {
       var n = (location.hash || '').indexOf('#ep-') === 0 ? location.hash.slice(4) : null;
       if (n && panels[n]) activate(n, false);
     });
-  });
+  }
 })();
