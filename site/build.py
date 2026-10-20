@@ -777,6 +777,52 @@ def load_misfits_manifest():
     return _MISFITS_MANIFEST
 
 
+# Folders whose stills get reordered by visual similarity (see
+# order_by_similar_look) instead of kept in their original shot order —
+# there's no usable "date originally created" metadata on these frame
+# grabs (checked: no EXIF, and file mtimes just reflect when they were
+# checked out, not when the frame was captured), so similarity is the
+# only grouping signal actually available.
+EPISODE_VISUAL_GROUP = {'ep-06'}
+
+
+def _color_signature(path, size=(12, 7)):
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return im.convert('RGB').resize(size).tobytes()
+    except Exception:
+        return None
+
+
+def order_by_similar_look(folder, files):
+    """Greedy nearest-neighbor chain over a small per-image color/
+    composition signature (a resized-down RGB pixel grid) — groups
+    visually similar stills together (bright outdoor shots, dark
+    military scenes, the purple-lit lab, etc.) instead of leaving them
+    in shot order. Falls back to the given order untouched if any image
+    can't be read (e.g. the branch's images aren't checked out)."""
+    sigs = {}
+    for f in files:
+        path = os.path.join(SITE_DIR, 'assets/images/misfits-and-monsters', folder, f['file'])
+        sig = _color_signature(path)
+        if sig is None:
+            return files
+        sigs[f['file']] = sig
+
+    def dist(a, b):
+        return sum((x - y) ** 2 for x, y in zip(a, b))
+
+    remaining = list(files)
+    ordered = [remaining.pop(0)]
+    while remaining:
+        last_sig = sigs[ordered[-1]['file']]
+        nxt = min(remaining, key=lambda f: dist(last_sig, sigs[f['file']]))
+        remaining.remove(nxt)
+        ordered.append(nxt)
+    return ordered
+
+
 def _episode_gallery_default(p):
     """The first episode with a stills folder (or just the first entry if
     somehow none do) — shared between render_episode_selector and
@@ -856,10 +902,20 @@ def render_episode_panels(root, p):
             # Group by shape — every 16:9 still first, then the 4:3 ones
             # (episode 2's news-broadcast frames) together at the end —
             # rather than interleaved in whatever order they were shot.
-            # A stable sort keeps each group's own original relative
-            # order; threshold of 1.5 cleanly separates 16:9 (1.78) from
-            # 4:3 (1.33).
-            files = sorted(manifest.get(folder, []), key=lambda f: 0 if (f['w'] / f['h']) > 1.5 else 1)
+            # Threshold of 1.5 cleanly separates 16:9 (1.78) from 4:3
+            # (1.33). Within each shape group, episodes in
+            # EPISODE_VISUAL_GROUP (episode 6) are further reordered by
+            # visual similarity instead of shot order (kept separate per
+            # group so a visually-reordered 4:3 still never ends up
+            # ahead of the 16:9 group).
+            raw_wide = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) > 1.5]
+            raw_narrow = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) <= 1.5]
+            if folder in EPISODE_VISUAL_GROUP:
+                if raw_wide:
+                    raw_wide = order_by_similar_look(folder, raw_wide)
+                if raw_narrow:
+                    raw_narrow = order_by_similar_look(folder, raw_narrow)
+            files = raw_wide + raw_narrow
             items, wide_cells, narrow_cells = [], [], []
             for i, f in enumerate(files):
                 url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
