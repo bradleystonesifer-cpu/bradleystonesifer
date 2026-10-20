@@ -552,7 +552,12 @@ ul { margin: 0; padding: 0; }
 
 .gallery-main {
   display: grid;
-  grid-template-columns: 1fr 1.1fr 1fr;
+  /* --pc carries its own fr suffix (e.g. "1.1333fr") so this is a plain
+     var() substitution, not calc() — calc() doesn't reliably support
+     multiplying a number by an fr unit. Falls back to the original
+     hardcoded 1.1fr middle column when a page doesn't set --pc (every
+     <8-image gallery), so this line alone changes nothing for them. */
+  grid-template-columns: 1fr var(--pc, 1.1fr) 1fr;
   gap: 12px;
   margin-bottom: 12px;
   align-items: stretch;
@@ -577,8 +582,39 @@ ul { margin: 0; padding: 0; }
 .gallery-poster { background: var(--brown); border-radius: 2px; overflow: hidden; display: block; }
 .gallery-poster img { width: 100%; height: auto; object-fit: contain; }
 .gallery-bottom { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: 2.35 / 1; background: #000; }
+/* var(--ar, 2.35/1) falls back to the original fixed ratio when a page
+   doesn't set --ar (every <8-image gallery) — same no-op-by-default
+   reasoning as --pc above. */
+.gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: var(--ar, 2.35 / 1); background: #000; }
 .gallery-bottom-cell img { object-position: center 30%; }
+
+/* Native-aspect-ratio gallery (8+ galleryImages) — scoped to the
+   .gallery-main--ar marker class (only added when build.py computes a real
+   --ar/--pc) so every <8-image page's fixed-crop layout above is completely
+   unaffected. 4 stills per side in normal flow, sized by their own aspect
+   ratio instead of force-cropped into 3 equal absolute-positioned rows. */
+.gallery-main--ar .gallery-side-grid {
+  position: static;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gallery-main--ar .gallery-cell {
+  aspect-ratio: var(--ar);
+  min-height: auto;
+}
+/* Poster stretches to match the side stacks' height and crops (object-fit:
+   cover) rather than letterboxing — desktop only (min-width:901px), where
+   the 3-column row actually gives it a real shared height to stretch into.
+   Below that, .gallery-main collapses to one column (existing ≤900px
+   rule), so the poster falls back to the original width:100%;height:auto;
+   object-fit:contain rule above, which sizes correctly in a single column
+   regardless of sibling heights. */
+@media (min-width: 901px) {
+  .gallery-main--ar .gallery-poster { align-self: stretch; }
+  .gallery-main--ar .gallery-poster img { width: 100%; height: 100%; object-fit: cover; }
+}
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
 .stills-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }

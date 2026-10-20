@@ -29,10 +29,13 @@ CAT_FILENAME = {'narrative': 'scripted.html', 'documentary': 'documentary.html',
 VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-presentation'}
 # Per-page .gallery-bottom column override (desktop only) for pages whose
 # bottom-grid image count doesn't divide evenly into the default 4 columns,
-# picked so it divides evenly instead — see render_detail_page().
+# picked so it divides evenly instead — see render_detail_page(). Only
+# applies to pages still on the old fixed-crop gallery layout (currently
+# just almost-kings, which is excluded from the new native-aspect-ratio
+# engine — see GALLERY_NEW_LAYOUT_EXCLUDE in detail_data()); pages on the
+# new engine always keep 4 columns regardless of row evenness, per Bradley.
 GALLERY_BOTTOM_COLS = {
-    'almost-kings': 3,       # 21 images: 7 rows of 3
-    'god-bless-america': 5,  # 75 images: 15 rows of 5
+    'almost-kings': 3,  # 21 images: 7 rows of 3
 }
 
 # ---------------------------------------------------------------- helpers --
@@ -218,6 +221,40 @@ def poster_tile_data(p):
     }
 
 
+def local_image_path(url):
+    """Absolute filesystem path for a root-relative local image path, or
+    None for an external (http/https) URL — those can't be read with PIL
+    without a network fetch, so callers fall back to a default ratio."""
+    if not url or url.startswith('http://') or url.startswith('https://'):
+        return None
+    return os.path.join(SITE_DIR, url)
+
+
+def image_aspect_ratio(url, default):
+    """width/height of a local image via PIL, or `default` if the path is
+    external, missing, or unreadable."""
+    path = local_image_path(url)
+    if not path:
+        return default
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            w, h = im.size
+            if h:
+                return w / h
+    except Exception:
+        pass
+    return default
+
+
+# Slugs explicitly kept on the old fixed-crop 3-per-side gallery layout even
+# though they have 8+ galleryImages — Almost Kings already has its own
+# hand-tuned bottom-grid column count (GALLERY_BOTTOM_COLS) for its
+# processed-to-2.35:1 stills, so it's excluded from the new native-aspect-
+# ratio engine to avoid relayouting an already-finished page.
+GALLERY_NEW_LAYOUT_EXCLUDE = {'almost-kings'}
+
+
 def detail_data(p):
     title = p['title']
     raw_credits = p.get('overrideCredits') or []
@@ -231,8 +268,29 @@ def detail_data(p):
         gallery_source = [(u, gallery_alts[i] if i < len(gallery_alts) else title)
                            for i, u in enumerate(gallery_source)]
     gallery = list(gallery_source)
-    if len(gallery) > 3:
-        gallery[1], gallery[3] = gallery[3], gallery[1]
+
+    # 8+ galleryImages: stills keep their native aspect ratio (4 per side,
+    # interleaved 1/3/5/7 left, 2/4/6/8 right) and the poster column is
+    # sized to match the resulting side-stack height, instead of the old
+    # fixed 3-per-side layout that force-cropped every still to whatever
+    # shape fit the poster's height.
+    gallery_ar = None
+    gallery_pc = None
+    use_new_layout = len(gallery) >= 8 and p.get('slug') not in GALLERY_NEW_LAYOUT_EXCLUDE
+    if use_new_layout:
+        first_url = _gallery_item(gallery[0], title)[0]
+        gallery_ar = image_aspect_ratio(first_url, 2.39)
+        poster_ar = image_aspect_ratio(p.get('posterImage') or p.get('image'), 2 / 3)
+        gallery_pc = 4 * poster_ar / gallery_ar if gallery_ar else 1.1
+        gallery_left = gallery[0:8:2]   # images 1,3,5,7
+        gallery_right = gallery[1:8:2]  # images 2,4,6,8
+        gallery_bottom = gallery[8:]
+    else:
+        if len(gallery) > 3:
+            gallery[1], gallery[3] = gallery[3], gallery[1]
+        gallery_left = gallery[0:3]
+        gallery_right = gallery[3:6]
+        gallery_bottom = gallery[6:]
 
     return {
         'creditGroups': group_credits(linked) if linked else [],
@@ -240,9 +298,11 @@ def detail_data(p):
         'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
-        'galleryLeft': gallery[0:3],
-        'galleryRight': gallery[3:6],
-        'galleryBottom': gallery[6:],
+        'galleryLeft': gallery_left,
+        'galleryRight': gallery_right,
+        'galleryBottom': gallery_bottom,
+        'galleryAr': gallery_ar,
+        'galleryPc': gallery_pc,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -531,7 +591,23 @@ def render_gallery(root, dd, title):
     left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
     right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
-    out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>', '<div class="gallery-main">']
+
+    # Native-aspect-ratio layout (8+ galleryImages, see detail_data()):
+    # --ar/--pc drive .gallery-main--ar's CSS (scoped so <8-image pages are
+    # untouched). --ar also has to go on .gallery-bottom directly since it
+    # sits outside .gallery-main and CSS custom properties only inherit
+    # down the DOM tree, not across siblings.
+    ar = dd.get('galleryAr')
+    main_cls = 'gallery-main' + (' gallery-main--ar' if ar else '')
+    main_style = ''
+    bottom_style = ''
+    if ar:
+        pc = dd.get('galleryPc') or 1.1
+        main_style = ' style="--ar: %.4f; --pc: %.4ffr;"' % (ar, pc)
+        bottom_style = ' style="--ar: %.4f;"' % ar
+
+    out = ['<div class="field-label" style="margin-top: 34px;">Gallery</div>',
+           '<div class="' + main_cls + '"' + main_style + '>']
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + left + '</div></div>')
     if poster:
         out.append('<div class="gallery-poster">' + img(poster, title + ' poster', lazy=False) + '</div>')
@@ -539,7 +615,7 @@ def render_gallery(root, dd, title):
     out.append('</div>')
     bottom = dd['galleryBottom']
     if bottom:
-        out.append('<div class="gallery-bottom">')
+        out.append('<div class="gallery-bottom"' + bottom_style + '>')
         for item in bottom:
             url, alt = _gallery_item(item, title)
             if url:
