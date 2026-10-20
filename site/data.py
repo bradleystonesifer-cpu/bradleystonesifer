@@ -185,7 +185,7 @@ OVERRIDES = {
         "overrideCredits": [
             {"k": "Director", "v": "David Palmer, Dax Shepard"},
             {"k": "Production Company", "v": "Exclusive Media Group"},
-            {"k": "Lead Actors", "v": "Dax Shepard, Kristen Bell, Bradley Cooper, Tom Arnold, Kristin Chenoweth"},
+            {"k": "Lead Actors", "v": "Dax Shepard, Kristen Bell, Bradley Cooper, Tom Arnold, Kristin Chenoweth, Jason Bateman"},
             {"k": "Press — Variety", "v": "“An unexpectedly satisfying date-movie spin... this low-budget B movie looks poised to surprise.”", "href": "https://variety.com/2012/film/reviews/hit-run-1117948082/"},
         ],
         "logline": "A former getaway driver in witness protection risks his new identity to get his girlfriend to Los Angeles, with the feds and his old gang on their tail.",
@@ -592,6 +592,9 @@ VIDEOS = {
                       "thumb": _vt("461045520-c5b0c102b79df337d0cdcb75b623189d8da44e6e97a6592b0044c8e4349cfde7")}],
     "the-kid": [{"url": "https://player.vimeo.com/video/74362737",
                   "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
+    # No hash in the share URL Bradley sent, so no h= param. No thumbnail ID
+    # supplied yet — facade falls back to the project's still.
+    "god-bless-america": [{"url": "https://player.vimeo.com/video/65878287"}],
     "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997",
                                      "thumb": _vt("519906211-506cfcf7540e141336a6d4a8ec90725f8f1d1af897db2d372ec018578f3c6a4d")}],
     # Old video (128559140) moved to the "Selects" card — see
