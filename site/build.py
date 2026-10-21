@@ -643,6 +643,18 @@ def render_video_player(p, aspect='16/9', root=''):
     return ''.join(out)
 
 
+def render_static_video_thumb(p, aspect, root):
+    """Fallback for a project with no trailer at all (comingSoon, no
+    videoEmbed/VIDEOS entry): a plain, non-clickable still in the same
+    .video-wrap box/sizing as a real player, no play button or overlay.
+    Only used when render_video_player() itself found nothing to render."""
+    url = p.get('staticVideoThumb')
+    if not url:
+        return ''
+    return ('<div class="video-wrap" style="aspect-ratio: ' + aspect + ';">'
+            + img(asset(root, url), p['title'], lazy=False) + '</div>')
+
+
 def _gallery_item(item, title):
     """A gallery slot is either a plain URL string (title used as alt, the
     original behavior) or an (url, alt) pair when the project supplies
@@ -936,7 +948,7 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_player(p, aspect, root)
+    center_html = render_video_player(p, aspect, root) or render_static_video_thumb(p, aspect, root)
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -1117,7 +1129,6 @@ ASSET_RENAME = {
     'youth governor.jpg': 'poster-the-youth-governor.jpg',
     'fire on the hill.jpg': 'poster-fire-on-the-hill.jpg',
     'Call me Lucky.jpg': 'poster-call-me-lucky.jpg',
-    'house of Ideas.avif': 'coming-soon-house-of-ideas.avif',
 }
 
 
