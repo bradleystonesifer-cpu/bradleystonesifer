@@ -600,7 +600,7 @@ def render_press_quotes(quotes):
     return ''.join(out)
 
 
-def render_video_block(p, which, aspect='16/9'):
+def render_video_block(p, which, aspect='16/9', root=''):
     """which: 'first' (top player) or 'second' (bottom Selects player)."""
     embed = p.get('videoEmbed') if which == 'first' else p.get('secondVideoEmbed')
     if not embed:
@@ -608,8 +608,12 @@ def render_video_block(p, which, aspect='16/9'):
     vid = vimeo_id(embed)
     # videoThumb (per-project, i.vimeocdn.com) wins when set; falls back to
     # the original p.get('image') otherwise — the-vicious-kind never sets
-    # videoThumb, so its output is byte-for-byte unchanged.
-    thumb_url = p.get('videoThumb') or p.get('image')
+    # videoThumb, so its output is byte-for-byte unchanged. asset(root, ...)
+    # root-prefixes a local path (no-op for the absolute Squarespace/
+    # i.vimeocdn.com URLs every pre-existing caller of this function uses)
+    # — needed now that a local root-relative still (e.g. a gallery image)
+    # can end up here too, same as every other image field on the site.
+    thumb_url = asset(root, p.get('videoThumb') or p.get('image'))
     if which == 'first':
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
@@ -622,7 +626,7 @@ def render_video_block(p, which, aspect='16/9'):
     # second / "Selects" player. secondVideoThumb is optional — when unset
     # (the-vicious-kind never sets it) this renders exactly as before, a
     # plain gradient card with no image, byte-for-byte unchanged.
-    second_thumb = p.get('secondVideoThumb')
+    second_thumb = asset(root, p.get('secondVideoThumb')) if p.get('secondVideoThumb') else ''
     thumb_html = img(second_thumb, p['title'] + ' — Selects', cls='selects-bg-img') if second_thumb else ''
     thumb_cls = ' has-thumb' if second_thumb else ''
     return (
@@ -654,7 +658,7 @@ def render_video_player(p, aspect='16/9', root=''):
     .play-btn-tri CSS classes for visual consistency.
     """
     if p.get('videoEmbed'):
-        return render_video_block(p, 'first', aspect)
+        return render_video_block(p, 'first', aspect, root)
     videos = VIDEOS.get(p.get('slug'))
     if not videos:
         return ''
@@ -1042,7 +1046,7 @@ def render_detail_page(p, current_folder, next_map):
 
     body.append(render_gallery(root, dd, p['title']))
     body.append(render_gallery_mobile(root, dd, p['title']))
-    body.append(render_video_block(p, 'second'))
+    body.append(render_video_block(p, 'second', root=root))
     body.append('</div>')  # /detail-wrap
 
     extra_head = ''
