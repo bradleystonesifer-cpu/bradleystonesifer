@@ -206,6 +206,12 @@ OVERRIDES = {
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
         "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
+        # 50 processed stills (site/assets/images/me-her/), ordered
+        # best-first per manifest.json, replacing the image2/image3
+        # gallery fallback.
+        "galleryImages": [
+            "assets/images/me-her/me-her-%02d.jpg" % i for i in range(1, 51)
+        ],
     },
     "narrative-3": {  # Almost Kings
         # The video that used to be the main player, moved to a "Selects"
