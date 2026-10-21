@@ -272,6 +272,11 @@ OVERRIDES = {
         "watchUrl": "https://www.youtube.com/watch?v=WkTD4-xR8xQ",
         "videoAspect": "16/9",
         "secondVideoEmbed": "https://player.vimeo.com/video/15131157?badge=0&autopause=0&player_id=0&app_id=58479",
+        # 65 processed stills (site/assets/images/spork/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/spork/spork-%02d.jpg" % i for i in range(1, 66)
+        ],
         "overrideCredits": [
             {"k": "Director", "v": "J.B. Ghuman Jr.", "href": "https://www.jbghumanjr.com/film"},
             {"k": "Production Company", "v": "Neca Films; Last Bastion Entertainment; Bent Film"},
@@ -525,7 +530,7 @@ COLLAGE_SPEC = [
     ("narrative-1", "image3", "16/9", 5),
     ("music_video-5", "image2", "16/9", 5),
     ("narrative-10", "poster", "2/3", 2),
-    ("narrative-4", "image2", "2.35/1", 6),
+    ("narrative-4", "gallery:0", "2.35/1", 6),
     ("music_video-2", "image2", "2.35/1", 6),
     ("documentary-3", "poster", "2/3", 2),
     ("commercial-4", "image", "16/9", 5),
