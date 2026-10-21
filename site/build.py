@@ -211,7 +211,9 @@ def poster_tile_data(p):
     # on a project's own data entry. Either one switches the tile off the
     # still-with-title fallback with no layout changes.
     poster_file = p.get('poster') or p.get('posterImage') or ''
-    tile_image = '' if cs else (poster_file or p.get('image') or '')
+    # posterThumb (optional) swaps in a smaller file for this grid tile only
+    # — the detail page's own poster column keeps the full-res posterImage.
+    tile_image = '' if cs else (p.get('posterThumb') or poster_file or p.get('image') or '')
     return {
         'comingSoon': cs,
         'hasTileImage': not cs and bool(tile_image),
@@ -1110,7 +1112,6 @@ ASSET_RENAME = {
     'spork.jpg': 'poster-spork.jpg',
     'theKid.jpg': 'poster-the-kid.jpg',
     'DePutaMadre.jpg': 'poster-de-puta-madre.jpg',
-    'pasted-1787862845306-0.png': 'poster-woman-child.png',
     'posters-1787856825786-bd9q.jpg': 'poster-god-bless-america.jpg',
     'misfits and monsters.jpg': 'poster-misfits-and-monsters.jpg',
     'KTF.jpg': 'poster-kiss-the-future.jpg',

@@ -313,6 +313,28 @@ OVERRIDES = {
             {"k": "Lead Actors", "v": "Alexie Gilmore, Tone Bell, Toby Huss, Lynne Marie Stewart, James Handy, Nora Kirkpatrick"},
         ],
         "logline": "Fired from her teaching job for becoming pregnant out of wedlock, Malynn and her partner must either concede to the institution's rules or fight for her civil liberties.",
+        # Real poster (site/assets/images/poster-woman-child.jpg, 1500x2222)
+        # in place of the old uploads/pasted-...png design-bundle export —
+        # see build.py's ASSET_RENAME (that mapping entry is removed, so
+        # the stale .png is no longer regenerated). posterThumb feeds the
+        # small Scripted-page grid tile only; the detail page keeps the
+        # full-res poster.
+        "posterImage": "assets/images/poster-woman-child.jpg",
+        "posterThumb": "assets/images/poster-woman-child-thumb.jpg",
+        # 28 processed stills (site/assets/images/woman-child/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/woman-child/woman-child-%02d.jpg" % i for i in range(1, 29)
+        ],
+        # Real stills in place of the recycled Canon-camera-test
+        # Squarespace placeholder frames (see narrative-8's own note).
+        "image": "assets/images/woman-child/woman-child-01.jpg",
+        "image2": "assets/images/woman-child/woman-child-02.jpg",
+        "image3": "assets/images/woman-child/woman-child-03.jpg",
+        "videoEmbed": "https://player.vimeo.com/video/239052675",
+        "videoAspect": "2.4/1",
+        "watchLabel": "Watch",
+        "watchUrl": "https://vimeo.com/239052675",
     },
     "narrative-5": {  # The Kid
         "overrideCredits": [
@@ -487,7 +509,6 @@ POSTERS = {
     "narrative-4": "uploads/spork.jpg",
     "narrative-5": "uploads/theKid.jpg",
     "narrative-6": "uploads/DePutaMadre.jpg",
-    "narrative-7": "uploads/pasted-1787862845306-0.png",
     "narrative-8": "uploads/posters-1787856825786-bd9q.jpg",
     "narrative-10": "uploads/misfits and monsters.jpg",
     "documentary-0": "uploads/KTF.jpg",
