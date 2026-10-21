@@ -297,10 +297,9 @@ OVERRIDES = {
         "videoEmbed": "https://player.vimeo.com/video/1218379599?badge=0&autopause=0&player_id=0&app_id=58479",
         "secondVideoEmbed": "https://player.vimeo.com/video/15057181?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1",
         # 50 processed stills (site/assets/images/the-vicious-kind/), ordered
-        # best-first — replaces the old 14-image Squarespace gallery.
-        # Note: COLLAGE_SPEC's ("narrative-0", "gallery:2", ...) homepage
-        # tile reads galleryImages[2] dynamically, so that tile now shows
-        # the new gallery's 3rd image instead of the old one.
+        # best-first — replaces the old 14-image Squarespace gallery. Also
+        # joins the homepage's "scripted" collage pool automatically (see
+        # build_collage_pools()).
         "galleryImages": [
             "assets/images/the-vicious-kind/the-vicious-kind-%02d.jpg" % i for i in range(1, 51)
         ],
@@ -566,48 +565,68 @@ POSTERS = {
     "documentary-3": "uploads/Call me Lucky.jpg",
 }
 
-# Home-page collage: (project key, image slot, aspect ratio, column span). Mirrors `_collageSpec`.
+# Home-page collage: (project key, image slot, aspect ratio, column span).
+# Three kinds of entry, each a whole-number-of-12-columns row on its own
+# (so no row ever needs cross-ratio height-matching — every tile in a row
+# shares the same ratio and span, which is what keeps it flush at every
+# viewport width):
+#   - "poster": a project's own fixed poster, never randomized. All 6 of
+#     the site's poster tiles share one row (6 x span 2 = 12).
+#   - ("scripted", "scripted", ...): a generic scripted-pool slot — `key`
+#     is an unused placeholder (collage_tile_type()/render_home() never
+#     look a non-poster entry's project up by key, only by its pool), so
+#     the real image always comes from build_collage_pools()'s shared
+#     "scripted" pool (every narrative gallery + Misfits' episode stills)
+#     rather than any one project. Scripted stills are shot ~2.4:1, so
+#     every scripted row is a flush pair of 2.40/1 tiles (span 6 + 6) —
+#     no cropping, no letterbox bars.
+#   - a real (key, slot) pair at 16/9 or 2.40/1: one of the 10 vetted
+#     non-scripted stills (4 commercial, 4 documentary, 2 music video),
+#     grouped into two 16:9 triples (span 4+4+4) and two 2.40/1 pairs
+#     (span 6+6, cover-cropped — fine for a still that isn't natively
+#     that shape, same as every non-scripted tile already is today).
 COLLAGE_SPEC = [
+    # Posters — unchanged from before, just grouped into their own row.
     ("narrative-0", "poster", "2/3", 2),
-    ("commercial-2", "image", "16/9", 5),
-    ("documentary-2", "image2", "16/9", 5),
-    ("narrative-1", "image", "16/9", 4),
+    ("narrative-1", "poster", "2/3", 2),
+    ("documentary-0", "poster", "2/3", 2),
+    ("narrative-10", "poster", "2/3", 2),
+    ("documentary-3", "poster", "2/3", 2),
+    ("documentary-2", "poster", "2/3", 2),
+
+    # Non-scripted — 4 commercial / 4 documentary / 2 music video, the
+    # strongest of the images already vetted in the old COLLAGE_SPEC.
+    # Documentary picks deliberately avoid documentary-0/2/3 (Kiss the
+    # Future / Fire on the Hill / Call Me Lucky) — those are 3 of the 6
+    # poster tiles above, and since the poster row sits immediately next
+    # to this one in document order, reusing one of them here let the
+    # fixed poster and the random tile right after it occasionally roll
+    # the same title (no two adjacent tiles from the same film is a hard
+    # rule the randomizer can't enforce against a poster it never sees).
+    ("commercial-2", "image", "16/9", 4),
+    ("documentary-1", "image", "16/9", 4),
     ("music_video-1", "image", "16/9", 4),
     ("commercial-10", "image", "16/9", 4),
-    ("music_video-0", "image", "2.35/1", 6),
-    ("commercial-17", "image", "2.35/1", 6),
-    ("music_video-2", "image", "16/9", 4),
-    ("narrative-4", "image", "16/9", 4),
-    ("documentary-2", "image3", "16/9", 4),
-    ("narrative-3", "image2", "16/9", 5),
-    ("narrative-1", "poster", "2/3", 2),
-    ("commercial-19", "image", "16/9", 5),
-    ("documentary-3", "image", "2.35/1", 6),
-    ("music_video-5", "image", "2.35/1", 6),
-    ("narrative-1", "image2", "16/9", 5),
-    ("commercial-12", "image", "16/9", 5),
-    ("documentary-0", "poster", "2/3", 2),
-    ("narrative-0", "gallery:2", "2.35/1", 6),
-    ("commercial-21", "image", "2.35/1", 6),
-    ("documentary-0", "image2", "16/9", 4),
-    ("narrative-3", "image3", "16/9", 4),
-    ("music_video-1", "image2", "16/9", 4),
-    ("narrative-1", "image3", "16/9", 5),
-    ("music_video-5", "image2", "16/9", 5),
-    ("narrative-10", "poster", "2/3", 2),
-    ("narrative-4", "gallery:0", "2.35/1", 6),
-    ("music_video-2", "image2", "2.35/1", 6),
-    ("documentary-3", "poster", "2/3", 2),
-    ("commercial-4", "image", "16/9", 5),
-    ("music_video-0", "image3", "16/9", 5),
-    ("commercial-22", "image", "2.35/1", 6),
-    ("music_video-1", "image3", "2.35/1", 6),
-    ("documentary-3", "image3", "16/9", 4),
-    ("narrative-4", "image3", "16/9", 4),
-    ("commercial-20", "image", "16/9", 4),
-    ("commercial-32", "image", "16/9", 5),
-    ("music_video-2", "image3", "16/9", 5),
-    ("documentary-2", "poster", "2/3", 2),
+    ("documentary-4", "image", "16/9", 4),
+    ("documentary-5", "image", "16/9", 4),
+    ("commercial-17", "image", "2.40/1", 6),
+    ("commercial-21", "image", "2.40/1", 6),
+    ("documentary-6", "image", "2.40/1", 6),
+    ("music_video-0", "image", "2.40/1", 6),
+
+    # Scripted — the majority of the grid. 12 rows of 2 (24 tiles).
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).

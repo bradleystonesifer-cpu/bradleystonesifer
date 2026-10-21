@@ -332,51 +332,101 @@ def slot_url(all_projects, key, slot):
 
 SCRIPTED_POOL_MIN_GALLERY = 8    # narrative projects need this many galleryImages to join the pool
 SCRIPTED_POOL_MIN_WIDTH = 1500   # skip frames narrower than this (low-res / 2.35 reel scans)
+SCRIPTED_FEATURED_COUNT = 8      # each gallery's/episode's own first N stills are its "featured" selects
+SCRIPTED_FEATURED_WEIGHT = 3     # featured stills are duplicated this many times in the client-side
+                                  # random pool, so they're drawn ~3x as often as the rest — plain pool
+                                  # composition, no extra JS logic needed (the existing per-url dedup
+                                  # already treats every duplicate copy of a still as the same image)
 
 
 def collage_tile_type(key, slot, ratio):
     """Classify a COLLAGE_SPEC entry for rendering: posters are fixed and
-    unchanged; a scripted project's own gallery-sourced scope tile stays
-    scripted; everything else (every non-scripted tile, and every scripted
-    tile that was pointing at a Squarespace image/image2/image3 field —
-    not allowed for scripted projects) is reassigned by shape to the
-    matching non-scripted pool."""
+    unchanged; slot == "scripted" is a generic scripted-pool slot — its
+    `key` is an unused placeholder (never looked up: the real image
+    always comes from the shared "scripted" pool in build_collage_pools,
+    not any one project) — everything else is a vetted non-scripted
+    still, routed by shape to the matching pool."""
     if slot == 'poster':
         return 'poster'
-    if key.startswith('narrative-') and slot.startswith('gallery:') and ratio.startswith('2.35'):
-        return 'scripted-scope'
+    if slot == 'scripted':
+        return 'scripted'
     return '16x9' if ratio == '16/9' else 'scope'
 
 
+def _scripted_still(url, href, title):
+    return {'url': url, 'href': href, 'title': title}
+
+
 def build_collage_pools(all_projects):
-    """Three image pools for the randomized homepage collage, keyed by
-    tile type. Scripted pool: every gallery image (real width >= 1500px)
-    from narrative projects with 8+ galleryImages — automatic, so a film
-    that gets a gallery later joins with no spec edit. Non-scripted pools:
-    the (key, slot) pairs COLLAGE_SPEC already uses at that ratio today —
-    those are the only non-scripted images anyone has actually vetted at
+    """Pools for the randomized homepage collage, keyed by tile type.
+
+    Scripted pool: every gallery image (real width >= 1500px) from every
+    narrative project with 8+ galleryImages — automatic, so a film that
+    gets a gallery later joins with no spec edit — plus Misfits &
+    Monsters' per-episode stills (its gallery is one folder per episode,
+    not a flat galleryImages list, so it's a one-off addition rather
+    than covered by that same automatic rule). Each project's (or each
+    Misfits episode's) own first SCRIPTED_FEATURED_COUNT stills are
+    "featured": returned separately (second return value) for the
+    server-rendered default tile, and duplicated SCRIPTED_FEATURED_WEIGHT
+    times in the pool handed to the client-side randomizer.
+
+    Non-scripted pools: the (key, slot) pairs COLLAGE_SPEC uses at that
+    ratio — the only non-scripted images anyone has actually vetted at
     that shape (Squarespace URLs can't be dimension-checked locally)."""
-    scripted = []
+    scripted_all = []
+    scripted_featured = []
+
+    def add_scripted(url, href, title, featured):
+        entry = _scripted_still(url, href, title)
+        scripted_all.append(entry)
+        if featured:
+            scripted_featured.append(entry)
+
     for key, p in all_projects.items():
         if not key.startswith('narrative-'):
             continue
+
         gallery = p.get('galleryImages') or []
-        if len(gallery) < SCRIPTED_POOL_MIN_GALLERY:
-            continue
-        for item in gallery:
-            url = item[0] if isinstance(item, tuple) else item
-            path = local_image_path(url)
-            if not path:
+        if len(gallery) >= SCRIPTED_POOL_MIN_GALLERY:
+            for i, item in enumerate(gallery):
+                url = item[0] if isinstance(item, tuple) else item
+                path = local_image_path(url)
+                if not path:
+                    continue
+                try:
+                    from PIL import Image
+                    with Image.open(path) as im:
+                        w = im.size[0]
+                except Exception:
+                    continue
+                if w < SCRIPTED_POOL_MIN_WIDTH:
+                    continue
+                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
+
+        for eg in (p.get('episodeGalleries') or []):
+            folder = eg.get('folder')
+            files = load_misfits_manifest().get(folder) or []
+            if not files:
                 continue
-            try:
-                from PIL import Image
-                with Image.open(path) as im:
-                    w = im.size[0]
-            except Exception:
-                continue
-            if w < SCRIPTED_POOL_MIN_WIDTH:
-                continue
-            scripted.append({'url': url, 'href': p['href'], 'title': p['title']})
+            # Same shape-then-visual-similarity order the episode's own
+            # page uses (render_episode_panels) — so "featured" means the
+            # same 8 stills in both places, and each episode's own first
+            # 8 (not the project's) count as its featured selects.
+            wide = [f for f in files if (f['w'] / f['h']) > 1.5]
+            narrow = [f for f in files if (f['w'] / f['h']) <= 1.5]
+            if folder in EPISODE_VISUAL_GROUP:
+                if wide:
+                    wide = order_by_similar_look(folder, wide)
+                if narrow:
+                    narrow = order_by_similar_look(folder, narrow)
+            for i, f in enumerate(wide + narrow):
+                if f['w'] < SCRIPTED_POOL_MIN_WIDTH:
+                    continue
+                url = 'assets/images/misfits-and-monsters/' + folder + '/' + f['file']
+                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
+
+    scripted_weighted = scripted_all + scripted_featured * (SCRIPTED_FEATURED_WEIGHT - 1)
 
     non_scripted_16x9 = []
     non_scripted_scope = []
@@ -392,10 +442,11 @@ def build_collage_pools(all_projects):
         url = slot_url(all_projects, key, slot)
         if not url:
             continue
-        item = {'url': url, 'href': p['href'], 'title': p['title']}
+        item = _scripted_still(url, p['href'], p['title'])
         (non_scripted_16x9 if ttype == '16x9' else non_scripted_scope).append(item)
 
-    return {'scripted': scripted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
+    pools = {'scripted': scripted_weighted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
+    return pools, scripted_featured
 
 
 # ------------------------------------------------------------------ head --
@@ -1034,7 +1085,12 @@ def render_random_collage_tile(default_item, ratio, span, pool_key):
 
 
 def render_home(all_projects):
-    pools = build_collage_pools(all_projects)
+    pools, scripted_featured = build_collage_pools(all_projects)
+    # The server-rendered (no-JS / first-paint) default must be a featured
+    # still specifically — scripted_featured, not the full weighted pool
+    # the client randomizes from (pools['scripted'], which deliberately
+    # over-represents featured stills but still includes the rest).
+    default_pools = dict(pools, scripted=scripted_featured)
     counters = {'scripted': 0, '16x9': 0, 'scope': 0}
     tiles = []
     for key, slot, ratio, span in COLLAGE_SPEC:
@@ -1044,8 +1100,8 @@ def render_home(all_projects):
             url = slot_url(all_projects, key, slot)
             tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
             continue
-        pool_key = 'scripted' if ttype == 'scripted-scope' else ttype
-        pool = pools[pool_key]
+        pool_key = ttype
+        pool = default_pools[pool_key]
         if pool:
             idx = counters[pool_key] % len(pool)
             counters[pool_key] += 1
