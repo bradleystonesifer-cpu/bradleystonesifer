@@ -823,13 +823,21 @@ def order_by_similar_look(folder, files):
     return ordered
 
 
+EPISODE_GALLERY_PREFERRED_DEFAULT = '02'  # "02" was the first episode with stills; kept as the default even after episode 1 got its own gallery, so the page doesn't silently change which one opens
+
+
 def _episode_gallery_default(p):
-    """The first episode with a stills folder (or just the first entry if
-    somehow none do) — shared between render_episode_selector and
+    """The preferred default episode if it has a stills folder, else the
+    first episode that does (or just the first entry if somehow none
+    do) — shared between render_episode_selector and
     render_episode_panels so both agree on which one starts active."""
     galleries = p.get('episodeGalleries') or []
     if not galleries:
         return None
+    by_n = {g['n']: g for g in galleries}
+    preferred = by_n.get(EPISODE_GALLERY_PREFERRED_DEFAULT)
+    if preferred and preferred.get('folder'):
+        return EPISODE_GALLERY_PREFERRED_DEFAULT
     return next((g['n'] for g in galleries if g.get('folder')), None) or galleries[0]['n']
 
 
