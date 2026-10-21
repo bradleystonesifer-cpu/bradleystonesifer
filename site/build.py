@@ -298,7 +298,6 @@ def detail_data(p):
     return {
         'creditGroups': group_credits(linked) if linked else [],
         'pressQuotes': press_quotes(linked) if linked else [],
-        'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
         'galleryLeft': gallery_left,
@@ -657,6 +656,24 @@ def render_static_video_thumb(p, aspect, root):
             + img(asset(root, url), p['title'], lazy=False) + '</div>')
 
 
+def render_key_art(p, root, aspect='16/9'):
+    """Fallback for the detail page's center column when a project has no
+    VIDEOS entry (no trailer/clip to play) — a plain hyperlinked key-art
+    image instead of an empty slot, sized the same as the video player it
+    stands in for. Opt-in via keyArtImage/keyArtUrl so every other
+    project's output is unaffected."""
+    url = p.get('keyArtImage')
+    link = p.get('keyArtUrl')
+    if not url or not link:
+        return ''
+    return (
+        '<a class="key-art-link" href="' + esc(link) + '" target="_blank" rel="noopener" '
+        'style="aspect-ratio: ' + aspect + ';">'
+        + img(asset(root, url), p['title'] + ' key art', lazy=False) +
+        '</a>'
+    )
+
+
 def _gallery_item(item, title):
     """A gallery slot is either a plain URL string (title used as alt, the
     original behavior) or an (url, alt) pair when the project supplies
@@ -751,6 +768,226 @@ def render_gallery_mobile(root, dd, title):
         + '<script type="application/json" class="gm-data">' + data_json + '</script>'
         '</div>'
     )
+
+
+EPISODE_FEATURED_COUNT = 8
+_MISFITS_MANIFEST = None
+
+
+def load_misfits_manifest():
+    """site/assets/images/misfits-and-monsters/manifest.json: {folder:
+    [{file, w, h}, ...]} — real dimensions for the per-episode gallery
+    selector's justified-row (desktop) / 2-col (mobile) layouts. Cached
+    after the first successful read; returns {} if the branch's images
+    haven't been checked out (so a build never hard-fails over it)."""
+    global _MISFITS_MANIFEST
+    if _MISFITS_MANIFEST is None:
+        path = os.path.join(SITE_DIR, 'assets/images/misfits-and-monsters/manifest.json')
+        try:
+            with open(path) as f:
+                _MISFITS_MANIFEST = json.load(f)
+        except Exception:
+            _MISFITS_MANIFEST = {}
+    return _MISFITS_MANIFEST
+
+
+# Folders whose stills get reordered by visual similarity (see
+# order_by_similar_look) instead of kept in their original shot order —
+# there's no usable "date originally created" metadata on these frame
+# grabs (checked: no EXIF, and file mtimes just reflect when they were
+# checked out, not when the frame was captured), so similarity is the
+# only grouping signal actually available.
+EPISODE_VISUAL_GROUP = {'ep-06'}
+
+
+def _color_signature(path, size=(12, 7)):
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return im.convert('RGB').resize(size).tobytes()
+    except Exception:
+        return None
+
+
+def order_by_similar_look(folder, files):
+    """Greedy nearest-neighbor chain over a small per-image color/
+    composition signature (a resized-down RGB pixel grid) — groups
+    visually similar stills together (bright outdoor shots, dark
+    military scenes, the purple-lit lab, etc.) instead of leaving them
+    in shot order. Falls back to the given order untouched if any image
+    can't be read (e.g. the branch's images aren't checked out)."""
+    sigs = {}
+    for f in files:
+        path = os.path.join(SITE_DIR, 'assets/images/misfits-and-monsters', folder, f['file'])
+        sig = _color_signature(path)
+        if sig is None:
+            return files
+        sigs[f['file']] = sig
+
+    def dist(a, b):
+        return sum((x - y) ** 2 for x, y in zip(a, b))
+
+    remaining = list(files)
+    ordered = [remaining.pop(0)]
+    while remaining:
+        last_sig = sigs[ordered[-1]['file']]
+        nxt = min(remaining, key=lambda f: dist(last_sig, sigs[f['file']]))
+        remaining.remove(nxt)
+        ordered.append(nxt)
+    return ordered
+
+
+EPISODE_GALLERY_PREFERRED_DEFAULT = '02'  # "02" was the first episode with stills; kept as the default even after episode 1 got its own gallery, so the page doesn't silently change which one opens
+
+
+def _episode_gallery_default(p):
+    """The preferred default episode if it has a stills folder, else the
+    first episode that does (or just the first entry if somehow none
+    do) — shared between render_episode_selector and
+    render_episode_panels so both agree on which one starts active."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return None
+    by_n = {g['n']: g for g in galleries}
+    preferred = by_n.get(EPISODE_GALLERY_PREFERRED_DEFAULT)
+    if preferred and preferred.get('folder'):
+        return EPISODE_GALLERY_PREFERRED_DEFAULT
+    return next((g['n'] for g in galleries if g.get('folder')), None) or galleries[0]['n']
+
+
+def render_episode_selector(p):
+    """Episode selector buttons for Misfits & Monsters — its own
+    full-width row directly below the detail-grid (credits | key art |
+    logline+press), above the episode panels it controls. Styled like
+    the commercial pages' multi-video selector. The panels (title,
+    synopsis, gallery) render separately via render_episode_panels(),
+    wired together in main.js by their own top-level selectors
+    (data-episode-select-row / data-episode-panels), not by DOM nesting,
+    since they're not DOM siblings."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return ''
+    episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
+    default_n = _episode_gallery_default(p)
+
+    buttons = []
+    for g in galleries:
+        n = g['n']
+        title = episodes_by_n.get(n, {}).get('title', '')
+        is_default = n == default_n
+        btn_cls = 'video-select-btn ep-select-btn' + (' active' if is_default else '')
+        buttons.append(
+            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n)
+            + '" aria-pressed="' + ('true' if is_default else 'false') + '">'
+            + esc(n) + ' ' + esc(title) + '</button>'
+        )
+
+    return '<div class="episode-select-row" data-episode-select-row>' + ''.join(buttons) + '</div>'
+
+
+def render_episode_panels(root, p):
+    """Full-width episode panels for Misfits & Monsters — one per
+    episode, swapped by the selector buttons above (JS, no reload). Each
+    panel's stills are grouped into up to two justified-row flex groups
+    (desktop) — all 16:9 first, then the 4:3 ones (episode 2's news-
+    broadcast frames) in their own row group, capped by JS to the 16:9
+    rows' own width so they wrap sooner rather than running wider — or a
+    2-column grid (mobile), reusing the same .gm-cell/.gm-more/.gm-data
+    wiring and shared lightbox as every other gallery page, just with
+    its own collapse-on-episode-switch behavior layered on in main.js.
+    Episode titles/synopses are reused from the existing "episodes" list
+    by matching "n" — never duplicated here. Episodes with no folder yet
+    (1 and 8) still get a real, clickable panel — title, synopsis, and a
+    "Stills coming soon" note — rather than being disabled or hidden, so
+    the full 8-episode structure and every #ep-NN hash link works."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return ''
+    episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
+    manifest = load_misfits_manifest()
+    default_n = _episode_gallery_default(p)
+
+    panels = []
+    for g in galleries:
+        n = g['n']
+        folder = g.get('folder')
+        info = episodes_by_n.get(n, {})
+        title = info.get('title', '')
+        synopsis = info.get('synopsis', '')
+        has_images = bool(folder) and manifest.get(folder)
+        is_default = n == default_n
+
+        info_html = ('<div class="episode-info"><div class="ep-active-title">' + esc(n) + ' · ' + esc(title) + '</div>'
+                      + ('<p class="logline-text">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>')
+
+        if has_images:
+            # Group by shape — every 16:9 still first, then the 4:3 ones
+            # (episode 2's news-broadcast frames) together at the end —
+            # rather than interleaved in whatever order they were shot.
+            # Threshold of 1.5 cleanly separates 16:9 (1.78) from 4:3
+            # (1.33). Within each shape group, episodes in
+            # EPISODE_VISUAL_GROUP (episode 6) are further reordered by
+            # visual similarity instead of shot order (kept separate per
+            # group so a visually-reordered 4:3 still never ends up
+            # ahead of the 16:9 group).
+            raw_wide = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) > 1.5]
+            raw_narrow = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) <= 1.5]
+            if folder in EPISODE_VISUAL_GROUP:
+                if raw_wide:
+                    raw_wide = order_by_similar_look(folder, raw_wide)
+                if raw_narrow:
+                    raw_narrow = order_by_similar_look(folder, raw_narrow)
+            files = raw_wide + raw_narrow
+            items, wide_cells, narrow_cells = [], [], []
+            for i, f in enumerate(files):
+                url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
+                alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
+                ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
+                items.append({'url': url, 'alt': alt})
+                style = ' style="--ar: %.4f"' % ar
+                if i < EPISODE_FEATURED_COUNT:
+                    # Only the default/visible-on-load episode gets its
+                    # first couple of images eager — every other panel
+                    # (hidden until its selector button is clicked) stays
+                    # fully lazy even for its "featured" cells, since
+                    # nothing in it is on screen yet.
+                    inner = img(url, alt, lazy=(not is_default) or i > 1)
+                else:
+                    inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
+                hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
+                cell = ('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
+                (wide_cells if ar > 1.5 else narrow_cells).append(cell)
+
+            more_btn = ''
+            rest = len(files) - EPISODE_FEATURED_COUNT
+            if rest > 0:
+                more_label = 'Show more (' + str(rest) + ')'
+                more_btn = ('<button type="button" class="gm-more" data-gm-more aria-expanded="false" '
+                             'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
+                             + esc(more_label) + '</button>')
+
+            # Two separate flex-wrap rows, not one, so JS can cap the 4:3
+            # row's width to whatever the 16:9 row actually achieves —
+            # otherwise narrower 4:3 cells pack one extra per row and the
+            # row runs wider than the 16:9 rows above it (see main.js
+            # syncNarrowRowWidth). Only emitted if this episode actually
+            # has any of that shape.
+            rows_html = '<div class="ep-grid-row" data-ep-row-wide>' + ''.join(wide_cells) + '</div>'
+            if narrow_cells:
+                rows_html += '<div class="ep-grid-row" data-ep-row-narrow>' + ''.join(narrow_cells) + '</div>'
+            data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
+            gallery_html = ('<div class="ep-grid">' + rows_html + '</div>' + more_btn
+                             + '<script type="application/json" class="gm-data">' + data_json + '</script>')
+        else:
+            gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
+
+        panels.append(
+            '<div class="episode-panel" data-episode-panel="' + esc(n) + '"' + ('' if is_default else ' hidden') + '>'
+            + info_html + gallery_html + '</div>'
+        )
+
+    return ('<div class="episode-panels" data-episode-panels data-default-episode="' + esc(default_n or '') + '">'
+            + ''.join(panels) + '</div>')
 
 
 def page_rel(current_folder, target_href):
@@ -950,7 +1187,9 @@ def render_detail_page(p, current_folder):
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_player(p, aspect, root) or render_static_video_thumb(p, aspect, root)
+    center_html = (render_video_player(p, aspect, root)
+                   or render_static_video_thumb(p, aspect, root)
+                   or render_key_art(p, root, aspect))
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -967,25 +1206,31 @@ def render_detail_page(p, current_folder):
         body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
     body.append('</div>')
     if left_html or center_html or right_html:
+        # When there's no video (center_html empty — e.g. Misfits &
+        # Monsters has no VIDEOS entry), the right column must still
+        # land in the grid's 3rd (narrow) track explicitly — otherwise
+        # CSS grid auto-placement slides it into the unused 2nd (wide)
+        # track, leaving a blank gap where the video would have been
+        # instead of the page reading like every other film page just
+        # missing its video. A class (not inline style) so the existing
+        # <=1150px breakpoint, which collapses this column to full width
+        # on its own row, still wins on specificity+source order.
+        right_col_cls = 'detail-col-right' + ('' if center_html else ' detail-col-right--solo')
         body.append('<div class="detail-grid">')
         if left_html:
             body.append('<div class="detail-col-left"><div>' + left_html + '</div></div>')
         if center_html:
             body.append('<div class="detail-col-center">' + center_html + '</div>')
         if right_html:
-            body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
+            body.append('<div class="' + right_col_cls + '"><div>' + right_html + '</div></div>')
         body.append('</div>')  # /detail-grid
 
-    if dd['episodes']:
-        body.append('<div class="field-label">Episodes</div><div class="episodes-list">')
-        for ep in dd['episodes']:
-            body.append('<div class="episode-row"><div class="episode-n">' + esc(ep['n']) + '</div>'
-                         '<div class="episode-title">' + esc(ep['title']) + '</div>'
-                         '<div class="episode-synopsis">' + esc(ep['synopsis']) + '</div></div>')
-        body.append('</div>')
-
-    body.append(render_gallery(root, dd, p['title']))
-    body.append(render_gallery_mobile(root, dd, p['title']))
+    if p.get('episodeGalleries'):
+        body.append(render_episode_selector(p))
+        body.append(render_episode_panels(root, p))
+    else:
+        body.append(render_gallery(root, dd, p['title']))
+        body.append(render_gallery_mobile(root, dd, p['title']))
     body.append(render_video_block(p, 'second'))
     body.append('</div>')  # /detail-wrap
 

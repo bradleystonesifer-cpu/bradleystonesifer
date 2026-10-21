@@ -458,6 +458,12 @@ ul { margin: 0; padding: 0; }
 }
 .detail-col-left > div, .detail-col-right > div { width: 100%; }
 .detail-col-center { align-self: start; display: flex; flex-direction: column; min-width: 0; }
+/* No video (center_html empty, e.g. Misfits & Monsters): keep the right
+   column in its usual narrow 3rd track instead of grid auto-placement
+   sliding it into the wide 2nd (video) track. The <=1150px breakpoint
+   below still wins at narrower widths (same specificity, later in the
+   cascade), collapsing this back to a full-width row as normal. */
+.detail-col-right--solo { grid-column: 3; }
 
 .credit-groups { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0 0 28px; }
 .credit-group { padding: 16px 0; border-bottom: 1px solid var(--hair); }
@@ -477,6 +483,13 @@ ul { margin: 0; padding: 0; }
 .credit-val a, .credit-actors a { color: var(--ink); }
 
 .video-wrap { position: relative; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+
+/* Center-column fallback when a project has no trailer/clip to play
+   (render_key_art) — a plain hyperlinked key-art image, sized like the
+   video player it stands in for. */
+.key-art-link { position: relative; display: block; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+.key-art-link img { transition: opacity 0.2s; }
+.key-art-link:hover img { opacity: 0.85; }
 .video-wrap iframe {
   position: absolute;
   top: 0;
@@ -542,18 +555,6 @@ ul { margin: 0; padding: 0; }
   padding: 13px 20px;
   border-radius: 2px;
 }
-
-.episodes-list { display: grid; gap: 0; margin-bottom: 46px; border-top: 1px solid var(--hair); }
-.episode-row {
-  display: grid;
-  grid-template-columns: 48px 1fr 2fr;
-  gap: 20px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--hair);
-}
-.episode-n { font: 500 13px/1.4 'IBM Plex Mono', monospace; color: var(--accent); }
-.episode-title { font: 600 15px/1.4 'Inter', sans-serif; text-transform: uppercase; }
-.episode-synopsis { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); }
 
 .gallery-main {
   display: grid;
@@ -689,6 +690,56 @@ ul { margin: 0; padding: 0; }
 @media (max-width: 600px) {
   .gallery-main, .gallery-bottom { display: none; }
   .gallery-mobile { display: block; }
+}
+
+/* Episode selector (Misfits & Monsters only) — its own full-width row
+   directly below the detail-grid, aligned to the same edges as the
+   gallery below it. Reuses the .video-select-btn look. */
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 34px; }
+
+/* Episode panels — full width, below the selector row, matching every
+   other film page's gallery position/width exactly. Reuses .gm-cell/
+   .gm-more/.gm-lightbox wiring for each panel's grid — only the row's
+   own layout (justified flex rows on desktop, a 2-col grid on mobile)
+   and its show-more/less + episode-switch behavior are new. */
+.episode-panels { margin-top: 24px; }
+.episode-info { margin-bottom: 14px; }
+.ep-active-title {
+  font: 500 11px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.episode-info .logline-text { margin-bottom: 0; }
+.ep-coming-soon { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); font-style: italic; margin: 0; }
+
+/* Justified rows: a row height that scales continuously with the
+   viewport (clamp, not a breakpoint jump) + each cell's own --ar (from
+   the image's real w/h) gives the cell its correct width with zero
+   crop — no flex-grow, so a width is never stretched past its true
+   ratio (that would letterbox inside the cell) and the last, sparser
+   row stays left-aligned instead of being forced to fill the row.
+   max-width: 100% is only a safety clamp for a narrow viewport, not the
+   normal case.
+
+   The 16:9 and 4:3 stills are two separate flex-wrap rows (.ep-grid-row),
+   not one — narrower 4:3 cells otherwise pack one extra per row and
+   that row runs wider than the 16:9 rows above it. main.js measures the
+   16:9 row's actual achieved width and applies it as the 4:3 row's
+   max-width, so it wraps at that same boundary instead of the full
+   container width. */
+.ep-grid { display: flex; flex-direction: column; gap: 12px; }
+.ep-grid-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.ep-grid-row .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+.ep-grid-row .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
+
+@media (max-width: 600px) {
+  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+  .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
+  .episode-panels { margin-top: 20px; }
+  .ep-grid-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-width: none !important; }
+  .ep-grid-row .gm-cell { height: auto; width: auto; }
 }
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
@@ -841,6 +892,12 @@ ul { margin: 0; padding: 0; }
 
 @media (max-width: 700px) {
   .detail-grid { grid-template-columns: 1fr; }
+  /* Without this, .detail-col-right--solo's grid-column: 3 still applies
+     (this query only resets grid-template-columns, not an item's own
+     grid-column) and the grid implicitly creates extra columns to
+     satisfy it — right column renders beside the left one instead of
+     stacking below it. */
+  .detail-col-right--solo { grid-column: auto; }
 }
 
 @media (max-width: 900px) {

@@ -424,11 +424,30 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Left/Right Productions"},
             {"k": "Network", "v": "truTV (2018)"},
             {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
+            {"k": "Press — Robert Ham, Paste", "v": "“Telling eight individual tales was daunting enough, but Goldthwait and his team pushed themselves to give each episode its own distinctive look and feel.”",
+             "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
         "creditLine": "Cinematographer, 7 of 8 episodes",
-        "watchLabel": "Watch",
-        "watchUrl": "https://www.justwatch.com/us/tv-show/bobcat-goldthwaits-misfits-and-monsters",
+        # No Watch button on this page — removed per explicit instruction.
+        # Center-column fallback (no VIDEOS entry for this project) — the
+        # show's official key art, linked out to its truTV watch page.
+        "keyArtImage": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
+        "keyArtUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
+        # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
+        # ep-NN/, manifest.json for each still's real w/h — all 8 episodes
+        # now have a folder). Titles/synopses are reused from the "episodes"
+        # list above by matching "n" — not duplicated here.
+        "episodeGalleries": [
+            {"n": "01", "folder": "ep-01"},
+            {"n": "02", "folder": "ep-02"},
+            {"n": "03", "folder": "ep-03"},
+            {"n": "04", "folder": "ep-04"},
+            {"n": "05", "folder": "ep-05"},
+            {"n": "06", "folder": "ep-06"},
+            {"n": "07", "folder": "ep-07"},
+            {"n": "08", "folder": "ep-08"},
+        ],
     },
     "narrative-11": {  # Back in the Day
         "creditLine": "Cinematographer, Co-Producer",
