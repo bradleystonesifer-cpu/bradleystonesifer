@@ -306,7 +306,7 @@ OVERRIDES = {
     },
     "narrative-7": {  # Woman Child
         "overrideCredits": [
-            {"k": "Director", "v": "Emily Bloom"},
+            {"k": "Director", "v": "Emily Bloom", "href": "https://www.emily-bloom.com/"},
             {"k": "Writer", "v": "Emily Bloom"},
             {"k": "Producers", "v": "Jenna Cedicci, Charlie Fonville, Ben Windle"},
             {"k": "Production Company", "v": "Island Creek Pictures"},

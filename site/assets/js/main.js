@@ -150,18 +150,32 @@
   // still-unfetched cells, and tapping any cell opens a shared
   // full-screen lightbox with swipe/arrow navigation across every still
   // (including ones never revealed in the grid — those fetch on demand).
+  // The same lightbox is reused, unmodified, by the desktop click-to-
+  // enlarge wiring below (opt-in per project — see data-gm-index on
+  // .gallery-cell/.gallery-bottom-cell).
   var GM_BATCH = 16;
   var gmLightbox = null;
-  function gmOpenLightbox(items, index) {
+  var gmLastTrigger = null;
+  function gmPreload(url) {
+    if (!url) return;
+    var im = new Image();
+    im.src = url;
+  }
+  function gmOpenLightbox(items, index, triggerEl) {
     if (!items.length) return;
+    gmLastTrigger = triggerEl || document.activeElement;
     if (!gmLightbox) {
       gmLightbox = document.createElement('div');
       gmLightbox.className = 'gm-lightbox';
+      gmLightbox.setAttribute('role', 'dialog');
+      gmLightbox.setAttribute('aria-modal', 'true');
+      gmLightbox.setAttribute('aria-label', 'Image viewer');
       gmLightbox.innerHTML =
         '<button type="button" class="gm-lb-close" aria-label="Close">&times;</button>' +
         '<button type="button" class="gm-lb-prev" aria-label="Previous">&#8249;</button>' +
         '<img alt="">' +
-        '<button type="button" class="gm-lb-next" aria-label="Next">&#8250;</button>';
+        '<button type="button" class="gm-lb-next" aria-label="Next">&#8250;</button>' +
+        '<div class="gm-lb-counter" aria-hidden="true"></div>';
       document.body.appendChild(gmLightbox);
       gmLightbox.querySelector('.gm-lb-close').addEventListener('click', gmCloseLightbox);
       gmLightbox.addEventListener('click', function (e) {
@@ -170,7 +184,7 @@
       gmLightbox.querySelector('.gm-lb-prev').addEventListener('click', function () { gmStep(-1); });
       gmLightbox.querySelector('.gm-lb-next').addEventListener('click', function () { gmStep(1); });
       document.addEventListener('keydown', function (e) {
-        if (gmLightbox.style.display !== 'flex') return;
+        if (!gmLightbox.classList.contains('is-open')) return;
         if (e.key === 'Escape') gmCloseLightbox();
         if (e.key === 'ArrowLeft') gmStep(-1);
         if (e.key === 'ArrowRight') gmStep(1);
@@ -187,7 +201,7 @@
     gmLightbox.dataset.items = JSON.stringify(items);
     gmLightbox.dataset.index = index;
     gmRenderLightbox();
-    gmLightbox.style.display = 'flex';
+    gmLightbox.classList.add('is-open');
     document.body.style.overflow = 'hidden';
   }
   function gmRenderLightbox() {
@@ -197,6 +211,15 @@
     var img = gmLightbox.querySelector('img');
     img.src = item.url;
     img.alt = item.alt || '';
+    var counter = gmLightbox.querySelector('.gm-lb-counter');
+    if (counter) counter.textContent = (i + 1) + ' / ' + list.length;
+    gmLightbox.setAttribute('aria-label', (item.alt || 'Image') + ', ' + (i + 1) + ' of ' + list.length);
+    // Only the current image loads eagerly above; its neighbours are
+    // preloaded in the background so stepping to them is instant.
+    if (list.length > 1) {
+      gmPreload(list[(i + 1) % list.length].url);
+      gmPreload(list[(i - 1 + list.length) % list.length].url);
+    }
   }
   function gmStep(dir) {
     var list = JSON.parse(gmLightbox.dataset.items);
@@ -206,8 +229,12 @@
     gmRenderLightbox();
   }
   function gmCloseLightbox() {
-    if (gmLightbox) gmLightbox.style.display = 'none';
+    if (gmLightbox) gmLightbox.classList.remove('is-open');
     document.body.style.overflow = '';
+    if (gmLastTrigger && typeof gmLastTrigger.focus === 'function') {
+      gmLastTrigger.focus();
+    }
+    gmLastTrigger = null;
   }
 
   document.querySelectorAll('[data-gallery-mobile]').forEach(function (wrap) {
@@ -243,8 +270,36 @@
     cells.forEach(function (cell) {
       cell.addEventListener('click', function () {
         var idx = parseInt(cell.getAttribute('data-gm-index'), 10);
-        gmOpenLightbox(items, idx);
+        gmOpenLightbox(items, idx, cell);
       });
     });
   });
+
+  // Desktop click-to-enlarge (opt-in per project, see DESKTOP_LIGHTBOX_SLUGS
+  // in build.py): reuses the exact same lightbox + the page's one gm-data
+  // dataset (render_gallery_mobile), just triggered from the desktop
+  // gallery's own cells instead of the phone-width grid. data-gm-index is
+  // only present on a page's cells when enabled, so this is a no-op
+  // everywhere else.
+  var desktopGalleryCells = document.querySelectorAll('.gallery-cell[data-gm-index], .gallery-bottom-cell[data-gm-index]');
+  if (desktopGalleryCells.length) {
+    var dlDataEl = document.querySelector('.gm-data');
+    var dlItems = [];
+    if (dlDataEl) {
+      try { dlItems = JSON.parse(dlDataEl.textContent); } catch (e) {}
+    }
+    desktopGalleryCells.forEach(function (cell) {
+      function openDesktopLightbox() {
+        var idx = parseInt(cell.getAttribute('data-gm-index'), 10);
+        gmOpenLightbox(dlItems, idx, cell);
+      }
+      cell.addEventListener('click', openDesktopLightbox);
+      cell.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDesktopLightbox();
+        }
+      });
+    });
+  }
 })();

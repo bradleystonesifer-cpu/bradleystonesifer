@@ -204,6 +204,30 @@ def category_display_lists(all_projects):
     return groups
 
 
+def next_project_map(all_projects, groups):
+    """slug -> next project, in the same order its own category page lists
+    projects (films: the reordered `groups` lists; commercial: CATS' plain
+    order, matching render_commercial_page), wrapping from the last project
+    back to the first. comingSoon projects don't have a real page yet, so
+    they're skipped in the rotation rather than linked to as "next"."""
+    next_map = {}
+
+    def link_up(projects):
+        eligible = [p for p in projects if not p.get('comingSoon')]
+        n = len(eligible)
+        if n < 2:
+            return
+        for i, p in enumerate(eligible):
+            next_map[p['slug']] = eligible[(i + 1) % n]
+
+    for cat_key in ('narrative', 'documentary', 'music_video'):
+        link_up(groups[cat_key]['projects'])
+    commercial_cat = next(c for c in CATS if c['key'] == 'commercial')
+    link_up([all_projects['commercial-' + str(i)] for i in range(len(commercial_cat['projects']))])
+
+    return next_map
+
+
 def poster_tile_data(p):
     cs = bool(p.get('comingSoon'))
     # "poster" is the same kind of real-poster-file field as "posterImage"
@@ -257,6 +281,11 @@ def image_aspect_ratio(url, default):
 # ratio engine to avoid relayouting an already-finished page.
 GALLERY_NEW_LAYOUT_EXCLUDE = {'almost-kings'}
 
+# Desktop click-to-enlarge lightbox (reuses the mobile gm-lightbox JS/data) —
+# opt-in per project so every other page's desktop gallery stays exactly as
+# it was. Add a slug here to switch it on.
+DESKTOP_LIGHTBOX_SLUGS = {'woman-child'}
+
 
 def detail_data(p):
     title = p['title']
@@ -288,12 +317,20 @@ def detail_data(p):
         gallery_left = gallery[0:8:2]   # images 1,3,5,7
         gallery_right = gallery[1:8:2]  # images 2,4,6,8
         gallery_bottom = gallery[8:]
+        gallery_left_idx = list(range(0, 8, 2))
+        gallery_right_idx = list(range(1, 8, 2))
+        gallery_bottom_idx = list(range(8, len(gallery)))
     else:
         if len(gallery) > 3:
             gallery[1], gallery[3] = gallery[3], gallery[1]
         gallery_left = gallery[0:3]
         gallery_right = gallery[3:6]
         gallery_bottom = gallery[6:]
+        # gallery itself was just reordered above (not a fresh slice), so
+        # galleryFlat already reflects it — positions line up 1:1.
+        gallery_left_idx = list(range(0, 3))
+        gallery_right_idx = list(range(3, 6))
+        gallery_bottom_idx = list(range(6, len(gallery)))
 
     return {
         'creditGroups': group_credits(linked) if linked else [],
@@ -304,9 +341,16 @@ def detail_data(p):
         'galleryLeft': gallery_left,
         'galleryRight': gallery_right,
         'galleryBottom': gallery_bottom,
+        'galleryLeftIdx': gallery_left_idx,
+        'galleryRightIdx': gallery_right_idx,
+        'galleryBottomIdx': gallery_bottom_idx,
         'galleryAr': gallery_ar,
         'galleryPc': gallery_pc,
         'galleryFlat': gallery,
+        # One-line-switch desktop lightbox (see DESKTOP_LIGHTBOX_SLUGS) — the
+        # click-to-enlarge mobile lightbox, reused as-is, just triggered from
+        # the desktop gallery's own cells instead of the phone-width grid.
+        'desktopLightbox': p.get('slug') in DESKTOP_LIGHTBOX_SLUGS,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -660,11 +704,18 @@ def render_gallery(root, dd, title):
     # of a hardcoded '../' that breaks when the same path is reused
     # elsewhere (e.g. a COLLAGE_SPEC "gallery:N" homepage tile, which sits
     # at site root rather than inside /films/ or /commercial/).
-    def cell(item):
+    desktop_lb = dd.get('desktopLightbox')
+    # data-gm-index matches this still's position in galleryFlat, the same
+    # order the mobile gm-data JSON (render_gallery_mobile) uses — so the
+    # desktop click-to-enlarge wiring in main.js can reuse that one dataset
+    # instead of embedding a second copy.
+    lb_attrs = (lambda idx: ' data-gm-index="' + str(idx) + '" tabindex="0" role="button"') if desktop_lb else (lambda idx: '')
+
+    def cell(item, idx, cls):
         url, alt = _gallery_item(item, title)
-        return '<div class="gallery-cell">' + img(asset(root, url), alt) + '</div>'
-    left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
-    right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
+        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>'
+    left = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryLeft'], dd['galleryLeftIdx']) if _gallery_item(u, title)[0])
+    right = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryRight'], dd['galleryRightIdx']) if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
 
     # Native-aspect-ratio layout (8+ galleryImages, see detail_data()):
@@ -691,10 +742,10 @@ def render_gallery(root, dd, title):
     bottom = dd['galleryBottom']
     if bottom:
         out.append('<div class="gallery-bottom"' + bottom_style + '>')
-        for item in bottom:
+        for item, idx in zip(bottom, dd['galleryBottomIdx']):
             url, alt = _gallery_item(item, title)
             if url:
-                out.append('<div class="gallery-bottom-cell">' + img(asset(root, url), alt) + '</div>')
+                out.append('<div class="gallery-bottom-cell"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -750,6 +801,21 @@ def page_rel(current_folder, target_href):
     if target_href.startswith(prefix):
         return target_href[len(prefix):]
     return '../' + target_href
+
+
+def render_next_link(current_folder, next_p):
+    """Mirrors back-link's own markup/class (next-link is a visual
+    modifier, not a separate style) — .next-link-full/.next-link-short
+    swap at the same 700px breakpoint .detail-grid already stacks at."""
+    if not next_p:
+        return ''
+    href = page_rel(current_folder, next_p['href'])
+    return (
+        '<a class="back-link next-link" href="' + href + '">'
+        '<span class="next-link-full">Next: ' + esc(next_p['title']) + ' &#8594;</span>'
+        '<span class="next-link-short">Next &#8594;</span>'
+        '</a>'
+    )
 
 
 # ---------------------------------------------------------------- pages --
@@ -932,7 +998,7 @@ def render_commercial_page(all_projects):
                 inner_header(root), ''.join(body))
 
 
-def render_detail_page(p, current_folder):
+def render_detail_page(p, current_folder, next_map):
     root = '../'
     dd = detail_data(p)
     aspect = p.get('videoAspect', '16/9')
@@ -947,9 +1013,11 @@ def render_detail_page(p, current_folder):
         right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
     right_html = ''.join(right_parts)
 
+    nav_html = ('<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>'
+                + render_next_link(current_folder, next_map.get(p['slug'])))
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
-            '<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>',
+            '<div class="detail-head-nav">' + nav_html + '</div>',
             '<h1 class="detail-title">' + esc(p['title']) + '</h1>']
     if p.get('creditLine'):
         body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
@@ -993,7 +1061,7 @@ def render_detail_page(p, current_folder):
                 inner_header(root), ''.join(body), extra_head)
 
 
-def render_simple_detail_page(p, current_folder, video_only=False):
+def render_simple_detail_page(p, current_folder, next_map, video_only=False):
     """Music Video / Commercial detail pages: back link, title, a single
     full-width 16:9 video player, and a stills gallery — no credits sidebar."""
     root = '../'
@@ -1004,9 +1072,11 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     video_html = render_video_player(p, aspect, root)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
+    nav_html = ('<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>'
+                + render_next_link(current_folder, next_map.get(p['slug'])))
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
-            '<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>',
+            '<div class="detail-head-nav">' + nav_html + '</div>',
             '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
             '</div>']
     if video_html:
@@ -1158,6 +1228,7 @@ def main():
     all_projects = build_all()
     rewrite_upload_paths(all_projects)
     groups = category_display_lists(all_projects)
+    next_map = next_project_map(all_projects, groups)
 
     write('index.html', render_home(all_projects))
     write('about.html', render_about())
@@ -1170,11 +1241,11 @@ def main():
         for i in range(len(cat['projects'])):
             p = all_projects[cat['key'] + '-' + str(i)]
             if cat['key'] == 'music_video':
-                write(p['href'], render_simple_detail_page(p, folder))
+                write(p['href'], render_simple_detail_page(p, folder, next_map))
             elif cat['key'] == 'commercial':
-                write(p['href'], render_simple_detail_page(p, folder, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
+                write(p['href'], render_simple_detail_page(p, folder, next_map, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
             else:
-                write(p['href'], render_detail_page(p, folder))
+                write(p['href'], render_detail_page(p, folder, next_map))
 
     copy_assets()
     print('Built', 6 + len(all_projects), 'pages for', len(all_projects), 'projects.')
