@@ -389,7 +389,26 @@ OVERRIDES = {
         "watchUrl": "https://www.justwatch.com/us/movie/god-bless-america",
     },
     "narrative-9": {  # House of Ideas
-        "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
+        "comingSoon": True,
+        # Real still (with "Coming Soon" baked in, no CSS overlay needed)
+        # in place of the old uploads/house of Ideas.avif design-bundle
+        # export — see build.py's ASSET_RENAME (that mapping entry is
+        # removed, so the stale .avif is no longer regenerated). Used for
+        # the Scripted-page "coming soon" tile and the static (non-video)
+        # center-column image on this project's own page.
+        "comingSoonImage": "assets/images/house-of-ideas/house-of-ideas-video-thumb.jpg",
+        "staticVideoThumb": "assets/images/house-of-ideas/house-of-ideas-video-thumb.jpg",
+        "videoAspect": "2.42/1",
+        # 28 processed stills (site/assets/images/house-of-ideas/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/house-of-ideas/house-of-ideas-%02d.jpg" % i for i in range(1, 29)
+        ],
+        # Real stills in place of the recycled Canon-camera-test
+        # Squarespace placeholder frames (see narrative-8's own note).
+        "image": "assets/images/house-of-ideas/house-of-ideas-01.jpg",
+        "image2": "assets/images/house-of-ideas/house-of-ideas-02.jpg",
+        "image3": "assets/images/house-of-ideas/house-of-ideas-03.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Gabriel Hardman"},
             {"k": "Writers", "v": "Ian Brill, Gabriel Hardman"},
