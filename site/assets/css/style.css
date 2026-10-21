@@ -183,10 +183,18 @@ ul { margin: 0; padding: 0; }
 
 /* ============ home — collage ============ */
 .collage-outer { padding: clamp(10px, 1.4vw, 28px) var(--gutter); width: 100%; }
-.collage-grid {
+/* A repeating 3-row cycle (poster+2x16:9 / 2x2.40:1 / 3x16:9), each row
+   its own independent 12-column grid — rather than one shared dense grid
+   — so a row can reflow its own column count at narrower widths (e.g.
+   row 3's trio going 2+1 on tablet) without disturbing any other row. */
+.collage-rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.4vw, 28px);
+}
+.collage-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-flow: dense;
   gap: clamp(10px, 1.4vw, 28px);
 }
 .collage-tile {
@@ -968,6 +976,15 @@ ul { margin: 0; padding: 0; }
   .about-wrap { padding-left: clamp(10px, 5vw, 28px); padding-right: clamp(10px, 5vw, 28px); }
   .cat-title, .about-title { font-size: 34px; }
   .triptych-row { flex-direction: column; }
+
+  /* Home collage, row 3 (three 16:9 tiles at span 4 each): at tablet
+     width a third of the row is too narrow to read well. Drop to 2
+     columns and let the odd tile span the full row underneath — a clean
+     2+1 instead of three cramped slivers. Rows 1 and 2 (poster+2 / a
+     flush pair) still read fine at this width, so they're left alone. */
+  .collage-row--trio { grid-template-columns: repeat(2, 1fr); }
+  .collage-row--trio .collage-tile { grid-column: span 1 !important; }
+  .collage-row--trio .collage-tile:last-child { grid-column: 1 / -1 !important; }
 }
 
 @media (max-width: 600px) {
@@ -999,11 +1016,18 @@ ul { margin: 0; padding: 0; }
   }
   .nav-dropdown-inner a { padding: 13px 18px; }
 
-  /* Home collage: a clean 2-column grid (posters stay 1-col/tall; wide
-     16:9 and scope tiles span both columns instead of squeezing into a
-     half-width sliver). Doesn't touch the pool-based randomization —
+  /* Home collage: every row becomes a clean 2-column grid. The poster
+     (tall, 2:3) goes full width on its own line regardless of which side
+     of row 1 it sits on; everything else pairs up 2-up. Row 3's trio
+     reuses the tablet 2+1 rule (last tile full width) so it still has no
+     holes at 2 columns. Doesn't touch the pool-based randomization —
      that's all data-driven by main.js, independent of layout. */
-  .collage-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
-  .collage-tile { grid-column: span 1 !important; }
-  .collage-tile[data-pool] { grid-column: span 2 !important; }
+  .collage-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .collage-row .collage-tile { grid-column: span 1 !important; }
+  /* Higher specificity than ".collage-row .collage-tile" above (two
+     classes beats one) — needed because both rules carry !important, and
+     with equal !important, the more specific selector wins regardless of
+     source order. */
+  .collage-row .collage-tile--poster { grid-column: 1 / -1 !important; }
+  .collage-row--trio .collage-tile:last-child { grid-column: 1 / -1 !important; }
 }

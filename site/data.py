@@ -570,67 +570,73 @@ POSTERS = {
 }
 
 # Home-page collage: (project key, image slot, aspect ratio, column span).
-# Three kinds of entry, each a whole-number-of-12-columns row on its own
-# (so no row ever needs cross-ratio height-matching — every tile in a row
-# shares the same ratio and span, which is what keeps it flush at every
-# viewport width):
-#   - "poster": a project's own fixed poster, never randomized. All 6 of
-#     the site's poster tiles share one row (6 x span 2 = 12).
+# A repeating 3-row cycle (4 cycles x 8 tiles = 32), each row a whole
+# 12-column row on its own (every tile in a row shares the same ratio/span,
+# which is what keeps it flush at every viewport width). render_home()
+# chunks this flat list back into cycles of 8 and groups each cycle's
+# tiles into its 3 rows purely by position (0-2 / 3-4 / 5-7) — the poster
+# sits first or last within its row (alternating L/R/L/R by cycle) but
+# that doesn't change which 3 entries belong to row 1.
+#   Row 1 — poster (span 2) + two 16:9 tiles (span 5 + 5).
+#   Row 2 — two scripted-only 2.40:1 tiles (span 6 + 6, native aspect,
+#            no cropping — scripted stills are shot ~2.4:1).
+#   Row 3 — three 16:9 tiles (span 4 + 4 + 4).
+#
+# Three kinds of entry:
+#   - "poster": a project's own fixed poster, never randomized. 4 total,
+#     one per cycle — Misfits & Monsters plus the 3 strongest others
+#     (The Vicious Kind, Hit & Run, Call Me Lucky).
 #   - ("scripted", "scripted", ...): a generic scripted-pool slot — `key`
 #     is an unused placeholder (collage_tile_type()/render_home() never
 #     look a non-poster entry's project up by key, only by its pool), so
 #     the real image always comes from build_collage_pools()'s shared
-#     "scripted" pool (every narrative gallery + Misfits' episode stills)
-#     rather than any one project. Scripted stills are shot ~2.4:1, so
-#     every scripted row is a flush pair of 2.40/1 tiles (span 6 + 6) —
-#     no cropping, no letterbox bars.
-#   - a real (key, slot) pair at 16/9 or 2.40/1: one of the 10 vetted
-#     non-scripted stills (4 commercial, 4 documentary, 2 music video),
-#     grouped into two 16:9 triples (span 4+4+4) and two 2.40/1 pairs
-#     (span 6+6, cover-cropped — fine for a still that isn't natively
-#     that shape, same as every non-scripted tile already is today).
+#     "scripted" pool (every narrative gallery + Misfits' episode stills).
+#   - a real (key, slot) pair at 16/9: one of the 10 vetted non-scripted
+#     stills (4 commercial, 4 documentary, 2 music video). 2.40:1 slots
+#     (row 2) are scripted-only, so every non-scripted tile lives in a
+#     row-1 or row-3 16:9 slot, spread across all 4 cycles with at least
+#     one scripted tile left in every 16:9 row (never a fully non-scripted
+#     16:9 row). None of the 10 share a title with any of the 4 posters.
 COLLAGE_SPEC = [
-    # Posters — unchanged from before, just grouped into their own row.
+    # --- Cycle 1 (poster left: The Vicious Kind) ---
     ("narrative-0", "poster", "2/3", 2),
-    ("narrative-1", "poster", "2/3", 2),
-    ("documentary-0", "poster", "2/3", 2),
-    ("narrative-10", "poster", "2/3", 2),
-    ("documentary-3", "poster", "2/3", 2),
-    ("documentary-2", "poster", "2/3", 2),
-
-    # Non-scripted — 4 commercial / 4 documentary / 2 music video, the
-    # strongest of the images already vetted in the old COLLAGE_SPEC.
-    # Documentary picks deliberately avoid documentary-0/2/3 (Kiss the
-    # Future / Fire on the Hill / Call Me Lucky) — those are 3 of the 6
-    # poster tiles above, and since the poster row sits immediately next
-    # to this one in document order, reusing one of them here let the
-    # fixed poster and the random tile right after it occasionally roll
-    # the same title (no two adjacent tiles from the same film is a hard
-    # rule the randomizer can't enforce against a poster it never sees).
-    ("commercial-2", "image", "16/9", 4),
+    ("commercial-2", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
     ("documentary-1", "image", "16/9", 4),
-    ("music_video-1", "image", "16/9", 4),
-    ("commercial-10", "image", "16/9", 4),
-    ("documentary-4", "image", "16/9", 4),
-    ("documentary-5", "image", "16/9", 4),
-    ("commercial-17", "image", "2.40/1", 6),
-    ("commercial-21", "image", "2.40/1", 6),
-    ("documentary-6", "image", "2.40/1", 6),
-    ("music_video-0", "image", "2.40/1", 6),
+    ("music_video-0", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
 
-    # Scripted — the majority of the grid. 12 rows of 2 (24 tiles).
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6), ("scripted", "scripted", "2.40/1", 6),
+    # --- Cycle 2 (poster right: Hit & Run) ---
+    ("documentary-4", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("narrative-1", "poster", "2/3", 2),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("commercial-10", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+
+    # --- Cycle 3 (poster left: Misfits & Monsters) ---
+    ("narrative-10", "poster", "2/3", 2),
+    ("music_video-1", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("documentary-5", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+    ("commercial-17", "image", "16/9", 4),
+
+    # --- Cycle 4 (poster right: Call Me Lucky) ---
+    ("commercial-21", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("documentary-3", "poster", "2/3", 2),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "16/9", 4),
+    ("documentary-6", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).

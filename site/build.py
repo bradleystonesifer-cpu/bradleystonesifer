@@ -390,12 +390,13 @@ def collage_tile_type(key, slot, ratio):
     `key` is an unused placeholder (never looked up: the real image
     always comes from the shared "scripted" pool in build_collage_pools,
     not any one project) — everything else is a vetted non-scripted
-    still, routed by shape to the matching pool."""
+    still. The repeating 3-row layout keeps 2.40:1 slots scripted-only
+    (native aspect, no cropping), so every other entry is 16:9."""
     if slot == 'poster':
         return 'poster'
     if slot == 'scripted':
         return 'scripted'
-    return '16x9' if ratio == '16/9' else 'scope'
+    return '16x9'
 
 
 def _scripted_still(url, href, title):
@@ -416,9 +417,10 @@ def build_collage_pools(all_projects):
     server-rendered default tile, and duplicated SCRIPTED_FEATURED_WEIGHT
     times in the pool handed to the client-side randomizer.
 
-    Non-scripted pools: the (key, slot) pairs COLLAGE_SPEC uses at that
-    ratio — the only non-scripted images anyone has actually vetted at
-    that shape (Squarespace URLs can't be dimension-checked locally)."""
+    Non-scripted pool (16:9 only — 2.40:1 is scripted-only in the repeating
+    row layout): the (key, slot) pairs COLLAGE_SPEC uses at that shape —
+    the only non-scripted images anyone has actually vetted at that shape
+    (Squarespace URLs can't be dimension-checked locally)."""
     scripted_all = []
     scripted_featured = []
 
@@ -474,11 +476,10 @@ def build_collage_pools(all_projects):
     scripted_weighted = scripted_all + scripted_featured * (SCRIPTED_FEATURED_WEIGHT - 1)
 
     non_scripted_16x9 = []
-    non_scripted_scope = []
     seen = set()
     for key, slot, ratio, _span in COLLAGE_SPEC:
         ttype = collage_tile_type(key, slot, ratio)
-        if ttype not in ('16x9', 'scope') or key.startswith('narrative-'):
+        if ttype != '16x9' or key.startswith('narrative-'):
             continue
         if (key, slot) in seen:
             continue
@@ -487,10 +488,9 @@ def build_collage_pools(all_projects):
         url = slot_url(all_projects, key, slot)
         if not url:
             continue
-        item = _scripted_still(url, p['href'], p['title'])
-        (non_scripted_16x9 if ttype == '16x9' else non_scripted_scope).append(item)
+        non_scripted_16x9.append(_scripted_still(url, p['href'], p['title']))
 
-    pools = {'scripted': scripted_weighted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
+    pools = {'scripted': scripted_weighted, '16x9': non_scripted_16x9}
     return pools, scripted_featured
 
 
@@ -1126,13 +1126,18 @@ def render_next_link(current_folder, next_p):
 # ---------------------------------------------------------------- pages --
 
 def render_collage_tile(current_folder, item):
-    """Fixed tile — posters only; never randomized."""
+    """Fixed tile — posters only; never randomized. collage-tile--poster
+    lets the randomizer (adjacency/consecutive-row rules) and the phone
+    layout (forced full-width) both target the poster tile directly,
+    regardless of which side of its row it sits on."""
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
+    title = esc(item['title'])
     return (
-        '<a class="collage-tile" href="' + href + '" style="' + style + '" draggable="false">'
+        '<a class="collage-tile collage-tile--poster" href="' + href + '" style="' + style
+        + '" data-title="' + title + '" draggable="false">'
         + img(item['url'], item['title']) +
-        '<div class="collage-scrim"><span>' + esc(item['title']) + '</span></div>'
+        '<div class="collage-scrim"><span>' + title + '</span></div>'
         '</a>'
     )
 
@@ -1141,18 +1146,26 @@ def render_random_collage_tile(default_item, ratio, span, pool_key):
     """Randomizable tile — server renders a deterministic default (real
     href, no img src) plus a <noscript> fallback image, so the page works
     and links correctly with JS off or for crawlers. main.js replaces the
-    src/href/alt on load from the matching pool, picking something new on
-    every page view."""
+    src/href/alt/data-title on load from the matching pool, picking
+    something new on every page view, subject to its row-aware rules."""
     style = 'grid-column: span ' + str(span) + '; aspect-ratio: ' + ratio + ';'
     alt = esc(default_item['title'])
     return (
         '<a class="collage-tile" href="' + esc(default_item['href']) + '" data-pool="' + pool_key
-        + '" style="' + style + '" draggable="false">'
+        + '" data-title="' + alt + '" style="' + style + '" draggable="false">'
         '<img alt="' + alt + '" decoding="async" draggable="false">'
         '<noscript>' + img(default_item['url'], default_item['title']) + '</noscript>'
         '<div class="collage-scrim"><span>' + alt + '</span></div>'
         '</a>'
     )
+
+
+# One row-wrapper div per 3/2/3-tile group; cycled over COLLAGE_SPEC's
+# flat 32-entry list purely by position (which 3 entries make up a row
+# never changes even though the poster can sit first or last within its
+# own row's 3 — see the COLLAGE_SPEC comment in data.py).
+COLLAGE_ROW_SIZES = [3, 2, 3]
+COLLAGE_ROW_CLASSES = ['collage-row--mixed', 'collage-row--pair', 'collage-row--trio']
 
 
 def render_home(all_projects):
@@ -1162,7 +1175,7 @@ def render_home(all_projects):
     # the client randomizes from (pools['scripted'], which deliberately
     # over-represents featured stills but still includes the rest).
     default_pools = dict(pools, scripted=scripted_featured)
-    counters = {'scripted': 0, '16x9': 0, 'scope': 0}
+    counters = {'scripted': 0, '16x9': 0}
     tiles = []
     for key, slot, ratio, span in COLLAGE_SPEC:
         ttype = collage_tile_type(key, slot, ratio)
@@ -1181,6 +1194,16 @@ def render_home(all_projects):
             default_item = {'url': '', 'href': '#', 'title': ''}
         tiles.append(render_random_collage_tile(default_item, ratio, span, pool_key))
 
+    rows = []
+    i = 0
+    r = 0
+    while i < len(tiles):
+        size = COLLAGE_ROW_SIZES[r % 3]
+        cls = COLLAGE_ROW_CLASSES[r % 3]
+        rows.append('<div class="collage-row ' + cls + '">' + ''.join(tiles[i:i + size]) + '</div>')
+        i += size
+        r += 1
+
     # Escaped so a stray "</script>" inside any title/url can't prematurely
     # close the data block.
     pools_json = json.dumps(pools, separators=(',', ':')).replace('</', '<\\/')
@@ -1190,29 +1213,81 @@ def render_home(all_projects):
         'var data=document.getElementById("collage-pools");'
         'if(!data)return;'
         'var pools;try{pools=JSON.parse(data.textContent);}catch(e){return;}'
-        'var tiles=document.querySelectorAll(".collage-tile[data-pool]");'
+        'var rows=Array.prototype.slice.call(document.querySelectorAll(".collage-row"));'
         'var used={};Object.keys(pools).forEach(function(k){used[k]=[];});'
-        'var lastTitle=null;'
-        'tiles.forEach(function(tile,i){'
+        'var titleCounts={};'
+        # Seeded from the fixed poster tiles only — their appearances are
+        # permanent, so the random pool's "max 3 total" cap has to count
+        # them from the start, before any tile has been swapped.
+        'document.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
+        'var title=t.getAttribute("data-title");'
+        'if(title)titleCounts[title]=(titleCounts[title]||0)+1;'
+        '});'
+        # Each row's poster title(s), read up front — a poster never
+        # changes, so this is known before any random tile is picked.
+        # That lets a row being picked *before* a poster row avoid that
+        # poster's title too (a plain previous-row check alone can only
+        # look backward, so without this a poster could still land right
+        # after a random tile from its own film in the row before it).
+        'var rowPosterTitles=rows.map(function(row){'
+        'var titles=[];'
+        'row.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
+        'var pt=t.getAttribute("data-title");if(pt)titles.push(pt);'
+        '});'
+        'return titles;'
+        '});'
+        'var prevRowTitles=[];'
+        'rows.forEach(function(row,rowIdx){'
+        'var curRowTitles=[];'
+        'var nextPosterTitles=rowPosterTitles[rowIdx+1]||[];'
+        # This row's own poster title(s) — blocked for every random tile
+        # in the row regardless of processing order, since a poster-right
+        # cycle puts the poster *last* in the row (curRowTitles alone,
+        # built up as tiles are processed left to right, wouldn't yet
+        # include it when picking the tile right before it).
+        'var ownPosterTitles=rowPosterTitles[rowIdx];'
+        'var cells=row.querySelectorAll(".collage-tile");'
+        'cells.forEach(function(tile,posInRow){'
+        'if(!tile.hasAttribute("data-pool")){'
+        # Fixed poster: just record its title (already captured in
+        # rowPosterTitles, but curRowTitles needs it too so a random tile
+        # later in *this same* row also avoids it).
+        'var pt=tile.getAttribute("data-title");'
+        'if(pt)curRowTitles.push(pt);'
+        'return;'
+        '}'
         'var key=tile.getAttribute("data-pool");'
         'var pool=pools[key];'
         'if(!pool||!pool.length)return;'
         'var avail=pool.filter(function(it){return used[key].indexOf(it.url)===-1;});'
         'if(!avail.length){used[key]=[];avail=pool;}'
-        'var preferred=avail.filter(function(it){return it.title!==lastTitle;});'
-        'var choices=preferred.length?preferred:avail;'
+        'var blocked={};'
+        'prevRowTitles.forEach(function(t){blocked[t]=true;});'
+        'nextPosterTitles.forEach(function(t){blocked[t]=true;});'
+        'ownPosterTitles.forEach(function(t){blocked[t]=true;});'
+        'curRowTitles.forEach(function(t){blocked[t]=true;});'
+        'var choices=avail.filter(function(it){'
+        'return !blocked[it.title]&&(titleCounts[it.title]||0)<3;'
+        '});'
+        'if(!choices.length)choices=avail.filter(function(it){return !blocked[it.title];});'
+        'if(!choices.length)choices=avail;'
         'var item=choices[Math.floor(Math.random()*choices.length)];'
-        'used[key].push(item.url);lastTitle=item.title;'
+        'used[key].push(item.url);'
+        'titleCounts[item.title]=(titleCounts[item.title]||0)+1;'
+        'curRowTitles.push(item.title);'
         'var img=tile.querySelector("img");'
-        'if(img){img.src=item.url;img.alt=item.title;if(i>3)img.loading="lazy";}'
+        'if(img){img.src=item.url;img.alt=item.title;if(posInRow>1||used[key].length>1)img.loading="lazy";}'
         'tile.href=item.href;'
+        'tile.setAttribute("data-title",item.title);'
         'var scrim=tile.querySelector(".collage-scrim span");'
         'if(scrim)scrim.textContent=item.title;'
+        '});'
+        'prevRowTitles=curRowTitles;'
         '});'
         '})();</script>'
     )
     body = (
-        '<div class="collage-outer"><div class="collage-grid">' + ''.join(tiles) + '</div></div>'
+        '<div class="collage-outer"><div class="collage-rows">' + ''.join(rows) + '</div></div>'
         '<script type="application/json" id="collage-pools">' + pools_json + '</script>'
         + collage_script +
         '<div class="home-intro">'
