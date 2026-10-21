@@ -331,8 +331,12 @@ OVERRIDES = {
         "image": "assets/images/woman-child/woman-child-01.jpg",
         "image2": "assets/images/woman-child/woman-child-02.jpg",
         "image3": "assets/images/woman-child/woman-child-03.jpg",
+        # Vimeo 239052675 is itself a 16:9 file (oEmbed reports 640x360)
+        # with the 2.4:1 picture letterboxed inside it — no videoAspect
+        # override, so the player/thumbnail box matches that native 16:9
+        # shape instead of forcing a 2.4:1 wrapper that made Vimeo's own
+        # player pillarbox the 16:9 embed down to ~74% size inside it.
         "videoEmbed": "https://player.vimeo.com/video/239052675",
-        "videoAspect": "2.4/1",
         "watchLabel": "Watch",
         "watchUrl": "https://vimeo.com/239052675",
     },
