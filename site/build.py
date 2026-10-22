@@ -377,89 +377,85 @@ def slot_url(all_projects, key, slot):
 
 SCRIPTED_POOL_MIN_GALLERY = 8    # narrative projects need this many galleryImages to join the pool
 SCRIPTED_POOL_MIN_WIDTH = 1500   # skip frames narrower than this (low-res / 2.35 reel scans)
-SCRIPTED_FEATURED_COUNT = 8      # each gallery's/episode's own first N stills are its "featured" selects
-SCRIPTED_FEATURED_WEIGHT = 3     # featured stills are duplicated this many times in the client-side
-                                  # random pool, so they're drawn ~3x as often as the rest — plain pool
-                                  # composition, no extra JS logic needed (the existing per-url dedup
-                                  # already treats every duplicate copy of a still as the same image)
+
+# Every non-poster COLLAGE_SPEC entry is one of these — matches the pool
+# key build_collage_pools() returns it under.
+COLLAGE_TYPES = ('scripted', 'commercial', 'documentary', 'music_video')
+# When a slot's own type has no unused project left, try the other types
+# in this fixed order (skipping the slot's own type, already tried).
+COLLAGE_FALLBACK_ORDER = ('scripted', 'commercial', 'documentary', 'music_video')
 
 
-def collage_tile_type(key, slot, ratio):
-    """Classify a COLLAGE_SPEC entry for rendering: posters are fixed and
-    unchanged; slot == "scripted" is a generic scripted-pool slot — its
-    `key` is an unused placeholder (never looked up: the real image
-    always comes from the shared "scripted" pool in build_collage_pools,
-    not any one project) — everything else is a vetted non-scripted
-    still. The repeating 3-row layout keeps 2.40:1 slots scripted-only
-    (native aspect, no cropping), so every other entry is 16:9."""
-    if slot == 'poster':
-        return 'poster'
-    if slot == 'scripted':
-        return 'scripted'
-    return '16x9'
-
-
-def _scripted_still(url, href, title):
-    return {'url': url, 'href': href, 'title': title}
+def collage_poster_keys():
+    """The project keys COLLAGE_SPEC uses as fixed posters. Every one of
+    the 32 collage tiles is a distinct project — a poster tile already
+    *is* that project, so its key is excluded from every pool below
+    (never drawn again as a random still elsewhere on the page). Misfits
+    & Monsters is the one exception: when its own series key is a poster,
+    its *episodes* are still pool-eligible, since the spec treats each
+    episode as its own project separate from the series poster — that
+    works for free here because each episode gets its own synthetic key
+    (see build_collage_pools), never the series key itself."""
+    return {key for ttype, key, _ratio, _span in COLLAGE_SPEC if ttype == 'poster'}
 
 
 def build_collage_pools(all_projects):
-    """Pools for the randomized homepage collage, keyed by tile type.
+    """Pools for the randomized homepage collage, keyed by COLLAGE_TYPES —
+    one entry per *project* (not per still), each carrying every still of
+    its own worth picking from. Every tile on the page lands on a
+    distinct project; main.js's randomizer picks the project per slot
+    (without replacement, with COLLAGE_FALLBACK_ORDER as backup) and then
+    one random image from that project's own list.
 
-    Scripted pool: every gallery image (real width >= 1500px) from every
-    narrative project with 8+ galleryImages — automatic, so a film that
-    gets a gallery later joins with no spec edit — plus Misfits &
-    Monsters' per-episode stills (its gallery is one folder per episode,
-    not a flat galleryImages list, so it's a one-off addition rather
-    than covered by that same automatic rule). Each project's (or each
-    Misfits episode's) own first SCRIPTED_FEATURED_COUNT stills are
-    "featured": returned separately (second return value) for the
-    server-rendered default tile, and duplicated SCRIPTED_FEATURED_WEIGHT
-    times in the pool handed to the client-side randomizer.
+    scripted: every narrative project with 8+ galleryImages (real width
+    >= 1500px) — automatic, so a film that gets a gallery later joins
+    with no spec edit — plus Misfits & Monsters' per-episode stills, each
+    episode its own pool entry (its gallery is one folder per episode,
+    not a flat galleryImages list) keyed "<project key>:ep:<folder>" so
+    two tiles can never land on the same episode. A non-Misfits narrative
+    project used as a COLLAGE_SPEC poster is excluded entirely (see
+    collage_poster_keys()).
 
-    Non-scripted pool (16:9 only — 2.40:1 is scripted-only in the repeating
-    row layout): the (key, slot) pairs COLLAGE_SPEC uses at that shape —
-    the only non-scripted images anyone has actually vetted at that shape
-    (Squarespace URLs can't be dimension-checked locally)."""
-    scripted_all = []
-    scripted_featured = []
-
-    def add_scripted(url, href, title, featured):
-        entry = _scripted_still(url, href, title)
-        scripted_all.append(entry)
-        if featured:
-            scripted_featured.append(entry)
+    commercial / documentary / music_video: every project in that
+    category (excluding one used as a poster), each contributing its own
+    image/image2/image3 — every project in these categories already
+    carries 2-3 of them for its own triptych listing, so there's nothing
+    further to vet the way the old hand-picked list required."""
+    poster_keys = collage_poster_keys()
+    pools = {t: [] for t in COLLAGE_TYPES}
 
     for key, p in all_projects.items():
         if not key.startswith('narrative-'):
             continue
+        if key not in poster_keys:
+            gallery = p.get('galleryImages') or []
+            if len(gallery) >= SCRIPTED_POOL_MIN_GALLERY:
+                images = []
+                for item in gallery:
+                    url = item[0] if isinstance(item, tuple) else item
+                    path = local_image_path(url)
+                    if not path:
+                        continue
+                    try:
+                        from PIL import Image
+                        with Image.open(path) as im:
+                            w = im.size[0]
+                    except Exception:
+                        continue
+                    if w < SCRIPTED_POOL_MIN_WIDTH:
+                        continue
+                    images.append(url)
+                if images:
+                    pools['scripted'].append({'key': key, 'title': p['title'], 'href': p['href'], 'images': images})
 
-        gallery = p.get('galleryImages') or []
-        if len(gallery) >= SCRIPTED_POOL_MIN_GALLERY:
-            for i, item in enumerate(gallery):
-                url = item[0] if isinstance(item, tuple) else item
-                path = local_image_path(url)
-                if not path:
-                    continue
-                try:
-                    from PIL import Image
-                    with Image.open(path) as im:
-                        w = im.size[0]
-                except Exception:
-                    continue
-                if w < SCRIPTED_POOL_MIN_WIDTH:
-                    continue
-                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
-
+        # Episodes are pool-eligible even when the series itself (`key`)
+        # is a poster — see collage_poster_keys()'s docstring.
+        episodes_by_n = {e['n']: e['title'] for e in (p.get('episodes') or [])}
         for eg in (p.get('episodeGalleries') or []):
             folder = eg.get('folder')
             files = load_misfits_manifest().get(folder) or []
             if not files:
                 continue
-            # Same shape-then-visual-similarity order the episode's own
-            # page uses (render_episode_panels) — so "featured" means the
-            # same 8 stills in both places, and each episode's own first
-            # 8 (not the project's) count as its featured selects.
             wide = [f for f in files if (f['w'] / f['h']) > 1.5]
             narrow = [f for f in files if (f['w'] / f['h']) <= 1.5]
             if folder in EPISODE_VISUAL_GROUP:
@@ -467,31 +463,25 @@ def build_collage_pools(all_projects):
                     wide = order_by_similar_look(folder, wide)
                 if narrow:
                     narrow = order_by_similar_look(folder, narrow)
-            for i, f in enumerate(wide + narrow):
-                if f['w'] < SCRIPTED_POOL_MIN_WIDTH:
-                    continue
-                url = 'assets/images/misfits-and-monsters/' + folder + '/' + f['file']
-                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
+            images = ['assets/images/misfits-and-monsters/' + folder + '/' + f['file']
+                      for f in (wide + narrow) if f['w'] >= SCRIPTED_POOL_MIN_WIDTH]
+            if images:
+                ep_title = p['title'] + ' — ' + episodes_by_n.get(eg.get('n'), folder)
+                pools['scripted'].append({'key': key + ':ep:' + folder, 'title': ep_title,
+                                           'href': p['href'], 'images': images})
 
-    scripted_weighted = scripted_all + scripted_featured * (SCRIPTED_FEATURED_WEIGHT - 1)
+    for cat_key in ('commercial', 'documentary', 'music_video'):
+        cat = next(c for c in CATS if c['key'] == cat_key)
+        for i in range(len(cat['projects'])):
+            key = cat_key + '-' + str(i)
+            if key in poster_keys:
+                continue
+            p = all_projects[key]
+            images = [u for u in (p.get('image'), p.get('image2'), p.get('image3')) if u]
+            if images:
+                pools[cat_key].append({'key': key, 'title': p['title'], 'href': p['href'], 'images': images})
 
-    non_scripted_16x9 = []
-    seen = set()
-    for key, slot, ratio, _span in COLLAGE_SPEC:
-        ttype = collage_tile_type(key, slot, ratio)
-        if ttype != '16x9' or key.startswith('narrative-'):
-            continue
-        if (key, slot) in seen:
-            continue
-        seen.add((key, slot))
-        p = all_projects[key]
-        url = slot_url(all_projects, key, slot)
-        if not url:
-            continue
-        non_scripted_16x9.append(_scripted_still(url, p['href'], p['title']))
-
-    pools = {'scripted': scripted_weighted, '16x9': non_scripted_16x9}
-    return pools, scripted_featured
+    return pools
 
 
 # ------------------------------------------------------------------ head --
@@ -1128,34 +1118,36 @@ def render_next_link(current_folder, next_p):
 
 def render_collage_tile(current_folder, item):
     """Fixed tile — posters only; never randomized. collage-tile--poster
-    lets the randomizer (adjacency/consecutive-row rules) and the phone
-    layout (forced full-width) both target the poster tile directly,
-    regardless of which side of its row it sits on."""
+    lets main.js's dedup pass and the phone layout (forced full-width)
+    both target the poster tile directly, regardless of which side of
+    its row it sits on. data-key seeds the project-level dedup set so a
+    poster's own film is never also drawn as a random tile elsewhere."""
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
     title = esc(item['title'])
     return (
         '<a class="collage-tile collage-tile--poster" href="' + href + '" style="' + style
-        + '" data-title="' + title + '" draggable="false">'
+        + '" data-key="' + esc(item['key']) + '" draggable="false">'
         + img(item['url'], item['title']) +
         '<div class="collage-scrim"><span>' + title + '</span></div>'
         '</a>'
     )
 
 
-def render_random_collage_tile(default_item, ratio, span, pool_key):
-    """Randomizable tile — server renders a deterministic default (real
-    href, no img src) plus a <noscript> fallback image, so the page works
-    and links correctly with JS off or for crawlers. main.js replaces the
-    src/href/alt/data-title on load from the matching pool, picking
-    something new on every page view, subject to its row-aware rules."""
+def render_random_collage_tile(default_project, default_url, ratio, span, ttype):
+    """Randomizable tile — server renders a deterministic default project
+    (real href, no img src) plus a <noscript> fallback image, so the page
+    works and links correctly with JS off or for crawlers. main.js
+    replaces the src/href/alt/data-key on load, picking a different
+    *project* (never one already used elsewhere on the page — see
+    build_collage_pools()) and a random image from that project."""
     style = 'grid-column: span ' + str(span) + '; aspect-ratio: ' + ratio + ';'
-    alt = esc(default_item['title'])
+    alt = esc(default_project['title'])
     return (
-        '<a class="collage-tile" href="' + esc(default_item['href']) + '" data-pool="' + pool_key
-        + '" data-title="' + alt + '" style="' + style + '" draggable="false">'
+        '<a class="collage-tile" href="' + esc(default_project['href']) + '" data-pool="' + ttype
+        + '" data-key="' + esc(default_project['key']) + '" style="' + style + '" draggable="false">'
         '<img alt="' + alt + '" decoding="async" draggable="false">'
-        '<noscript>' + img(default_item['url'], default_item['title']) + '</noscript>'
+        '<noscript>' + img(default_url, default_project['title']) + '</noscript>'
         '<div class="collage-scrim"><span>' + alt + '</span></div>'
         '</a>'
     )
@@ -1169,31 +1161,37 @@ COLLAGE_ROW_SIZES = [3, 2, 3]
 COLLAGE_ROW_CLASSES = ['collage-row--mixed', 'collage-row--pair', 'collage-row--trio']
 
 
+def _collage_pick_project(pools, ttype, used_keys):
+    """First unused project for `ttype`, falling back through
+    COLLAGE_FALLBACK_ORDER (skipping `ttype`, already tried) if that
+    pool has nothing left — used for the deterministic server-rendered
+    default; main.js runs the same try-own-type-then-fallback shape but
+    picks randomly among what's left instead of the first match."""
+    for t in (ttype,) + tuple(t for t in COLLAGE_FALLBACK_ORDER if t != ttype):
+        for proj in pools.get(t, ()):
+            if proj['key'] not in used_keys:
+                return proj
+    return None
+
+
 def render_home(all_projects):
-    pools, scripted_featured = build_collage_pools(all_projects)
-    # The server-rendered (no-JS / first-paint) default must be a featured
-    # still specifically — scripted_featured, not the full weighted pool
-    # the client randomizes from (pools['scripted'], which deliberately
-    # over-represents featured stills but still includes the rest).
-    default_pools = dict(pools, scripted=scripted_featured)
-    counters = {'scripted': 0, '16x9': 0}
+    pools = build_collage_pools(all_projects)
+    used_keys = set(collage_poster_keys())
     tiles = []
-    for key, slot, ratio, span in COLLAGE_SPEC:
-        ttype = collage_tile_type(key, slot, ratio)
+    for ttype, key, ratio, span in COLLAGE_SPEC:
         if ttype == 'poster':
             p = all_projects[key]
-            url = slot_url(all_projects, key, slot)
-            tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
+            url = slot_url(all_projects, key, 'poster')
+            tiles.append(render_collage_tile('', {'key': key, 'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
             continue
-        pool_key = ttype
-        pool = default_pools[pool_key]
-        if pool:
-            idx = counters[pool_key] % len(pool)
-            counters[pool_key] += 1
-            default_item = pool[idx]
+        proj = _collage_pick_project(pools, ttype, used_keys)
+        if proj:
+            used_keys.add(proj['key'])
+            default_url = proj['images'][0]
         else:
-            default_item = {'url': '', 'href': '#', 'title': ''}
-        tiles.append(render_random_collage_tile(default_item, ratio, span, pool_key))
+            proj = {'key': '', 'title': '', 'href': '#'}
+            default_url = ''
+        tiles.append(render_random_collage_tile(proj, default_url, ratio, span, ttype))
 
     rows = []
     i = 0
@@ -1208,82 +1206,41 @@ def render_home(all_projects):
     # Escaped so a stray "</script>" inside any title/url can't prematurely
     # close the data block.
     pools_json = json.dumps(pools, separators=(',', ':')).replace('</', '<\\/')
+    fallback_json = json.dumps(list(COLLAGE_FALLBACK_ORDER), separators=(',', ':'))
 
     collage_script = (
         '<script>(function(){'
         'var data=document.getElementById("collage-pools");'
         'if(!data)return;'
         'var pools;try{pools=JSON.parse(data.textContent);}catch(e){return;}'
-        'var rows=Array.prototype.slice.call(document.querySelectorAll(".collage-row"));'
-        'var used={};Object.keys(pools).forEach(function(k){used[k]=[];});'
-        'var titleCounts={};'
-        # Seeded from the fixed poster tiles only — their appearances are
-        # permanent, so the random pool's "max 3 total" cap has to count
-        # them from the start, before any tile has been swapped.
+        'var fallbackOrder=' + fallback_json + ';'
+        # Every tile on the page is a distinct project — seeded from the
+        # fixed poster tiles' keys (permanent, never re-rolled) so a
+        # poster's own film is never also drawn as a random tile.
+        'var usedKeys={};'
         'document.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
-        'var title=t.getAttribute("data-title");'
-        'if(title)titleCounts[title]=(titleCounts[title]||0)+1;'
+        'var k=t.getAttribute("data-key");if(k)usedKeys[k]=true;'
         '});'
-        # Each row's poster title(s), read up front — a poster never
-        # changes, so this is known before any random tile is picked.
-        # That lets a row being picked *before* a poster row avoid that
-        # poster's title too (a plain previous-row check alone can only
-        # look backward, so without this a poster could still land right
-        # after a random tile from its own film in the row before it).
-        'var rowPosterTitles=rows.map(function(row){'
-        'var titles=[];'
-        'row.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
-        'var pt=t.getAttribute("data-title");if(pt)titles.push(pt);'
-        '});'
-        'return titles;'
-        '});'
-        'var prevRowTitles=[];'
-        'rows.forEach(function(row,rowIdx){'
-        'var curRowTitles=[];'
-        'var nextPosterTitles=rowPosterTitles[rowIdx+1]||[];'
-        # This row's own poster title(s) — blocked for every random tile
-        # in the row regardless of processing order, since a poster-right
-        # cycle puts the poster *last* in the row (curRowTitles alone,
-        # built up as tiles are processed left to right, wouldn't yet
-        # include it when picking the tile right before it).
-        'var ownPosterTitles=rowPosterTitles[rowIdx];'
-        'var cells=row.querySelectorAll(".collage-tile");'
-        'cells.forEach(function(tile,posInRow){'
-        'if(!tile.hasAttribute("data-pool")){'
-        # Fixed poster: just record its title (already captured in
-        # rowPosterTitles, but curRowTitles needs it too so a random tile
-        # later in *this same* row also avoids it).
-        'var pt=tile.getAttribute("data-title");'
-        'if(pt)curRowTitles.push(pt);'
-        'return;'
+        'function pickProject(ttype){'
+        'var order=[ttype].concat(fallbackOrder.filter(function(t){return t!==ttype;}));'
+        'for(var i=0;i<order.length;i++){'
+        'var pool=pools[order[i]]||[];'
+        'var avail=pool.filter(function(p){return !usedKeys[p.key];});'
+        'if(avail.length)return avail[Math.floor(Math.random()*avail.length)];'
         '}'
-        'var key=tile.getAttribute("data-pool");'
-        'var pool=pools[key];'
-        'if(!pool||!pool.length)return;'
-        'var avail=pool.filter(function(it){return used[key].indexOf(it.url)===-1;});'
-        'if(!avail.length){used[key]=[];avail=pool;}'
-        'var blocked={};'
-        'prevRowTitles.forEach(function(t){blocked[t]=true;});'
-        'nextPosterTitles.forEach(function(t){blocked[t]=true;});'
-        'ownPosterTitles.forEach(function(t){blocked[t]=true;});'
-        'curRowTitles.forEach(function(t){blocked[t]=true;});'
-        'var choices=avail.filter(function(it){'
-        'return !blocked[it.title]&&(titleCounts[it.title]||0)<3;'
-        '});'
-        'if(!choices.length)choices=avail.filter(function(it){return !blocked[it.title];});'
-        'if(!choices.length)choices=avail;'
-        'var item=choices[Math.floor(Math.random()*choices.length)];'
-        'used[key].push(item.url);'
-        'titleCounts[item.title]=(titleCounts[item.title]||0)+1;'
-        'curRowTitles.push(item.title);'
+        'return null;'
+        '}'
+        'document.querySelectorAll(".collage-tile[data-pool]").forEach(function(tile,i){'
+        'var proj=pickProject(tile.getAttribute("data-pool"));'
+        'if(!proj)return;'
+        'usedKeys[proj.key]=true;'
+        'var url=proj.images[Math.floor(Math.random()*proj.images.length)];'
         'var img=tile.querySelector("img");'
-        'if(img){img.src=item.url;img.alt=item.title;if(posInRow>1||used[key].length>1)img.loading="lazy";}'
-        'tile.href=item.href;'
-        'tile.setAttribute("data-title",item.title);'
+        'if(img){img.src=url;img.alt=proj.title;if(i>3)img.loading="lazy";}'
+        'tile.href=proj.href;'
+        'tile.setAttribute("data-key",proj.key);'
         'var scrim=tile.querySelector(".collage-scrim span");'
-        'if(scrim)scrim.textContent=item.title;'
-        '});'
-        'prevRowTitles=curRowTitles;'
+        'if(scrim)scrim.textContent=proj.title;'
         '});'
         '})();</script>'
     )
