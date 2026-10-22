@@ -352,7 +352,7 @@ def detail_data(p):
         # gallery's own cells instead of the phone-width grid.
         'desktopLightbox': True,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
-        'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
+        'backLabel': 'Back',
     }
 
 
@@ -1110,15 +1110,16 @@ def page_rel(current_folder, target_href):
 
 def render_next_link(current_folder, next_p):
     """Mirrors back-link's own markup/class (next-link is a visual
-    modifier, not a separate style) — .next-link-full/.next-link-short
-    swap at the same 700px breakpoint .detail-grid already stacks at."""
+    modifier, not a separate style). Visible text is always just "Next →"
+    — the next project's name is accessibility-only, via aria-label/title,
+    not shown on screen at any width."""
     if not next_p:
         return ''
     href = page_rel(current_folder, next_p['href'])
+    label = 'Next project: ' + esc(next_p['title'])
     return (
-        '<a class="back-link next-link" href="' + href + '">'
-        '<span class="next-link-full">Next: ' + esc(next_p['title']) + ' &#8594;</span>'
-        '<span class="next-link-short">Next &#8594;</span>'
+        '<a class="back-link next-link" href="' + href + '" aria-label="' + label + '" title="' + label + '">'
+        'Next &#8594;'
         '</a>'
     )
 
@@ -1468,7 +1469,7 @@ def render_simple_detail_page(p, current_folder, next_map, video_only=False):
     root = '../'
     aspect = p.get('videoAspect', '16/9')
     back_href = CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html'
-    back_label = '← Back' if p['section'] == 'films' else '← All commercial'
+    back_label = 'Back'
 
     video_html = render_video_player(p, aspect, root)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
