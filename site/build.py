@@ -289,10 +289,10 @@ def image_aspect_ratio(url, default):
 # ratio engine to avoid relayouting an already-finished page.
 GALLERY_NEW_LAYOUT_EXCLUDE = {'almost-kings'}
 
-# Desktop click-to-enlarge lightbox (reuses the mobile gm-lightbox JS/data) —
-# opt-in per project so every other page's desktop gallery stays exactly as
-# it was. Add a slug here to switch it on.
-DESKTOP_LIGHTBOX_SLUGS = {'woman-child'}
+# Desktop click-to-enlarge lightbox (reuses the mobile gm-lightbox JS/data).
+# Previously opt-in per project (a slug allowlist); now on for every project
+# with a gallery — main.js's desktop wiring is a no-op on any page where
+# render_gallery() finds no data-gm-index cells, so this is safe everywhere.
 
 
 def detail_data(p):
@@ -355,10 +355,10 @@ def detail_data(p):
         'galleryAr': gallery_ar,
         'galleryPc': gallery_pc,
         'galleryFlat': gallery,
-        # One-line-switch desktop lightbox (see DESKTOP_LIGHTBOX_SLUGS) — the
-        # click-to-enlarge mobile lightbox, reused as-is, just triggered from
-        # the desktop gallery's own cells instead of the phone-width grid.
-        'desktopLightbox': p.get('slug') in DESKTOP_LIGHTBOX_SLUGS,
+        # Desktop click-to-enlarge, on for every project: the click-to-enlarge
+        # mobile lightbox, reused as-is, just triggered from the desktop
+        # gallery's own cells instead of the phone-width grid.
+        'desktopLightbox': True,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -1491,10 +1491,18 @@ def render_simple_detail_page(p, current_folder, next_map, video_only=False):
     if video_html:
         body.append(video_html)
     if stills:
+        # data-gm-index + a .gm-data JSON block reuse the exact same desktop
+        # click-to-enlarge wiring render_gallery()/main.js already provide
+        # (desktopGalleryCells there queries .gallery-bottom-cell[data-gm-
+        # index] with no template-specific selector) — no JS changes needed
+        # to light up the lightbox here too.
         body.append('<div class="field-label" style="margin-top: 34px;">Gallery</div><div class="stills-grid">')
-        for u in stills:
-            body.append('<div class="gallery-bottom-cell">' + img(u, p['title']) + '</div>')
+        for i, u in enumerate(stills):
+            body.append('<div class="gallery-bottom-cell" data-gm-index="' + str(i)
+                         + '" tabindex="0" role="button">' + img(u, p['title']) + '</div>')
         body.append('</div>')
+        data_json = json.dumps([{'url': u, 'alt': p['title']} for u in stills], separators=(',', ':')).replace('</', '<\\/')
+        body.append('<script type="application/json" class="gm-data">' + data_json + '</script>')
     body.append('</div>')  # /detail-wrap
 
     return page(root, p['title'] + ' — Bradley Stonesifer',
