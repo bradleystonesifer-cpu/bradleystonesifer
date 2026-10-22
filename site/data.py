@@ -206,6 +206,12 @@ OVERRIDES = {
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
         "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
+        # 50 processed stills (site/assets/images/me-her/), ordered
+        # best-first per manifest.json, replacing the image2/image3
+        # gallery fallback.
+        "galleryImages": [
+            "assets/images/me-her/me-her-%02d.jpg" % i for i in range(1, 51)
+        ],
     },
     "narrative-3": {  # Almost Kings
         # The video that used to be the main player, moved to a "Selects"
@@ -272,6 +278,11 @@ OVERRIDES = {
         "watchUrl": "https://www.youtube.com/watch?v=WkTD4-xR8xQ",
         "videoAspect": "16/9",
         "secondVideoEmbed": "https://player.vimeo.com/video/15131157?badge=0&autopause=0&player_id=0&app_id=58479",
+        # 65 processed stills (site/assets/images/spork/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/spork/spork-%02d.jpg" % i for i in range(1, 66)
+        ],
         "overrideCredits": [
             {"k": "Director", "v": "J.B. Ghuman Jr.", "href": "https://www.jbghumanjr.com/film"},
             {"k": "Production Company", "v": "Neca Films; Last Bastion Entertainment; Bent Film"},
@@ -286,10 +297,9 @@ OVERRIDES = {
         "videoEmbed": "https://player.vimeo.com/video/1218379599?badge=0&autopause=0&player_id=0&app_id=58479",
         "secondVideoEmbed": "https://player.vimeo.com/video/15057181?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1",
         # 50 processed stills (site/assets/images/the-vicious-kind/), ordered
-        # best-first — replaces the old 14-image Squarespace gallery.
-        # Note: COLLAGE_SPEC's ("narrative-0", "gallery:2", ...) homepage
-        # tile reads galleryImages[2] dynamically, so that tile now shows
-        # the new gallery's 3rd image instead of the old one.
+        # best-first — replaces the old 14-image Squarespace gallery. Also
+        # joins the homepage's "scripted" collage pool automatically (see
+        # build_collage_pools()).
         "galleryImages": [
             "assets/images/the-vicious-kind/the-vicious-kind-%02d.jpg" % i for i in range(1, 51)
         ],
@@ -306,13 +316,39 @@ OVERRIDES = {
     },
     "narrative-7": {  # Woman Child
         "overrideCredits": [
-            {"k": "Director", "v": "Emily Bloom"},
+            {"k": "Director", "v": "Emily Bloom", "href": "https://www.emily-bloom.com/"},
             {"k": "Writer", "v": "Emily Bloom"},
             {"k": "Producers", "v": "Jenna Cedicci, Charlie Fonville, Ben Windle"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Lead Actors", "v": "Alexie Gilmore, Tone Bell, Toby Huss, Lynne Marie Stewart, James Handy, Nora Kirkpatrick"},
         ],
         "logline": "Fired from her teaching job for becoming pregnant out of wedlock, Malynn and her partner must either concede to the institution's rules or fight for her civil liberties.",
+        # Real poster (site/assets/images/poster-woman-child.jpg, 1500x2222)
+        # in place of the old uploads/pasted-...png design-bundle export —
+        # see build.py's ASSET_RENAME (that mapping entry is removed, so
+        # the stale .png is no longer regenerated). posterThumb feeds the
+        # small Scripted-page grid tile only; the detail page keeps the
+        # full-res poster.
+        "posterImage": "assets/images/poster-woman-child.jpg",
+        "posterThumb": "assets/images/poster-woman-child-thumb.jpg",
+        # 28 processed stills (site/assets/images/woman-child/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/woman-child/woman-child-%02d.jpg" % i for i in range(1, 29)
+        ],
+        # Real stills in place of the recycled Canon-camera-test
+        # Squarespace placeholder frames (see narrative-8's own note).
+        "image": "assets/images/woman-child/woman-child-01.jpg",
+        "image2": "assets/images/woman-child/woman-child-02.jpg",
+        "image3": "assets/images/woman-child/woman-child-03.jpg",
+        # Vimeo 239052675 is itself a 16:9 file (oEmbed reports 640x360)
+        # with the 2.4:1 picture letterboxed inside it — no videoAspect
+        # override, so the player/thumbnail box matches that native 16:9
+        # shape instead of forcing a 2.4:1 wrapper that made Vimeo's own
+        # player pillarbox the 16:9 embed down to ~74% size inside it.
+        "videoEmbed": "https://player.vimeo.com/video/239052675",
+        "watchLabel": "Watch",
+        "watchUrl": "https://vimeo.com/239052675",
     },
     "narrative-5": {  # The Kid
         "overrideCredits": [
@@ -376,7 +412,26 @@ OVERRIDES = {
         "watchUrl": "https://www.justwatch.com/us/movie/god-bless-america",
     },
     "narrative-9": {  # House of Ideas
-        "comingSoon": True, "comingSoonImage": "uploads/house of Ideas.avif",
+        "comingSoon": True,
+        # Real still (with "Coming Soon" baked in, no CSS overlay needed)
+        # in place of the old uploads/house of Ideas.avif design-bundle
+        # export — see build.py's ASSET_RENAME (that mapping entry is
+        # removed, so the stale .avif is no longer regenerated). Used for
+        # the Scripted-page "coming soon" tile and the static (non-video)
+        # center-column image on this project's own page.
+        "comingSoonImage": "assets/images/house-of-ideas/house-of-ideas-video-thumb.jpg",
+        "staticVideoThumb": "assets/images/house-of-ideas/house-of-ideas-video-thumb.jpg",
+        "videoAspect": "2.42/1",
+        # 28 processed stills (site/assets/images/house-of-ideas/), ordered
+        # best-first per manifest.json (featured = first 8).
+        "galleryImages": [
+            "assets/images/house-of-ideas/house-of-ideas-%02d.jpg" % i for i in range(1, 29)
+        ],
+        # Real stills in place of the recycled Canon-camera-test
+        # Squarespace placeholder frames (see narrative-8's own note).
+        "image": "assets/images/house-of-ideas/house-of-ideas-01.jpg",
+        "image2": "assets/images/house-of-ideas/house-of-ideas-02.jpg",
+        "image3": "assets/images/house-of-ideas/house-of-ideas-03.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Gabriel Hardman"},
             {"k": "Writers", "v": "Ian Brill, Gabriel Hardman"},
@@ -392,11 +447,30 @@ OVERRIDES = {
             {"k": "Production Company", "v": "Left/Right Productions"},
             {"k": "Network", "v": "truTV (2018)"},
             {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
+            {"k": "Press — Robert Ham, Paste", "v": "“Telling eight individual tales was daunting enough, but Goldthwait and his team pushed themselves to give each episode its own distinctive look and feel.”",
+             "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
         "creditLine": "Cinematographer, 7 of 8 episodes",
-        "watchLabel": "Watch",
-        "watchUrl": "https://www.justwatch.com/us/tv-show/bobcat-goldthwaits-misfits-and-monsters",
+        # No Watch button on this page — removed per explicit instruction.
+        # Center-column fallback (no VIDEOS entry for this project) — the
+        # show's official key art, linked out to its truTV watch page.
+        "keyArtImage": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
+        "keyArtUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
+        # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
+        # ep-NN/, manifest.json for each still's real w/h — all 8 episodes
+        # now have a folder). Titles/synopses are reused from the "episodes"
+        # list above by matching "n" — not duplicated here.
+        "episodeGalleries": [
+            {"n": "01", "folder": "ep-01"},
+            {"n": "02", "folder": "ep-02"},
+            {"n": "03", "folder": "ep-03"},
+            {"n": "04", "folder": "ep-04"},
+            {"n": "05", "folder": "ep-05"},
+            {"n": "06", "folder": "ep-06"},
+            {"n": "07", "folder": "ep-07"},
+            {"n": "08", "folder": "ep-08"},
+        ],
     },
     "narrative-11": {  # Back in the Day
         "creditLine": "Cinematographer, Co-Producer",
@@ -507,7 +581,6 @@ POSTERS = {
     "narrative-4": "uploads/spork.jpg",
     "narrative-5": "uploads/theKid.jpg",
     "narrative-6": "uploads/DePutaMadre.jpg",
-    "narrative-7": "uploads/pasted-1787862845306-0.png",
     "narrative-8": "uploads/posters-1787856825786-bd9q.jpg",
     "narrative-10": "uploads/misfits and monsters.jpg",
     "documentary-0": "uploads/KTF.jpg",
@@ -516,48 +589,74 @@ POSTERS = {
     "documentary-3": "uploads/Call me Lucky.jpg",
 }
 
-# Home-page collage: (project key, image slot, aspect ratio, column span). Mirrors `_collageSpec`.
+# Home-page collage: (project key, image slot, aspect ratio, column span).
+# A repeating 3-row cycle (4 cycles x 8 tiles = 32), each row a whole
+# 12-column row on its own (every tile in a row shares the same ratio/span,
+# which is what keeps it flush at every viewport width). render_home()
+# chunks this flat list back into cycles of 8 and groups each cycle's
+# tiles into its 3 rows purely by position (0-2 / 3-4 / 5-7) — the poster
+# sits first or last within its row (alternating L/R/L/R by cycle) but
+# that doesn't change which 3 entries belong to row 1.
+#   Row 1 — poster (span 2) + two 16:9 tiles (span 5 + 5).
+#   Row 2 — two scripted-only 2.40:1 tiles (span 6 + 6, native aspect,
+#            no cropping — scripted stills are shot ~2.4:1).
+#   Row 3 — three 16:9 tiles (span 4 + 4 + 4).
+#
+# Three kinds of entry:
+#   - "poster": a project's own fixed poster, never randomized. 4 total,
+#     one per cycle — Misfits & Monsters plus the 3 strongest others
+#     (The Vicious Kind, Hit & Run, Call Me Lucky).
+#   - ("scripted", "scripted", ...): a generic scripted-pool slot — `key`
+#     is an unused placeholder (collage_tile_type()/render_home() never
+#     look a non-poster entry's project up by key, only by its pool), so
+#     the real image always comes from build_collage_pools()'s shared
+#     "scripted" pool (every narrative gallery + Misfits' episode stills).
+#   - a real (key, slot) pair at 16/9: one of the 10 vetted non-scripted
+#     stills (4 commercial, 4 documentary, 2 music video). 2.40:1 slots
+#     (row 2) are scripted-only, so every non-scripted tile lives in a
+#     row-1 or row-3 16:9 slot, spread across all 4 cycles with at least
+#     one scripted tile left in every 16:9 row (never a fully non-scripted
+#     16:9 row). None of the 10 share a title with any of the 4 posters.
 COLLAGE_SPEC = [
+    # --- Cycle 1 (poster left: The Vicious Kind) ---
     ("narrative-0", "poster", "2/3", 2),
     ("commercial-2", "image", "16/9", 5),
-    ("documentary-2", "image2", "16/9", 5),
-    ("narrative-1", "image", "16/9", 4),
-    ("music_video-1", "image", "16/9", 4),
-    ("commercial-10", "image", "16/9", 4),
-    ("music_video-0", "image", "2.35/1", 6),
-    ("commercial-17", "image", "2.35/1", 6),
-    ("music_video-2", "image", "16/9", 4),
-    ("narrative-4", "image", "16/9", 4),
-    ("documentary-2", "image3", "16/9", 4),
-    ("narrative-3", "image2", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("documentary-1", "image", "16/9", 4),
+    ("music_video-0", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+
+    # --- Cycle 2 (poster right: Hit & Run) ---
+    ("documentary-4", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
     ("narrative-1", "poster", "2/3", 2),
-    ("commercial-19", "image", "16/9", 5),
-    ("documentary-3", "image", "2.35/1", 6),
-    ("music_video-5", "image", "2.35/1", 6),
-    ("narrative-1", "image2", "16/9", 5),
-    ("commercial-12", "image", "16/9", 5),
-    ("documentary-0", "poster", "2/3", 2),
-    ("narrative-0", "gallery:2", "2.35/1", 6),
-    ("commercial-21", "image", "2.35/1", 6),
-    ("documentary-0", "image2", "16/9", 4),
-    ("narrative-3", "image3", "16/9", 4),
-    ("music_video-1", "image2", "16/9", 4),
-    ("narrative-1", "image3", "16/9", 5),
-    ("music_video-5", "image2", "16/9", 5),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("commercial-10", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+
+    # --- Cycle 3 (poster left: Misfits & Monsters) ---
     ("narrative-10", "poster", "2/3", 2),
-    ("narrative-4", "image2", "2.35/1", 6),
-    ("music_video-2", "image2", "2.35/1", 6),
+    ("music_video-1", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("documentary-5", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
+    ("commercial-17", "image", "16/9", 4),
+
+    # --- Cycle 4 (poster right: Call Me Lucky) ---
+    ("commercial-21", "image", "16/9", 5),
+    ("scripted", "scripted", "16/9", 5),
     ("documentary-3", "poster", "2/3", 2),
-    ("commercial-4", "image", "16/9", 5),
-    ("music_video-0", "image3", "16/9", 5),
-    ("commercial-22", "image", "2.35/1", 6),
-    ("music_video-1", "image3", "2.35/1", 6),
-    ("documentary-3", "image3", "16/9", 4),
-    ("narrative-4", "image3", "16/9", 4),
-    ("commercial-20", "image", "16/9", 4),
-    ("commercial-32", "image", "16/9", 5),
-    ("music_video-2", "image3", "16/9", 5),
-    ("documentary-2", "poster", "2/3", 2),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "2.40/1", 6),
+    ("scripted", "scripted", "16/9", 4),
+    ("documentary-6", "image", "16/9", 4),
+    ("scripted", "scripted", "16/9", 4),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).

@@ -183,10 +183,18 @@ ul { margin: 0; padding: 0; }
 
 /* ============ home — collage ============ */
 .collage-outer { padding: clamp(10px, 1.4vw, 28px) var(--gutter); width: 100%; }
-.collage-grid {
+/* A repeating 3-row cycle (poster+2x16:9 / 2x2.40:1 / 3x16:9), each row
+   its own independent 12-column grid — rather than one shared dense grid
+   — so a row can reflow its own column count at narrower widths (e.g.
+   row 3's trio going 2+1 on tablet) without disturbing any other row. */
+.collage-rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.4vw, 28px);
+}
+.collage-row {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-auto-flow: dense;
   gap: clamp(10px, 1.4vw, 28px);
 }
 .collage-tile {
@@ -414,7 +422,6 @@ ul { margin: 0; padding: 0; }
 /* ============ project detail ============ */
 .detail-wrap { padding: 0 var(--gutter) 90px; margin-top: 12px; width: 100%; }
 .detail-head {
-  position: relative;
   margin: 0 0 26px;
   display: flex;
   flex-direction: column;
@@ -422,14 +429,24 @@ ul { margin: 0; padding: 0; }
   gap: 12px;
   text-align: center;
 }
+.detail-head-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
 .back-link {
-  position: absolute;
-  left: 0;
-  top: 34px;
   font: 500 11px/1 'IBM Plex Mono', monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
+}
+.next-link { text-align: right; }
+.next-link-short { display: none; }
+@media (max-width: 700px) {
+  .next-link-full { display: none; }
+  .next-link-short { display: inline; }
 }
 .detail-title {
   margin: 0;
@@ -458,6 +475,12 @@ ul { margin: 0; padding: 0; }
 }
 .detail-col-left > div, .detail-col-right > div { width: 100%; }
 .detail-col-center { align-self: start; display: flex; flex-direction: column; min-width: 0; }
+/* No video (center_html empty, e.g. Misfits & Monsters): keep the right
+   column in its usual narrow 3rd track instead of grid auto-placement
+   sliding it into the wide 2nd (video) track. The <=1150px breakpoint
+   below still wins at narrower widths (same specificity, later in the
+   cascade), collapsing this back to a full-width row as normal. */
+.detail-col-right--solo { grid-column: 3; }
 
 .credit-groups { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0 0 28px; }
 .credit-group { padding: 16px 0; border-bottom: 1px solid var(--hair); }
@@ -477,6 +500,13 @@ ul { margin: 0; padding: 0; }
 .credit-val a, .credit-actors a { color: var(--ink); }
 
 .video-wrap { position: relative; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+
+/* Center-column fallback when a project has no trailer/clip to play
+   (render_key_art) — a plain hyperlinked key-art image, sized like the
+   video player it stands in for. */
+.key-art-link { position: relative; display: block; width: 100%; overflow: hidden; border-radius: 2px; background: #000; }
+.key-art-link img { transition: opacity 0.2s; }
+.key-art-link:hover img { opacity: 0.85; }
 .video-wrap iframe {
   position: absolute;
   top: 0;
@@ -494,6 +524,15 @@ ul { margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+/* Explicit (the sitewide img{} rule already does this, but flex-centered
+   children don't always stretch to fill as expected) so the thumbnail
+   always spans the full .video-wrap box rather than sizing to its own
+   intrinsic dimensions inside the centered flex overlay. */
+.video-thumb-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .play-btn {
   width: 74px;
@@ -543,18 +582,6 @@ ul { margin: 0; padding: 0; }
   border-radius: 2px;
 }
 
-.episodes-list { display: grid; gap: 0; margin-bottom: 46px; border-top: 1px solid var(--hair); }
-.episode-row {
-  display: grid;
-  grid-template-columns: 48px 1fr 2fr;
-  gap: 20px;
-  padding: 18px 0;
-  border-bottom: 1px solid var(--hair);
-}
-.episode-n { font: 500 13px/1.4 'IBM Plex Mono', monospace; color: var(--accent); }
-.episode-title { font: 600 15px/1.4 'Inter', sans-serif; text-transform: uppercase; }
-.episode-synopsis { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); }
-
 .gallery-main {
   display: grid;
   /* --pc carries its own fr suffix (e.g. "1.1333fr") so this is a plain
@@ -592,6 +619,15 @@ ul { margin: 0; padding: 0; }
    reasoning as --pc above. */
 .gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: var(--ar, 2.35 / 1); background: #000; }
 .gallery-bottom-cell img { object-position: center 30%; }
+
+/* Desktop click-to-enlarge (opt-in per project — see DESKTOP_LIGHTBOX_SLUGS
+   in build.py): only cells that got a data-gm-index attribute render as
+   interactive, so every other page's gallery is untouched. */
+.gallery-cell[data-gm-index], .gallery-bottom-cell[data-gm-index] { cursor: pointer; }
+.gallery-cell[data-gm-index]:focus-visible, .gallery-bottom-cell[data-gm-index]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 /* Native-aspect-ratio gallery (8+ galleryImages) — scoped to the
    .gallery-main--ar marker class (only added when build.py computes a real
@@ -653,8 +689,11 @@ ul { margin: 0; padding: 0; }
   cursor: pointer;
 }
 
-/* Tap-to-enlarge lightbox (mobile gallery only) — built fresh since the
-   site had no existing lightbox to reuse. */
+/* Tap/click-to-enlarge lightbox, shared by the mobile gallery grid and
+   (opt-in, see DESKTOP_LIGHTBOX_SLUGS) the desktop gallery's own cells —
+   one overlay, one dataset, reused rather than building a second one.
+   Opacity/visibility (not display) drive show/hide so the open/close can
+   fade; prefers-reduced-motion below collapses that to an instant cut. */
 .gm-lightbox {
   position: fixed;
   inset: 0;
@@ -664,11 +703,42 @@ ul { margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   touch-action: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.gm-lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gm-lightbox { transition: none; }
 }
 .gm-lightbox img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  /* max-width/max-height (not width/height:100%) so the <img>'s own box
+     shrinks to match its rendered, aspect-correct size — with
+     object-fit:contain the box stayed 100%x100% and silently ate every
+     "backdrop" click inside its letterboxed margins, even in the corners,
+     so a click anywhere never actually closed it. */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+.gm-lb-counter {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 500 11px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: rgba(14, 12, 10, 0.55);
+  padding: 7px 14px;
+  border-radius: 2px;
+  z-index: 2;
 }
 .gm-lb-close, .gm-lb-prev, .gm-lb-next {
   all: unset;
@@ -689,6 +759,56 @@ ul { margin: 0; padding: 0; }
 @media (max-width: 600px) {
   .gallery-main, .gallery-bottom { display: none; }
   .gallery-mobile { display: block; }
+}
+
+/* Episode selector (Misfits & Monsters only) — its own full-width row
+   directly below the detail-grid, aligned to the same edges as the
+   gallery below it. Reuses the .video-select-btn look. */
+.episode-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 34px; }
+
+/* Episode panels — full width, below the selector row, matching every
+   other film page's gallery position/width exactly. Reuses .gm-cell/
+   .gm-more/.gm-lightbox wiring for each panel's grid — only the row's
+   own layout (justified flex rows on desktop, a 2-col grid on mobile)
+   and its show-more/less + episode-switch behavior are new. */
+.episode-panels { margin-top: 24px; }
+.episode-info { margin-bottom: 14px; }
+.ep-active-title {
+  font: 500 11px/1 'IBM Plex Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.episode-info .logline-text { margin-bottom: 0; }
+.ep-coming-soon { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); font-style: italic; margin: 0; }
+
+/* Justified rows: a row height that scales continuously with the
+   viewport (clamp, not a breakpoint jump) + each cell's own --ar (from
+   the image's real w/h) gives the cell its correct width with zero
+   crop — no flex-grow, so a width is never stretched past its true
+   ratio (that would letterbox inside the cell) and the last, sparser
+   row stays left-aligned instead of being forced to fill the row.
+   max-width: 100% is only a safety clamp for a narrow viewport, not the
+   normal case.
+
+   The 16:9 and 4:3 stills are two separate flex-wrap rows (.ep-grid-row),
+   not one — narrower 4:3 cells otherwise pack one extra per row and
+   that row runs wider than the 16:9 rows above it. main.js measures the
+   16:9 row's actual achieved width and applies it as the 4:3 row's
+   max-width, so it wraps at that same boundary instead of the full
+   container width. */
+.ep-grid { display: flex; flex-direction: column; gap: 12px; }
+.ep-grid-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.ep-grid-row .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
+.ep-grid-row .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
+
+@media (max-width: 600px) {
+  .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
+  .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
+  .episode-panels { margin-top: 20px; }
+  .ep-grid-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-width: none !important; }
+  .ep-grid-row .gm-cell { height: auto; width: auto; }
 }
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
@@ -841,6 +961,12 @@ ul { margin: 0; padding: 0; }
 
 @media (max-width: 700px) {
   .detail-grid { grid-template-columns: 1fr; }
+  /* Without this, .detail-col-right--solo's grid-column: 3 still applies
+     (this query only resets grid-template-columns, not an item's own
+     grid-column) and the grid implicitly creates extra columns to
+     satisfy it — right column renders beside the left one instead of
+     stacking below it. */
+  .detail-col-right--solo { grid-column: auto; }
 }
 
 @media (max-width: 900px) {
@@ -850,6 +976,15 @@ ul { margin: 0; padding: 0; }
   .about-wrap { padding-left: clamp(10px, 5vw, 28px); padding-right: clamp(10px, 5vw, 28px); }
   .cat-title, .about-title { font-size: 34px; }
   .triptych-row { flex-direction: column; }
+
+  /* Home collage, row 3 (three 16:9 tiles at span 4 each): at tablet
+     width a third of the row is too narrow to read well. Drop to 2
+     columns and let the odd tile span the full row underneath — a clean
+     2+1 instead of three cramped slivers. Rows 1 and 2 (poster+2 / a
+     flush pair) still read fine at this width, so they're left alone. */
+  .collage-row--trio { grid-template-columns: repeat(2, 1fr); }
+  .collage-row--trio .collage-tile { grid-column: span 1 !important; }
+  .collage-row--trio .collage-tile:last-child { grid-column: 1 / -1 !important; }
 }
 
 @media (max-width: 600px) {
@@ -881,11 +1016,18 @@ ul { margin: 0; padding: 0; }
   }
   .nav-dropdown-inner a { padding: 13px 18px; }
 
-  /* Home collage: a clean 2-column grid (posters stay 1-col/tall; wide
-     16:9 and scope tiles span both columns instead of squeezing into a
-     half-width sliver). Doesn't touch the pool-based randomization —
+  /* Home collage: every row becomes a clean 2-column grid. The poster
+     (tall, 2:3) goes full width on its own line regardless of which side
+     of row 1 it sits on; everything else pairs up 2-up. Row 3's trio
+     reuses the tablet 2+1 rule (last tile full width) so it still has no
+     holes at 2 columns. Doesn't touch the pool-based randomization —
      that's all data-driven by main.js, independent of layout. */
-  .collage-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
-  .collage-tile { grid-column: span 1 !important; }
-  .collage-tile[data-pool] { grid-column: span 2 !important; }
+  .collage-row { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .collage-row .collage-tile { grid-column: span 1 !important; }
+  /* Higher specificity than ".collage-row .collage-tile" above (two
+     classes beats one) — needed because both rules carry !important, and
+     with equal !important, the more specific selector wins regardless of
+     source order. */
+  .collage-row .collage-tile--poster { grid-column: 1 / -1 !important; }
+  .collage-row--trio .collage-tile:last-child { grid-column: 1 / -1 !important; }
 }

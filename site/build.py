@@ -212,6 +212,30 @@ def category_display_lists(all_projects):
     return groups
 
 
+def next_project_map(all_projects, groups):
+    """slug -> next project, in the same order its own category page lists
+    projects (films: the reordered `groups` lists; commercial: CATS' plain
+    order, matching render_commercial_page), wrapping from the last project
+    back to the first. comingSoon projects don't have a real page yet, so
+    they're skipped in the rotation rather than linked to as "next"."""
+    next_map = {}
+
+    def link_up(projects):
+        eligible = [p for p in projects if not p.get('comingSoon')]
+        n = len(eligible)
+        if n < 2:
+            return
+        for i, p in enumerate(eligible):
+            next_map[p['slug']] = eligible[(i + 1) % n]
+
+    for cat_key in ('narrative', 'documentary', 'music_video'):
+        link_up(groups[cat_key]['projects'])
+    commercial_cat = next(c for c in CATS if c['key'] == 'commercial')
+    link_up([all_projects['commercial-' + str(i)] for i in range(len(commercial_cat['projects']))])
+
+    return next_map
+
+
 def poster_tile_data(p):
     cs = bool(p.get('comingSoon'))
     # "poster" is the same kind of real-poster-file field as "posterImage"
@@ -219,7 +243,9 @@ def poster_tile_data(p):
     # on a project's own data entry. Either one switches the tile off the
     # still-with-title fallback with no layout changes.
     poster_file = p.get('poster') or p.get('posterImage') or ''
-    tile_image = '' if cs else (poster_file or p.get('image') or '')
+    # posterThumb (optional) swaps in a smaller file for this grid tile only
+    # — the detail page's own poster column keeps the full-res posterImage.
+    tile_image = '' if cs else (p.get('posterThumb') or poster_file or p.get('image') or '')
     return {
         'comingSoon': cs,
         'hasTileImage': not cs and bool(tile_image),
@@ -263,6 +289,11 @@ def image_aspect_ratio(url, default):
 # ratio engine to avoid relayouting an already-finished page.
 GALLERY_NEW_LAYOUT_EXCLUDE = {'almost-kings'}
 
+# Desktop click-to-enlarge lightbox (reuses the mobile gm-lightbox JS/data) —
+# opt-in per project so every other page's desktop gallery stays exactly as
+# it was. Add a slug here to switch it on.
+DESKTOP_LIGHTBOX_SLUGS = {'woman-child'}
+
 
 def detail_data(p):
     title = p['title']
@@ -294,12 +325,20 @@ def detail_data(p):
         gallery_left = gallery[0:8:2]   # images 1,3,5,7
         gallery_right = gallery[1:8:2]  # images 2,4,6,8
         gallery_bottom = gallery[8:]
+        gallery_left_idx = list(range(0, 8, 2))
+        gallery_right_idx = list(range(1, 8, 2))
+        gallery_bottom_idx = list(range(8, len(gallery)))
     else:
         if len(gallery) > 3:
             gallery[1], gallery[3] = gallery[3], gallery[1]
         gallery_left = gallery[0:3]
         gallery_right = gallery[3:6]
         gallery_bottom = gallery[6:]
+        # gallery itself was just reordered above (not a fresh slice), so
+        # galleryFlat already reflects it — positions line up 1:1.
+        gallery_left_idx = list(range(0, 3))
+        gallery_right_idx = list(range(3, 6))
+        gallery_bottom_idx = list(range(6, len(gallery)))
 
     return {
         'creditGroups': group_credits(linked) if linked else [],
@@ -310,9 +349,16 @@ def detail_data(p):
         'galleryLeft': gallery_left,
         'galleryRight': gallery_right,
         'galleryBottom': gallery_bottom,
+        'galleryLeftIdx': gallery_left_idx,
+        'galleryRightIdx': gallery_right_idx,
+        'galleryBottomIdx': gallery_bottom_idx,
         'galleryAr': gallery_ar,
         'galleryPc': gallery_pc,
         'galleryFlat': gallery,
+        # One-line-switch desktop lightbox (see DESKTOP_LIGHTBOX_SLUGS) — the
+        # click-to-enlarge mobile lightbox, reused as-is, just triggered from
+        # the desktop gallery's own cells instead of the phone-width grid.
+        'desktopLightbox': p.get('slug') in DESKTOP_LIGHTBOX_SLUGS,
         'backHref': CAT_FILENAME[p['catKey']] if p['section'] == 'films' else '../commercial.html',
         'backLabel': '← Back' if p['section'] == 'films' else '← All commercial',
     }
@@ -339,58 +385,109 @@ def slot_url(all_projects, key, slot):
 
 SCRIPTED_POOL_MIN_GALLERY = 8    # narrative projects need this many galleryImages to join the pool
 SCRIPTED_POOL_MIN_WIDTH = 1500   # skip frames narrower than this (low-res / 2.35 reel scans)
+SCRIPTED_FEATURED_COUNT = 8      # each gallery's/episode's own first N stills are its "featured" selects
+SCRIPTED_FEATURED_WEIGHT = 3     # featured stills are duplicated this many times in the client-side
+                                  # random pool, so they're drawn ~3x as often as the rest — plain pool
+                                  # composition, no extra JS logic needed (the existing per-url dedup
+                                  # already treats every duplicate copy of a still as the same image)
 
 
 def collage_tile_type(key, slot, ratio):
     """Classify a COLLAGE_SPEC entry for rendering: posters are fixed and
-    unchanged; a scripted project's own gallery-sourced scope tile stays
-    scripted; everything else (every non-scripted tile, and every scripted
-    tile that was pointing at a Squarespace image/image2/image3 field —
-    not allowed for scripted projects) is reassigned by shape to the
-    matching non-scripted pool."""
+    unchanged; slot == "scripted" is a generic scripted-pool slot — its
+    `key` is an unused placeholder (never looked up: the real image
+    always comes from the shared "scripted" pool in build_collage_pools,
+    not any one project) — everything else is a vetted non-scripted
+    still. The repeating 3-row layout keeps 2.40:1 slots scripted-only
+    (native aspect, no cropping), so every other entry is 16:9."""
     if slot == 'poster':
         return 'poster'
-    if key.startswith('narrative-') and slot.startswith('gallery:') and ratio.startswith('2.35'):
-        return 'scripted-scope'
-    return '16x9' if ratio == '16/9' else 'scope'
+    if slot == 'scripted':
+        return 'scripted'
+    return '16x9'
+
+
+def _scripted_still(url, href, title):
+    return {'url': url, 'href': href, 'title': title}
 
 
 def build_collage_pools(all_projects):
-    """Three image pools for the randomized homepage collage, keyed by
-    tile type. Scripted pool: every gallery image (real width >= 1500px)
-    from narrative projects with 8+ galleryImages — automatic, so a film
-    that gets a gallery later joins with no spec edit. Non-scripted pools:
-    the (key, slot) pairs COLLAGE_SPEC already uses at that ratio today —
-    those are the only non-scripted images anyone has actually vetted at
-    that shape (Squarespace URLs can't be dimension-checked locally)."""
-    scripted = []
+    """Pools for the randomized homepage collage, keyed by tile type.
+
+    Scripted pool: every gallery image (real width >= 1500px) from every
+    narrative project with 8+ galleryImages — automatic, so a film that
+    gets a gallery later joins with no spec edit — plus Misfits &
+    Monsters' per-episode stills (its gallery is one folder per episode,
+    not a flat galleryImages list, so it's a one-off addition rather
+    than covered by that same automatic rule). Each project's (or each
+    Misfits episode's) own first SCRIPTED_FEATURED_COUNT stills are
+    "featured": returned separately (second return value) for the
+    server-rendered default tile, and duplicated SCRIPTED_FEATURED_WEIGHT
+    times in the pool handed to the client-side randomizer.
+
+    Non-scripted pool (16:9 only — 2.40:1 is scripted-only in the repeating
+    row layout): the (key, slot) pairs COLLAGE_SPEC uses at that shape —
+    the only non-scripted images anyone has actually vetted at that shape
+    (Squarespace URLs can't be dimension-checked locally)."""
+    scripted_all = []
+    scripted_featured = []
+
+    def add_scripted(url, href, title, featured):
+        entry = _scripted_still(url, href, title)
+        scripted_all.append(entry)
+        if featured:
+            scripted_featured.append(entry)
+
     for key, p in all_projects.items():
         if not key.startswith('narrative-'):
             continue
+
         gallery = p.get('galleryImages') or []
-        if len(gallery) < SCRIPTED_POOL_MIN_GALLERY:
-            continue
-        for item in gallery:
-            url = item[0] if isinstance(item, tuple) else item
-            path = local_image_path(url)
-            if not path:
+        if len(gallery) >= SCRIPTED_POOL_MIN_GALLERY:
+            for i, item in enumerate(gallery):
+                url = item[0] if isinstance(item, tuple) else item
+                path = local_image_path(url)
+                if not path:
+                    continue
+                try:
+                    from PIL import Image
+                    with Image.open(path) as im:
+                        w = im.size[0]
+                except Exception:
+                    continue
+                if w < SCRIPTED_POOL_MIN_WIDTH:
+                    continue
+                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
+
+        for eg in (p.get('episodeGalleries') or []):
+            folder = eg.get('folder')
+            files = load_misfits_manifest().get(folder) or []
+            if not files:
                 continue
-            try:
-                from PIL import Image
-                with Image.open(path) as im:
-                    w = im.size[0]
-            except Exception:
-                continue
-            if w < SCRIPTED_POOL_MIN_WIDTH:
-                continue
-            scripted.append({'url': url, 'href': p['href'], 'title': p['title']})
+            # Same shape-then-visual-similarity order the episode's own
+            # page uses (render_episode_panels) — so "featured" means the
+            # same 8 stills in both places, and each episode's own first
+            # 8 (not the project's) count as its featured selects.
+            wide = [f for f in files if (f['w'] / f['h']) > 1.5]
+            narrow = [f for f in files if (f['w'] / f['h']) <= 1.5]
+            if folder in EPISODE_VISUAL_GROUP:
+                if wide:
+                    wide = order_by_similar_look(folder, wide)
+                if narrow:
+                    narrow = order_by_similar_look(folder, narrow)
+            for i, f in enumerate(wide + narrow):
+                if f['w'] < SCRIPTED_POOL_MIN_WIDTH:
+                    continue
+                url = 'assets/images/misfits-and-monsters/' + folder + '/' + f['file']
+                add_scripted(url, p['href'], p['title'], i < SCRIPTED_FEATURED_COUNT)
+
+    scripted_weighted = scripted_all + scripted_featured * (SCRIPTED_FEATURED_WEIGHT - 1)
 
     non_scripted_16x9 = []
-    non_scripted_scope = []
     seen = set()
     for key, slot, ratio, _span in COLLAGE_SPEC:
         ttype = collage_tile_type(key, slot, ratio)
-        if ttype not in ('16x9', 'scope') or key.startswith('narrative-'):
+        if ttype != '16x9' or key.startswith('narrative-'):
             continue
         if (key, slot) in seen:
             continue
@@ -399,10 +496,10 @@ def build_collage_pools(all_projects):
         url = slot_url(all_projects, key, slot)
         if not url:
             continue
-        item = {'url': url, 'href': p['href'], 'title': p['title']}
-        (non_scripted_16x9 if ttype == '16x9' else non_scripted_scope).append(item)
+        non_scripted_16x9.append(_scripted_still(url, p['href'], p['title']))
 
-    return {'scripted': scripted, '16x9': non_scripted_16x9, 'scope': non_scripted_scope}
+    pools = {'scripted': scripted_weighted, '16x9': non_scripted_16x9}
+    return pools, scripted_featured
 
 
 # ------------------------------------------------------------------ head --
@@ -562,7 +659,7 @@ def render_press_quotes(quotes):
     return ''.join(out)
 
 
-def render_video_block(p, which, aspect='16/9'):
+def render_video_block(p, which, aspect='16/9', root=''):
     """which: 'first' (top player) or 'second' (bottom Selects player)."""
     embed = p.get('videoEmbed') if which == 'first' else p.get('secondVideoEmbed')
     if not embed:
@@ -570,8 +667,12 @@ def render_video_block(p, which, aspect='16/9'):
     vid = vimeo_id(embed)
     # videoThumb (per-project, i.vimeocdn.com) wins when set; falls back to
     # the original p.get('image') otherwise — the-vicious-kind never sets
-    # videoThumb, so its output is byte-for-byte unchanged.
-    thumb_url = p.get('videoThumb') or p.get('image')
+    # videoThumb, so its output is byte-for-byte unchanged. asset(root, ...)
+    # root-prefixes a local path (no-op for the absolute Squarespace/
+    # i.vimeocdn.com URLs every pre-existing caller of this function uses)
+    # — needed now that a local root-relative still (e.g. a gallery image)
+    # can end up here too, same as every other image field on the site.
+    thumb_url = asset(root, p.get('videoThumb') or p.get('image'))
     if which == 'first':
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
@@ -584,7 +685,7 @@ def render_video_block(p, which, aspect='16/9'):
     # second / "Selects" player. secondVideoThumb is optional — when unset
     # (the-vicious-kind never sets it) this renders exactly as before, a
     # plain gradient card with no image, byte-for-byte unchanged.
-    second_thumb = p.get('secondVideoThumb')
+    second_thumb = asset(root, p.get('secondVideoThumb')) if p.get('secondVideoThumb') else ''
     thumb_html = img(second_thumb, p['title'] + ' — Selects', cls='selects-bg-img') if second_thumb else ''
     thumb_cls = ' has-thumb' if second_thumb else ''
     return (
@@ -616,7 +717,7 @@ def render_video_player(p, aspect='16/9', root=''):
     .play-btn-tri CSS classes for visual consistency.
     """
     if p.get('videoEmbed'):
-        return render_video_block(p, 'first', aspect)
+        return render_video_block(p, 'first', aspect, root)
     videos = VIDEOS.get(p.get('slug'))
     if not videos:
         return ''
@@ -651,6 +752,36 @@ def render_video_player(p, aspect='16/9', root=''):
     return ''.join(out)
 
 
+def render_static_video_thumb(p, aspect, root):
+    """Fallback for a project with no trailer at all (comingSoon, no
+    videoEmbed/VIDEOS entry): a plain, non-clickable still in the same
+    .video-wrap box/sizing as a real player, no play button or overlay.
+    Only used when render_video_player() itself found nothing to render."""
+    url = p.get('staticVideoThumb')
+    if not url:
+        return ''
+    return ('<div class="video-wrap" style="aspect-ratio: ' + aspect + ';">'
+            + img(asset(root, url), p['title'], lazy=False) + '</div>')
+
+
+def render_key_art(p, root, aspect='16/9'):
+    """Fallback for the detail page's center column when a project has no
+    VIDEOS entry (no trailer/clip to play) — a plain hyperlinked key-art
+    image instead of an empty slot, sized the same as the video player it
+    stands in for. Opt-in via keyArtImage/keyArtUrl so every other
+    project's output is unaffected."""
+    url = p.get('keyArtImage')
+    link = p.get('keyArtUrl')
+    if not url or not link:
+        return ''
+    return (
+        '<a class="key-art-link" href="' + esc(link) + '" target="_blank" rel="noopener" '
+        'style="aspect-ratio: ' + aspect + ';">'
+        + img(asset(root, url), p['title'] + ' key art', lazy=False) +
+        '</a>'
+    )
+
+
 def _gallery_item(item, title):
     """A gallery slot is either a plain URL string (title used as alt, the
     original behavior) or an (url, alt) pair when the project supplies
@@ -666,11 +797,18 @@ def render_gallery(root, dd, title):
     # of a hardcoded '../' that breaks when the same path is reused
     # elsewhere (e.g. a COLLAGE_SPEC "gallery:N" homepage tile, which sits
     # at site root rather than inside /films/ or /commercial/).
-    def cell(item):
+    desktop_lb = dd.get('desktopLightbox')
+    # data-gm-index matches this still's position in galleryFlat, the same
+    # order the mobile gm-data JSON (render_gallery_mobile) uses — so the
+    # desktop click-to-enlarge wiring in main.js can reuse that one dataset
+    # instead of embedding a second copy.
+    lb_attrs = (lambda idx: ' data-gm-index="' + str(idx) + '" tabindex="0" role="button"') if desktop_lb else (lambda idx: '')
+
+    def cell(item, idx, cls):
         url, alt = _gallery_item(item, title)
-        return '<div class="gallery-cell">' + img(asset(root, url), alt) + '</div>'
-    left = ''.join(cell(u) for u in dd['galleryLeft'] if _gallery_item(u, title)[0])
-    right = ''.join(cell(u) for u in dd['galleryRight'] if _gallery_item(u, title)[0])
+        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>'
+    left = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryLeft'], dd['galleryLeftIdx']) if _gallery_item(u, title)[0])
+    right = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryRight'], dd['galleryRightIdx']) if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
 
     # Native-aspect-ratio layout (8+ galleryImages, see detail_data()):
@@ -697,10 +835,10 @@ def render_gallery(root, dd, title):
     bottom = dd['galleryBottom']
     if bottom:
         out.append('<div class="gallery-bottom"' + bottom_style + '>')
-        for item in bottom:
+        for item, idx in zip(bottom, dd['galleryBottomIdx']):
             url, alt = _gallery_item(item, title)
             if url:
-                out.append('<div class="gallery-bottom-cell">' + img(asset(root, url), alt) + '</div>')
+                out.append('<div class="gallery-bottom-cell"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -747,6 +885,226 @@ def render_gallery_mobile(root, dd, title):
     )
 
 
+EPISODE_FEATURED_COUNT = 8
+_MISFITS_MANIFEST = None
+
+
+def load_misfits_manifest():
+    """site/assets/images/misfits-and-monsters/manifest.json: {folder:
+    [{file, w, h}, ...]} — real dimensions for the per-episode gallery
+    selector's justified-row (desktop) / 2-col (mobile) layouts. Cached
+    after the first successful read; returns {} if the branch's images
+    haven't been checked out (so a build never hard-fails over it)."""
+    global _MISFITS_MANIFEST
+    if _MISFITS_MANIFEST is None:
+        path = os.path.join(SITE_DIR, 'assets/images/misfits-and-monsters/manifest.json')
+        try:
+            with open(path) as f:
+                _MISFITS_MANIFEST = json.load(f)
+        except Exception:
+            _MISFITS_MANIFEST = {}
+    return _MISFITS_MANIFEST
+
+
+# Folders whose stills get reordered by visual similarity (see
+# order_by_similar_look) instead of kept in their original shot order —
+# there's no usable "date originally created" metadata on these frame
+# grabs (checked: no EXIF, and file mtimes just reflect when they were
+# checked out, not when the frame was captured), so similarity is the
+# only grouping signal actually available.
+EPISODE_VISUAL_GROUP = {'ep-06'}
+
+
+def _color_signature(path, size=(12, 7)):
+    try:
+        from PIL import Image
+        with Image.open(path) as im:
+            return im.convert('RGB').resize(size).tobytes()
+    except Exception:
+        return None
+
+
+def order_by_similar_look(folder, files):
+    """Greedy nearest-neighbor chain over a small per-image color/
+    composition signature (a resized-down RGB pixel grid) — groups
+    visually similar stills together (bright outdoor shots, dark
+    military scenes, the purple-lit lab, etc.) instead of leaving them
+    in shot order. Falls back to the given order untouched if any image
+    can't be read (e.g. the branch's images aren't checked out)."""
+    sigs = {}
+    for f in files:
+        path = os.path.join(SITE_DIR, 'assets/images/misfits-and-monsters', folder, f['file'])
+        sig = _color_signature(path)
+        if sig is None:
+            return files
+        sigs[f['file']] = sig
+
+    def dist(a, b):
+        return sum((x - y) ** 2 for x, y in zip(a, b))
+
+    remaining = list(files)
+    ordered = [remaining.pop(0)]
+    while remaining:
+        last_sig = sigs[ordered[-1]['file']]
+        nxt = min(remaining, key=lambda f: dist(last_sig, sigs[f['file']]))
+        remaining.remove(nxt)
+        ordered.append(nxt)
+    return ordered
+
+
+EPISODE_GALLERY_PREFERRED_DEFAULT = '02'  # "02" was the first episode with stills; kept as the default even after episode 1 got its own gallery, so the page doesn't silently change which one opens
+
+
+def _episode_gallery_default(p):
+    """The preferred default episode if it has a stills folder, else the
+    first episode that does (or just the first entry if somehow none
+    do) — shared between render_episode_selector and
+    render_episode_panels so both agree on which one starts active."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return None
+    by_n = {g['n']: g for g in galleries}
+    preferred = by_n.get(EPISODE_GALLERY_PREFERRED_DEFAULT)
+    if preferred and preferred.get('folder'):
+        return EPISODE_GALLERY_PREFERRED_DEFAULT
+    return next((g['n'] for g in galleries if g.get('folder')), None) or galleries[0]['n']
+
+
+def render_episode_selector(p):
+    """Episode selector buttons for Misfits & Monsters — its own
+    full-width row directly below the detail-grid (credits | key art |
+    logline+press), above the episode panels it controls. Styled like
+    the commercial pages' multi-video selector. The panels (title,
+    synopsis, gallery) render separately via render_episode_panels(),
+    wired together in main.js by their own top-level selectors
+    (data-episode-select-row / data-episode-panels), not by DOM nesting,
+    since they're not DOM siblings."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return ''
+    episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
+    default_n = _episode_gallery_default(p)
+
+    buttons = []
+    for g in galleries:
+        n = g['n']
+        title = episodes_by_n.get(n, {}).get('title', '')
+        is_default = n == default_n
+        btn_cls = 'video-select-btn ep-select-btn' + (' active' if is_default else '')
+        buttons.append(
+            '<button type="button" class="' + btn_cls + '" data-ep-select="' + esc(n)
+            + '" aria-pressed="' + ('true' if is_default else 'false') + '">'
+            + esc(n) + ' ' + esc(title) + '</button>'
+        )
+
+    return '<div class="episode-select-row" data-episode-select-row>' + ''.join(buttons) + '</div>'
+
+
+def render_episode_panels(root, p):
+    """Full-width episode panels for Misfits & Monsters — one per
+    episode, swapped by the selector buttons above (JS, no reload). Each
+    panel's stills are grouped into up to two justified-row flex groups
+    (desktop) — all 16:9 first, then the 4:3 ones (episode 2's news-
+    broadcast frames) in their own row group, capped by JS to the 16:9
+    rows' own width so they wrap sooner rather than running wider — or a
+    2-column grid (mobile), reusing the same .gm-cell/.gm-more/.gm-data
+    wiring and shared lightbox as every other gallery page, just with
+    its own collapse-on-episode-switch behavior layered on in main.js.
+    Episode titles/synopses are reused from the existing "episodes" list
+    by matching "n" — never duplicated here. Episodes with no folder yet
+    (1 and 8) still get a real, clickable panel — title, synopsis, and a
+    "Stills coming soon" note — rather than being disabled or hidden, so
+    the full 8-episode structure and every #ep-NN hash link works."""
+    galleries = p.get('episodeGalleries') or []
+    if not galleries:
+        return ''
+    episodes_by_n = {e['n']: e for e in (p.get('episodes') or [])}
+    manifest = load_misfits_manifest()
+    default_n = _episode_gallery_default(p)
+
+    panels = []
+    for g in galleries:
+        n = g['n']
+        folder = g.get('folder')
+        info = episodes_by_n.get(n, {})
+        title = info.get('title', '')
+        synopsis = info.get('synopsis', '')
+        has_images = bool(folder) and manifest.get(folder)
+        is_default = n == default_n
+
+        info_html = ('<div class="episode-info"><div class="ep-active-title">' + esc(n) + ' · ' + esc(title) + '</div>'
+                      + ('<p class="logline-text">' + esc(synopsis) + '</p>' if synopsis else '') + '</div>')
+
+        if has_images:
+            # Group by shape — every 16:9 still first, then the 4:3 ones
+            # (episode 2's news-broadcast frames) together at the end —
+            # rather than interleaved in whatever order they were shot.
+            # Threshold of 1.5 cleanly separates 16:9 (1.78) from 4:3
+            # (1.33). Within each shape group, episodes in
+            # EPISODE_VISUAL_GROUP (episode 6) are further reordered by
+            # visual similarity instead of shot order (kept separate per
+            # group so a visually-reordered 4:3 still never ends up
+            # ahead of the 16:9 group).
+            raw_wide = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) > 1.5]
+            raw_narrow = [f for f in manifest.get(folder, []) if (f['w'] / f['h']) <= 1.5]
+            if folder in EPISODE_VISUAL_GROUP:
+                if raw_wide:
+                    raw_wide = order_by_similar_look(folder, raw_wide)
+                if raw_narrow:
+                    raw_narrow = order_by_similar_look(folder, raw_narrow)
+            files = raw_wide + raw_narrow
+            items, wide_cells, narrow_cells = [], [], []
+            for i, f in enumerate(files):
+                url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
+                alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
+                ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
+                items.append({'url': url, 'alt': alt})
+                style = ' style="--ar: %.4f"' % ar
+                if i < EPISODE_FEATURED_COUNT:
+                    # Only the default/visible-on-load episode gets its
+                    # first couple of images eager — every other panel
+                    # (hidden until its selector button is clicked) stays
+                    # fully lazy even for its "featured" cells, since
+                    # nothing in it is on screen yet.
+                    inner = img(url, alt, lazy=(not is_default) or i > 1)
+                else:
+                    inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
+                hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
+                cell = ('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
+                (wide_cells if ar > 1.5 else narrow_cells).append(cell)
+
+            more_btn = ''
+            rest = len(files) - EPISODE_FEATURED_COUNT
+            if rest > 0:
+                more_label = 'Show more (' + str(rest) + ')'
+                more_btn = ('<button type="button" class="gm-more" data-gm-more aria-expanded="false" '
+                             'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
+                             + esc(more_label) + '</button>')
+
+            # Two separate flex-wrap rows, not one, so JS can cap the 4:3
+            # row's width to whatever the 16:9 row actually achieves —
+            # otherwise narrower 4:3 cells pack one extra per row and the
+            # row runs wider than the 16:9 rows above it (see main.js
+            # syncNarrowRowWidth). Only emitted if this episode actually
+            # has any of that shape.
+            rows_html = '<div class="ep-grid-row" data-ep-row-wide>' + ''.join(wide_cells) + '</div>'
+            if narrow_cells:
+                rows_html += '<div class="ep-grid-row" data-ep-row-narrow>' + ''.join(narrow_cells) + '</div>'
+            data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
+            gallery_html = ('<div class="ep-grid">' + rows_html + '</div>' + more_btn
+                             + '<script type="application/json" class="gm-data">' + data_json + '</script>')
+        else:
+            gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
+
+        panels.append(
+            '<div class="episode-panel" data-episode-panel="' + esc(n) + '"' + ('' if is_default else ' hidden') + '>'
+            + info_html + gallery_html + '</div>'
+        )
+
+    return ('<div class="episode-panels" data-episode-panels data-default-episode="' + esc(default_n or '') + '">'
+            + ''.join(panels) + '</div>')
+
+
 def page_rel(current_folder, target_href):
     """Resolve a root-relative href ('films/x.html') for a page sitting in
     current_folder ('' | 'films' | 'commercial')."""
@@ -758,16 +1116,36 @@ def page_rel(current_folder, target_href):
     return '../' + target_href
 
 
+def render_next_link(current_folder, next_p):
+    """Mirrors back-link's own markup/class (next-link is a visual
+    modifier, not a separate style) — .next-link-full/.next-link-short
+    swap at the same 700px breakpoint .detail-grid already stacks at."""
+    if not next_p:
+        return ''
+    href = page_rel(current_folder, next_p['href'])
+    return (
+        '<a class="back-link next-link" href="' + href + '">'
+        '<span class="next-link-full">Next: ' + esc(next_p['title']) + ' &#8594;</span>'
+        '<span class="next-link-short">Next &#8594;</span>'
+        '</a>'
+    )
+
+
 # ---------------------------------------------------------------- pages --
 
 def render_collage_tile(current_folder, item):
-    """Fixed tile — posters only; never randomized."""
+    """Fixed tile — posters only; never randomized. collage-tile--poster
+    lets the randomizer (adjacency/consecutive-row rules) and the phone
+    layout (forced full-width) both target the poster tile directly,
+    regardless of which side of its row it sits on."""
     href = page_rel(current_folder, item['href'])
     style = 'grid-column: span ' + str(item['span']) + '; aspect-ratio: ' + item['ratio'] + ';'
+    title = esc(item['title'])
     return (
-        '<a class="collage-tile" href="' + href + '" style="' + style + '" draggable="false">'
+        '<a class="collage-tile collage-tile--poster" href="' + href + '" style="' + style
+        + '" data-title="' + title + '" draggable="false">'
         + img(item['url'], item['title']) +
-        '<div class="collage-scrim"><span>' + esc(item['title']) + '</span></div>'
+        '<div class="collage-scrim"><span>' + title + '</span></div>'
         '</a>'
     )
 
@@ -776,13 +1154,13 @@ def render_random_collage_tile(default_item, ratio, span, pool_key):
     """Randomizable tile — server renders a deterministic default (real
     href, no img src) plus a <noscript> fallback image, so the page works
     and links correctly with JS off or for crawlers. main.js replaces the
-    src/href/alt on load from the matching pool, picking something new on
-    every page view."""
+    src/href/alt/data-title on load from the matching pool, picking
+    something new on every page view, subject to its row-aware rules."""
     style = 'grid-column: span ' + str(span) + '; aspect-ratio: ' + ratio + ';'
     alt = esc(default_item['title'])
     return (
         '<a class="collage-tile" href="' + esc(default_item['href']) + '" data-pool="' + pool_key
-        + '" style="' + style + '" draggable="false">'
+        + '" data-title="' + alt + '" style="' + style + '" draggable="false">'
         '<img alt="' + alt + '" decoding="async" draggable="false">'
         '<noscript>' + img(default_item['url'], default_item['title']) + '</noscript>'
         '<div class="collage-scrim"><span>' + alt + '</span></div>'
@@ -790,9 +1168,22 @@ def render_random_collage_tile(default_item, ratio, span, pool_key):
     )
 
 
+# One row-wrapper div per 3/2/3-tile group; cycled over COLLAGE_SPEC's
+# flat 32-entry list purely by position (which 3 entries make up a row
+# never changes even though the poster can sit first or last within its
+# own row's 3 — see the COLLAGE_SPEC comment in data.py).
+COLLAGE_ROW_SIZES = [3, 2, 3]
+COLLAGE_ROW_CLASSES = ['collage-row--mixed', 'collage-row--pair', 'collage-row--trio']
+
+
 def render_home(all_projects):
-    pools = build_collage_pools(all_projects)
-    counters = {'scripted': 0, '16x9': 0, 'scope': 0}
+    pools, scripted_featured = build_collage_pools(all_projects)
+    # The server-rendered (no-JS / first-paint) default must be a featured
+    # still specifically — scripted_featured, not the full weighted pool
+    # the client randomizes from (pools['scripted'], which deliberately
+    # over-represents featured stills but still includes the rest).
+    default_pools = dict(pools, scripted=scripted_featured)
+    counters = {'scripted': 0, '16x9': 0}
     tiles = []
     for key, slot, ratio, span in COLLAGE_SPEC:
         ttype = collage_tile_type(key, slot, ratio)
@@ -801,8 +1192,8 @@ def render_home(all_projects):
             url = slot_url(all_projects, key, slot)
             tiles.append(render_collage_tile('', {'href': p['href'], 'title': p['title'], 'url': url, 'ratio': ratio, 'span': span}))
             continue
-        pool_key = 'scripted' if ttype == 'scripted-scope' else ttype
-        pool = pools[pool_key]
+        pool_key = ttype
+        pool = default_pools[pool_key]
         if pool:
             idx = counters[pool_key] % len(pool)
             counters[pool_key] += 1
@@ -810,6 +1201,16 @@ def render_home(all_projects):
         else:
             default_item = {'url': '', 'href': '#', 'title': ''}
         tiles.append(render_random_collage_tile(default_item, ratio, span, pool_key))
+
+    rows = []
+    i = 0
+    r = 0
+    while i < len(tiles):
+        size = COLLAGE_ROW_SIZES[r % 3]
+        cls = COLLAGE_ROW_CLASSES[r % 3]
+        rows.append('<div class="collage-row ' + cls + '">' + ''.join(tiles[i:i + size]) + '</div>')
+        i += size
+        r += 1
 
     # Escaped so a stray "</script>" inside any title/url can't prematurely
     # close the data block.
@@ -820,29 +1221,81 @@ def render_home(all_projects):
         'var data=document.getElementById("collage-pools");'
         'if(!data)return;'
         'var pools;try{pools=JSON.parse(data.textContent);}catch(e){return;}'
-        'var tiles=document.querySelectorAll(".collage-tile[data-pool]");'
+        'var rows=Array.prototype.slice.call(document.querySelectorAll(".collage-row"));'
         'var used={};Object.keys(pools).forEach(function(k){used[k]=[];});'
-        'var lastTitle=null;'
-        'tiles.forEach(function(tile,i){'
+        'var titleCounts={};'
+        # Seeded from the fixed poster tiles only — their appearances are
+        # permanent, so the random pool's "max 3 total" cap has to count
+        # them from the start, before any tile has been swapped.
+        'document.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
+        'var title=t.getAttribute("data-title");'
+        'if(title)titleCounts[title]=(titleCounts[title]||0)+1;'
+        '});'
+        # Each row's poster title(s), read up front — a poster never
+        # changes, so this is known before any random tile is picked.
+        # That lets a row being picked *before* a poster row avoid that
+        # poster's title too (a plain previous-row check alone can only
+        # look backward, so without this a poster could still land right
+        # after a random tile from its own film in the row before it).
+        'var rowPosterTitles=rows.map(function(row){'
+        'var titles=[];'
+        'row.querySelectorAll(".collage-tile.collage-tile--poster").forEach(function(t){'
+        'var pt=t.getAttribute("data-title");if(pt)titles.push(pt);'
+        '});'
+        'return titles;'
+        '});'
+        'var prevRowTitles=[];'
+        'rows.forEach(function(row,rowIdx){'
+        'var curRowTitles=[];'
+        'var nextPosterTitles=rowPosterTitles[rowIdx+1]||[];'
+        # This row's own poster title(s) — blocked for every random tile
+        # in the row regardless of processing order, since a poster-right
+        # cycle puts the poster *last* in the row (curRowTitles alone,
+        # built up as tiles are processed left to right, wouldn't yet
+        # include it when picking the tile right before it).
+        'var ownPosterTitles=rowPosterTitles[rowIdx];'
+        'var cells=row.querySelectorAll(".collage-tile");'
+        'cells.forEach(function(tile,posInRow){'
+        'if(!tile.hasAttribute("data-pool")){'
+        # Fixed poster: just record its title (already captured in
+        # rowPosterTitles, but curRowTitles needs it too so a random tile
+        # later in *this same* row also avoids it).
+        'var pt=tile.getAttribute("data-title");'
+        'if(pt)curRowTitles.push(pt);'
+        'return;'
+        '}'
         'var key=tile.getAttribute("data-pool");'
         'var pool=pools[key];'
         'if(!pool||!pool.length)return;'
         'var avail=pool.filter(function(it){return used[key].indexOf(it.url)===-1;});'
         'if(!avail.length){used[key]=[];avail=pool;}'
-        'var preferred=avail.filter(function(it){return it.title!==lastTitle;});'
-        'var choices=preferred.length?preferred:avail;'
+        'var blocked={};'
+        'prevRowTitles.forEach(function(t){blocked[t]=true;});'
+        'nextPosterTitles.forEach(function(t){blocked[t]=true;});'
+        'ownPosterTitles.forEach(function(t){blocked[t]=true;});'
+        'curRowTitles.forEach(function(t){blocked[t]=true;});'
+        'var choices=avail.filter(function(it){'
+        'return !blocked[it.title]&&(titleCounts[it.title]||0)<3;'
+        '});'
+        'if(!choices.length)choices=avail.filter(function(it){return !blocked[it.title];});'
+        'if(!choices.length)choices=avail;'
         'var item=choices[Math.floor(Math.random()*choices.length)];'
-        'used[key].push(item.url);lastTitle=item.title;'
+        'used[key].push(item.url);'
+        'titleCounts[item.title]=(titleCounts[item.title]||0)+1;'
+        'curRowTitles.push(item.title);'
         'var img=tile.querySelector("img");'
-        'if(img){img.src=item.url;img.alt=item.title;if(i>3)img.loading="lazy";}'
+        'if(img){img.src=item.url;img.alt=item.title;if(posInRow>1||used[key].length>1)img.loading="lazy";}'
         'tile.href=item.href;'
+        'tile.setAttribute("data-title",item.title);'
         'var scrim=tile.querySelector(".collage-scrim span");'
         'if(scrim)scrim.textContent=item.title;'
+        '});'
+        'prevRowTitles=curRowTitles;'
         '});'
         '})();</script>'
     )
     body = (
-        '<div class="collage-outer"><div class="collage-grid">' + ''.join(tiles) + '</div></div>'
+        '<div class="collage-outer"><div class="collage-rows">' + ''.join(rows) + '</div></div>'
         '<script type="application/json" id="collage-pools">' + pools_json + '</script>'
         + collage_script +
         '<div class="home-intro">'
@@ -938,13 +1391,15 @@ def render_commercial_page(all_projects):
                 inner_header(root), ''.join(body))
 
 
-def render_detail_page(p, current_folder):
+def render_detail_page(p, current_folder, next_map):
     root = '../'
     dd = detail_data(p)
     aspect = p.get('videoAspect', '16/9')
 
     left_html = render_credit_groups(dd['creditGroups']) if dd['creditGroups'] else ''
-    center_html = render_video_player(p, aspect, root)
+    center_html = (render_video_player(p, aspect, root)
+                   or render_static_video_thumb(p, aspect, root)
+                   or render_key_art(p, root, aspect))
     right_parts = []
     if dd['logline']:
         right_parts.append('<div class="field-label">Logline</div><p class="logline-text">' + esc(dd['logline']) + '</p>')
@@ -953,21 +1408,33 @@ def render_detail_page(p, current_folder):
         right_parts.append('<a class="watch-btn" href="' + esc(p['watchUrl']) + '" target="_blank" rel="noopener">' + esc(p.get('watchLabel', 'Watch')) + '</a>')
     right_html = ''.join(right_parts)
 
+    nav_html = ('<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>'
+                + render_next_link(current_folder, next_map.get(p['slug'])))
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
-            '<a class="back-link" href="' + dd['backHref'] + '">' + esc(dd['backLabel']) + '</a>',
+            '<div class="detail-head-nav">' + nav_html + '</div>',
             '<h1 class="detail-title">' + esc(p['title']) + '</h1>']
     if p.get('creditLine'):
         body.append('<div class="detail-credit-line">' + esc(p['creditLine']) + '</div>')
     body.append('</div>')
     if left_html or center_html or right_html:
+        # When there's no video (center_html empty — e.g. Misfits &
+        # Monsters has no VIDEOS entry), the right column must still
+        # land in the grid's 3rd (narrow) track explicitly — otherwise
+        # CSS grid auto-placement slides it into the unused 2nd (wide)
+        # track, leaving a blank gap where the video would have been
+        # instead of the page reading like every other film page just
+        # missing its video. A class (not inline style) so the existing
+        # <=1150px breakpoint, which collapses this column to full width
+        # on its own row, still wins on specificity+source order.
+        right_col_cls = 'detail-col-right' + ('' if center_html else ' detail-col-right--solo')
         body.append('<div class="detail-grid">')
         if left_html:
             body.append('<div class="detail-col-left"><div>' + left_html + '</div></div>')
         if center_html:
             body.append('<div class="detail-col-center">' + center_html + '</div>')
         if right_html:
-            body.append('<div class="detail-col-right"><div>' + right_html + '</div></div>')
+            body.append('<div class="' + right_col_cls + '"><div>' + right_html + '</div></div>')
         body.append('</div>')  # /detail-grid
 
     if dd['episodes']:
@@ -978,9 +1445,13 @@ def render_detail_page(p, current_folder):
                          '<div class="episode-synopsis">' + esc(ep['synopsis']) + '</div></div>')
         body.append('</div>')
 
-    body.append(render_gallery(root, dd, p['title']))
-    body.append(render_gallery_mobile(root, dd, p['title']))
-    body.append(render_video_block(p, 'second'))
+    if p.get('episodeGalleries'):
+        body.append(render_episode_selector(p))
+        body.append(render_episode_panels(root, p))
+    else:
+        body.append(render_gallery(root, dd, p['title']))
+        body.append(render_gallery_mobile(root, dd, p['title']))
+    body.append(render_video_block(p, 'second', root=root))
     body.append('</div>')  # /detail-wrap
 
     extra_head = ''
@@ -999,7 +1470,7 @@ def render_detail_page(p, current_folder):
                 inner_header(root), ''.join(body), extra_head)
 
 
-def render_simple_detail_page(p, current_folder, video_only=False):
+def render_simple_detail_page(p, current_folder, next_map, video_only=False):
     """Music Video / Commercial detail pages: back link, title, a single
     full-width 16:9 video player, and a stills gallery — no credits sidebar."""
     root = '../'
@@ -1010,9 +1481,11 @@ def render_simple_detail_page(p, current_folder, video_only=False):
     video_html = render_video_player(p, aspect, root)
     stills = [] if video_only else (p.get('galleryImages') or [u for u in (p.get('image2'), p.get('image3')) if u])
 
+    nav_html = ('<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>'
+                + render_next_link(current_folder, next_map.get(p['slug'])))
     body = ['<div class="detail-wrap">',
             '<div class="detail-head">',
-            '<a class="back-link" href="' + back_href + '">' + esc(back_label) + '</a>',
+            '<div class="detail-head-nav">' + nav_html + '</div>',
             '<h1 class="detail-title">' + esc(p['title']) + '</h1>',
             '</div>']
     if video_html:
@@ -1118,14 +1591,12 @@ ASSET_RENAME = {
     'spork.jpg': 'poster-spork.jpg',
     'theKid.jpg': 'poster-the-kid.jpg',
     'DePutaMadre.jpg': 'poster-de-puta-madre.jpg',
-    'pasted-1787862845306-0.png': 'poster-woman-child.png',
     'posters-1787856825786-bd9q.jpg': 'poster-god-bless-america.jpg',
     'misfits and monsters.jpg': 'poster-misfits-and-monsters.jpg',
     'KTF.jpg': 'poster-kiss-the-future.jpg',
     'youth governor.jpg': 'poster-the-youth-governor.jpg',
     'fire on the hill.jpg': 'poster-fire-on-the-hill.jpg',
     'Call me Lucky.jpg': 'poster-call-me-lucky.jpg',
-    'house of Ideas.avif': 'coming-soon-house-of-ideas.avif',
 }
 
 
@@ -1165,6 +1636,7 @@ def main():
     all_projects = build_all()
     rewrite_upload_paths(all_projects)
     groups = category_display_lists(all_projects)
+    next_map = next_project_map(all_projects, groups)
 
     write('index.html', render_home(all_projects))
     write('about.html', render_about())
@@ -1177,11 +1649,11 @@ def main():
         for i in range(len(cat['projects'])):
             p = all_projects[cat['key'] + '-' + str(i)]
             if cat['key'] == 'music_video':
-                write(p['href'], render_simple_detail_page(p, folder))
+                write(p['href'], render_simple_detail_page(p, folder, next_map))
             elif cat['key'] == 'commercial':
-                write(p['href'], render_simple_detail_page(p, folder, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
+                write(p['href'], render_simple_detail_page(p, folder, next_map, video_only=(p['slug'] in VIDEO_ONLY_SLUGS)))
             else:
-                write(p['href'], render_detail_page(p, folder))
+                write(p['href'], render_detail_page(p, folder, next_map))
 
     copy_assets()
     print('Built', 6 + len(all_projects), 'pages for', len(all_projects), 'projects.')
