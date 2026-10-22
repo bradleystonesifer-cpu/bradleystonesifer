@@ -326,14 +326,14 @@ OVERRIDES = {
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
             {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
-            # Lead Actors always renders as an actor-list row (see
-            # with_links() in build.py), which by default auto-links each
-            # name to an IMDb search — actorLinks overrides that for just
-            # this name so it points to her own site instead, matching
-            # the Director row above.
-            {"k": "Lead Actors", "v": "Catherine Black",
-             "actorLinks": {"Catherine Black": "https://www.directedbycatherineblack.com/"}},
-            {"k": "Co-Star", "v": "Pierluca Arancio"},
+            # "Actors" renders as an actor-list row (see with_links() in
+            # build.py), which by default auto-links each name to an
+            # IMDb search — actorLinks overrides that per name: Catherine
+            # Black points to her own site (matching the Director row
+            # above), and Pierluca Arancio is explicitly unlinked.
+            {"k": "Actors", "v": "Catherine Black, Pierluca Arancio",
+             "actorLinks": {"Catherine Black": "https://www.directedbycatherineblack.com/",
+                             "Pierluca Arancio": None}},
             {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
             {"k": "Press — Bern Euler, Festival Director, Canadian Film Fest", "v": "“Sexy & Surreal”"},
         ],

@@ -85,17 +85,19 @@ def with_links(arr, title):
     for cr in arr:
         href = cr.get('href') or link_for(cr['k'], cr['v'], title)
         item = dict(cr, href=href)
-        if cr['k'] in ('Lead Actors', 'Notable Talent'):
+        if cr['k'] in ('Lead Actors', 'Actors', 'Notable Talent'):
             names = [n.strip() for n in cr['v'].split(',') if n.strip()]
             # actorLinks: optional {name: url} overrides for a specific
             # actor's own site instead of the auto-generated IMDb search —
             # e.g. a director/actor whose own name should link to their
             # own site on this row too (link_for('Director', ...) below
-            # is still the default for every other name).
+            # is still the default for every other name). A name mapped
+            # to None/'' explicitly suppresses the link instead (a name
+            # left out of the dict entirely still gets the IMDb default).
             overrides = cr.get('actorLinks') or {}
             actors = []
             for i, name in enumerate(names):
-                ahref = overrides.get(name) or link_for('Director', name, title)
+                ahref = overrides[name] if name in overrides else link_for('Director', name, title)
                 actors.append({'name': name, 'href': ahref, 'last': i < len(names) - 1})
             item['isActorList'] = True
             item['actors'] = actors
