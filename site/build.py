@@ -463,8 +463,14 @@ def build_collage_pools(all_projects):
                     wide = order_by_similar_look(folder, wide)
                 if narrow:
                     narrow = order_by_similar_look(folder, narrow)
+            # No SCRIPTED_POOL_MIN_WIDTH filter here (unlike narrative
+            # galleryImages below) — most episodes' processed stills run
+            # under that 1500px bar, which cut the collage's pool of
+            # distinct Misfits episodes down to 4 of 8 for no quality
+            # reason specific to this use (they're full-size everywhere
+            # else on the episode's own gallery page).
             images = ['assets/images/misfits-and-monsters/' + folder + '/' + f['file']
-                      for f in (wide + narrow) if f['w'] >= SCRIPTED_POOL_MIN_WIDTH]
+                      for f in (wide + narrow)]
             if images:
                 ep_title = p['title'] + ' — ' + episodes_by_n.get(eg.get('n'), folder)
                 pools['scripted'].append({'key': key + ':ep:' + folder, 'title': ep_title,
