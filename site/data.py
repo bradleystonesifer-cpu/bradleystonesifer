@@ -471,13 +471,12 @@ OVERRIDES = {
         # sweep). He shot all 8 episodes, so this was never corrected to
         # "8 of 8" — just dropped entirely, same as every other project.
         # Season 1 trailer (truTV, via Vimeo) — embed code supplied directly
-        # by Bradley, no ?h= privacy hash on it (so none is added here).
-        # Its own iframe wrapper used padding-top:75%, i.e. a 4:3 video, not
-        # the site's 16:9 default — hence the explicit videoAspect override.
+        # by Bradley, no ?h= privacy hash on it (so none is added here). The
+        # video itself is 16:9 (confirmed by Bradley), so no videoAspect
+        # override is needed — the site's default already matches.
         # Reuses the show's existing key-art still as the player thumbnail,
         # since no videoThumb was supplied with the embed.
         "videoEmbed": "https://player.vimeo.com/video/1238976555",
-        "videoAspect": "4/3",
         "videoThumb": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
         # Watch button: truTV's show page — the same link the center-column
         # key-art fallback used to link out to before this project had its
