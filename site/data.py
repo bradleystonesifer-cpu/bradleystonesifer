@@ -507,6 +507,9 @@ OVERRIDES = {
         # this ships, the same way Woman Child's embed turned out to
         # already be 16/9 with baked-in letterbox bars.
         "videoEmbed": "https://player.vimeo.com/video/1238186502?h=700b945d6e",
+        # Hero frame picked by Bradley in place of the auto-default
+        # (image, still 01) for the video player thumbnail specifically.
+        "videoThumb": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-24.jpg",
     },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [
