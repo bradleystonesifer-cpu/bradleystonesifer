@@ -498,15 +498,18 @@ OVERRIDES = {
         "image": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-01.jpg",
         "image2": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-02.jpg",
         "image3": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-03.jpg",
-        # Trailer, page's video player only. videoAspect intentionally left
-        # unset (defaults to 16/9) — the oEmbed check this needs
-        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238186502/700b945d6e)
+        # Trailer, page's video player only. No ?h= hash given this time
+        # (the earlier embed had one) — if the video is privacy-restricted
+        # and actually needs one, the facade will fail to load and it'll
+        # need adding. videoAspect intentionally left unset (defaults to
+        # 16/9) — the oEmbed check this needs
+        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238881769)
         # couldn't be reached from this environment (vimeo.com is blocked
-        # here), so the real ratio is unverified. Flagged for Bradley:
-        # confirm the real width/height (or that 16/9 is correct) before
-        # this ships, the same way Woman Child's embed turned out to
-        # already be 16/9 with baked-in letterbox bars.
-        "videoEmbed": "https://player.vimeo.com/video/1238186502?h=700b945d6e",
+        # here), so neither the real ratio nor the hash requirement is
+        # verified. Flagged for Bradley: confirm both (or that this loads
+        # fine as-is) before this ships, the same way Woman Child's embed
+        # turned out to already be 16/9 with baked-in letterbox bars.
+        "videoEmbed": "https://player.vimeo.com/video/1238881769",
         # Hero frame picked by Bradley in place of the auto-default
         # (image, still 01) for the video player thumbnail specifically.
         "videoThumb": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-24.jpg",
