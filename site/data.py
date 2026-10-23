@@ -470,11 +470,21 @@ OVERRIDES = {
         # the site is his DP portfolio already (removed per site-wide
         # sweep). He shot all 8 episodes, so this was never corrected to
         # "8 of 8" — just dropped entirely, same as every other project.
-        # No Watch button on this page — removed per explicit instruction.
-        # Center-column fallback (no VIDEOS entry for this project) — the
-        # show's official key art, linked out to its truTV watch page.
-        "keyArtImage": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
-        "keyArtUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
+        # Season 1 trailer (truTV, via Vimeo) — embed code supplied directly
+        # by Bradley, no ?h= privacy hash on it (so none is added here).
+        # Its own iframe wrapper used padding-top:75%, i.e. a 4:3 video, not
+        # the site's 16:9 default — hence the explicit videoAspect override.
+        # Reuses the show's existing key-art still as the player thumbnail,
+        # since no videoThumb was supplied with the embed.
+        "videoEmbed": "https://player.vimeo.com/video/1238976555",
+        "videoAspect": "4/3",
+        "videoThumb": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
+        # Watch button: truTV's show page — the same link the center-column
+        # key-art fallback used to link out to before this project had its
+        # own trailer (that fallback is now superseded by the player above,
+        # so keyArtImage/keyArtUrl were retired rather than left unused).
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
         # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
         # ep-NN/, manifest.json for each still's real w/h — all 8 episodes
         # now have a folder). Titles/synopses are reused from the "episodes"
