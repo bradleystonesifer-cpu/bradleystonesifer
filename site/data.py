@@ -60,12 +60,16 @@ CATS = [
                  {"n": "07", "title": "Better World", "synopsis": "A cutting-edge scientist creates two highly advanced AI forms, which quickly turn against him."},
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
-            # No poster/images yet — still-with-title fallback tile until artwork is supplied.
-            # "poster" is empty until Bradley supplies the file path for
-            # back-in-the-day-poster.jpg — once set, the poster wall tile
-            # switches from the still-with-title fallback automatically.
-            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
-            # Same deal — midnight-in-the-switchgrass-poster.jpg.
+            # Poster now supplied — see narrative-11's posterImage/posterThumb
+            # override below, same pattern as every other project with real
+            # artwork (the still-with-title fallback tile here was only ever
+            # a placeholder for when "poster" was empty).
+            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
+            # No poster/images yet — still-with-title fallback tile until
+            # artwork is supplied. "poster" is empty until Bradley supplies
+            # the file path for midnight-in-the-switchgrass-poster.jpg —
+            # once set, the poster wall tile switches from the still-with-
+            # title fallback automatically.
             {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
         ],
     },
@@ -351,6 +355,9 @@ OVERRIDES = {
         "watchUrl": "https://vimeo.com/239052675",
     },
     "narrative-5": {  # The Kid
+        # overrideCredits/logline unchanged — no Writers row, no creditLine
+        # (never one for Bradley on this page; the site's his DP portfolio
+        # already).
         "overrideCredits": [
             {"k": "Director", "v": "Sean Brosnan"},
             {"k": "Production Company", "v": "KnightMarcher"},
@@ -358,15 +365,48 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Louisville's International Festival of Film '13"},
         ],
         "logline": "Two days in the life of a young poet in Venice, California who deals with situations far beyond his years.",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.youtube.com/watch?v=N2jn6Bm6wDE",
+        # Keep the existing poster (uploads/theKid.jpg -> poster-the-kid.jpg
+        # via ASSET_RENAME) untouched — not overridden here.
+        # 32 processed stills, best-first (01-03), numeric order otherwise —
+        # same gallery/lightbox/mobile setup as every other project (native-
+        # aspect layout kicks in automatically at 8+ galleryImages, so these
+        # 2.3-2.4:1 frames show uncropped at their own real ratio).
+        "galleryImages": [
+            "assets/images/the-kid/the-kid-%02d.jpg" % i for i in range(1, 33)
+        ],
+        # New trailer (see VIDEOS["the-kid"] above) has a 16:9 player box.
+        "videoAspect": "16/9",
     },
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
-            {"k": "Director", "v": "Catherine Black"},
-            {"k": "Lead Actors", "v": "Catherine Black"},
+            {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
+            # "Actors" renders as an actor-list row (see with_links() in
+            # build.py), which by default auto-links each name to an
+            # IMDb search — actorLinks overrides that per name: Catherine
+            # Black points to her own site (matching the Director row
+            # above), and Pierluca Arancio is explicitly unlinked.
+            {"k": "Actors", "v": "Catherine Black, Pierluca Arancio",
+             "actorLinks": {"Catherine Black": "https://www.directedbycatherineblack.com/",
+                             "Pierluca Arancio": None}},
             {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
             {"k": "Press — Bern Euler, Festival Director, Canadian Film Fest", "v": "“Sexy & Surreal”"},
         ],
-        "logline": "What begins as a picnic becomes a hostage situation, as a woman held by her unstable ex-lover is forced to reckon with obsession and letting go.",
+        "logline": "A picnic turns tense and dangerous as a kidnapped woman tries to escape her delusional ex-partner in a surreal story about obsession and letting go.",
+        # 32 processed stills (site/assets/images/de-puta-madre/), ordered
+        # numerically — same gallery/lightbox/mobile setup as Woman Child
+        # and House of Ideas (native-aspect layout kicks in automatically
+        # once galleryImages has 8+ entries; see GALLERY_NEW_LAYOUT_EXCLUDE
+        # in detail_data()).
+        "galleryImages": [
+            "assets/images/de-puta-madre/de-puta-madre-%02d.jpg" % i for i in range(1, 33)
+        ],
+        # Real stills in place of the old Squarespace screenshot
+        # placeholders, so the 2.35:1 tiles fill correctly.
+        "image": "assets/images/de-puta-madre/de-puta-madre-01.jpg",
+        "image2": "assets/images/de-puta-madre/de-puta-madre-02.jpg",
+        "image3": "assets/images/de-puta-madre/de-puta-madre-03.jpg",
     },
     "narrative-8": {  # God Bless America
         "overrideCredits": [
@@ -431,7 +471,10 @@ OVERRIDES = {
              "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
-        "creditLine": "Cinematographer, 7 of 8 episodes",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide
+        # sweep). He shot all 8 episodes, so this was never corrected to
+        # "8 of 8" — just dropped entirely, same as every other project.
         # No Watch button on this page — removed per explicit instruction.
         # Center-column fallback (no VIDEOS entry for this project) — the
         # show's official key art, linked out to its truTV watch page.
@@ -453,26 +496,49 @@ OVERRIDES = {
         ],
     },
     "narrative-11": {  # Back in the Day
-        "creditLine": "Cinematographer, Co-Producer",
+        # No creditLine on purpose — never a Director of Photography (or
+        # any other) credit line for Bradley here; the site is his DP
+        # portfolio already, every project on it implies that.
         "watchLabel": "Watch",
-        "watchUrl": "https://www.justwatch.com/us/movie/back-in-the-day",
+        "watchUrl": "https://therokuchannel.roku.com/watch/692ad3f1f6ff52d0b3b123fcb8a1bb58",
+        # Production Company and Lead Actors below are KEPT AS THEY WERE —
+        # both conflict with the values given for this update (Production
+        # Company: "...WonderStar Productions" vs "...Ericabo Productions";
+        # Lead Actors: this 9-name list vs a 4-name one). Flagged for
+        # Bradley instead of overwritten — see the reply for this task.
         "overrideCredits": [
             {"k": "Director", "v": "Michael Rosenbaum"},
-            {"k": "Writers", "v": "Michael Rosenbaum"},
-            {"k": "Producers", "v": "Kim Waltrip"},
             {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
             {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa, Kristoffer Polaha, Jay R. Ferguson, Emma Caulfield"},
+            {"k": "Distributor", "v": "Screen Media"},
         ],
-        "logline": "Disenchanted with his Hollywood career, Jim Owens returns to his Indiana hometown for his high school reunion, hoping to relive the glory days and win back the one who got away.",
+        # Draft, pending approval — see the reply for this task.
+        "logline": "A man dissatisfied with his career rallies his old high-school friends for a stretch of outrageous parties, and in the process falls for the girl who got away.",
         # todo: festivals, press still needed
+        "posterImage": "assets/images/back-in-the-day/poster-back-in-the-day.jpg",
+        "posterThumb": "assets/images/back-in-the-day/poster-back-in-the-day-thumb.jpg",
+        "galleryImages": [
+            "assets/images/back-in-the-day/back-in-the-day-%02d.jpg" % i for i in range(1, 29)
+        ],
+        "image": "assets/images/back-in-the-day/back-in-the-day-01.jpg",
+        "image2": "assets/images/back-in-the-day/back-in-the-day-02.jpg",
+        "image3": "assets/images/back-in-the-day/back-in-the-day-03.jpg",
+        # Trailer, page's video player only. Hash (?h=ec9b2cc5dc) and 16:9
+        # aspect confirmed by Bradley ("Back In The Day Official Trailer 1
+        # 2014"). No videoAspect override needed (16/9 is the default).
+        "videoEmbed": "https://player.vimeo.com/video/1238886191?h=ec9b2cc5dc",
     },
     "narrative-12": {  # Midnight in the Switchgrass
-        "creditLine": "Director of Photography, Los Angeles unit",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide
+        # sweep; flagged on this branch earlier, now actually fixed).
+        # Watch is an external link only (JustWatch) — this is not the one
+        # film (Woman Child) whose full movie plays on-site, so it must
+        # never point at the trailer embed below.
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
             {"k": "Director", "v": "Randall Emmett"},
-            {"k": "Writers", "v": "Alan Horsnail"},
             {"k": "Production Company", "v": "Emmett Furla Oasis Films; The Pimienta Film Co."},
             {"k": "Lead Actors", "v": "Megan Fox, Bruce Willis, Emile Hirsch, Lukas Haas, Machine Gun Kelly"},
             {"k": "Notable Festivals", "v": "Gasparilla International Film Festival '21 (Closing Night Film)"},
@@ -480,6 +546,30 @@ OVERRIDES = {
         # Sources disagree on the setting, so the logline stays neutral.
         "logline": "When a young woman goes missing at a truck stop, two FBI agents and a local lawman race to stop a serial killer before he claims another victim.",
         # todo: press still needed
+        # Real poster (site/assets/images/midnight-in-the-switchgrass/), same
+        # posterImage/posterThumb wiring as Woman Child — posterThumb feeds
+        # the Scripted-page grid tile, the detail page keeps the full-res
+        # posterImage. ~0.73:1, object-fit handled the same as every other
+        # poster (gallery-poster/gm-poster img rules), no stretching.
+        "posterImage": "assets/images/midnight-in-the-switchgrass/poster-midnight-in-the-switchgrass.jpg",
+        "posterThumb": "assets/images/midnight-in-the-switchgrass/poster-midnight-in-the-switchgrass-thumb.jpg",
+        # 31 processed stills, ordered numerically — same gallery/lightbox/
+        # mobile setup as the other films (native-aspect layout kicks in
+        # automatically at 8+ galleryImages).
+        "galleryImages": [
+            "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-%02d.jpg" % i for i in range(1, 32)
+        ],
+        "image": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-01.jpg",
+        "image2": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-02.jpg",
+        "image3": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-03.jpg",
+        # Trailer, page's video player only. Hash (?h=f1b198c690) and 16:9
+        # aspect both confirmed from Bradley's actual Vimeo embed code
+        # (its padding:56.25% wrapper is the 9/16 ratio marker) — no
+        # videoAspect override needed, same as Woman Child.
+        "videoEmbed": "https://player.vimeo.com/video/1238881769?h=f1b198c690",
+        # Hero frame picked by Bradley in place of the auto-default
+        # (image, still 01) for the video player thumbnail specifically.
+        "videoThumb": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-24.jpg",
     },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [
@@ -569,7 +659,7 @@ POSTERS = {
     "documentary-3": "uploads/Call me Lucky.jpg",
 }
 
-# Home-page collage: (project key, image slot, aspect ratio, column span).
+# Home-page collage: (tile type, project key, aspect ratio, column span).
 # A repeating 3-row cycle (4 cycles x 8 tiles = 32), each row a whole
 # 12-column row on its own (every tile in a row shares the same ratio/span,
 # which is what keeps it flush at every viewport width). render_home()
@@ -582,61 +672,58 @@ POSTERS = {
 #            no cropping — scripted stills are shot ~2.4:1).
 #   Row 3 — three 16:9 tiles (span 4 + 4 + 4).
 #
-# Three kinds of entry:
-#   - "poster": a project's own fixed poster, never randomized. 4 total,
-#     one per cycle — Misfits & Monsters plus the 3 strongest others
-#     (The Vicious Kind, Hit & Run, Call Me Lucky).
-#   - ("scripted", "scripted", ...): a generic scripted-pool slot — `key`
-#     is an unused placeholder (collage_tile_type()/render_home() never
-#     look a non-poster entry's project up by key, only by its pool), so
-#     the real image always comes from build_collage_pools()'s shared
-#     "scripted" pool (every narrative gallery + Misfits' episode stills).
-#   - a real (key, slot) pair at 16/9: one of the 10 vetted non-scripted
-#     stills (4 commercial, 4 documentary, 2 music video). 2.40:1 slots
-#     (row 2) are scripted-only, so every non-scripted tile lives in a
-#     row-1 or row-3 16:9 slot, spread across all 4 cycles with at least
-#     one scripted tile left in every 16:9 row (never a fully non-scripted
-#     16:9 row). None of the 10 share a title with any of the 4 posters.
+# `key` is only meaningful for type == "poster" (one of the 4 fixed
+# films); every other entry's `key` is None — build_collage_pools() and
+# render_home() assign an actual project to it at build/randomize time
+# from the matching type's pool (project key is unique across the whole
+# page; see build_collage_pools()'s docstring for the no-duplicate-
+# project rule and the Misfits-episodes-count-separately exception).
+#
+# Of the 20 16:9 slots, 6 are "scripted" (generic scripted-pool, same as
+# a 2.40:1 slot) and 14 are non-scripted, split 6 commercial / 5
+# documentary / 3 music video — together with the 4 posters and 8
+# (always-scripted) 2.40:1 slots, that's 18 scripted + 6 + 5 + 3 = 32,
+# matching the target mix (scripted the clear majority).
 COLLAGE_SPEC = [
     # --- Cycle 1 (poster left: The Vicious Kind) ---
-    ("narrative-0", "poster", "2/3", 2),
-    ("commercial-2", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("documentary-1", "image", "16/9", 4),
-    ("music_video-0", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("poster", "narrative-0", "2/3", 2),
+    ("scripted", None, "16/9", 5),
+    ("commercial", None, "16/9", 5),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("commercial", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
+    ("music_video", None, "16/9", 4),
 
     # --- Cycle 2 (poster right: Hit & Run) ---
-    ("documentary-4", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("narrative-1", "poster", "2/3", 2),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("commercial-10", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("scripted", None, "16/9", 5),
+    ("commercial", None, "16/9", 5),
+    ("poster", "narrative-1", "2/3", 2),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("documentary", None, "16/9", 4),
+    ("commercial", None, "16/9", 4),
+    ("scripted", None, "16/9", 4),
 
     # --- Cycle 3 (poster left: Misfits & Monsters) ---
-    ("narrative-10", "poster", "2/3", 2),
-    ("music_video-1", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("documentary-5", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
-    ("commercial-17", "image", "16/9", 4),
+    ("poster", "narrative-10", "2/3", 2),
+    ("music_video", None, "16/9", 5),
+    ("documentary", None, "16/9", 5),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "16/9", 4),
+    ("commercial", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
 
     # --- Cycle 4 (poster right: Call Me Lucky) ---
-    ("commercial-21", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("documentary-3", "poster", "2/3", 2),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "16/9", 4),
-    ("documentary-6", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("commercial", None, "16/9", 5),
+    ("music_video", None, "16/9", 5),
+    ("poster", "documentary-3", "2/3", 2),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
+    ("scripted", None, "16/9", 4),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).
@@ -716,8 +803,11 @@ VIDEOS = {
     # films — scripted (the-vicious-kind / hit-and-run / spork excluded, see note above)
     "me-plus-her": [{"url": "https://player.vimeo.com/video/84247438",
                       "thumb": _vt("461045520-c5b0c102b79df337d0cdcb75b623189d8da44e6e97a6592b0044c8e4349cfde7")}],
-    "the-kid": [{"url": "https://player.vimeo.com/video/74362737",
-                  "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
+    "the-kid": [{"url": "https://player.vimeo.com/video/1238158846?h=5dd8104ad8",
+                  # New trailer — the old thumbnail ID is for the previous
+                  # video (74362737) and won't match this one, so falls
+                  # back to the gallery's own first (best) still instead.
+                  "thumb": "assets/images/the-kid/the-kid-01.jpg"}],
     # No hash in the share URL Bradley sent, so no h= param. No thumbnail ID
     # supplied yet — facade falls back to the project's still.
     "god-bless-america": [{"url": "https://player.vimeo.com/video/65878287",
