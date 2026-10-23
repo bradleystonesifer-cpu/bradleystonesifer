@@ -361,12 +361,32 @@ OVERRIDES = {
     },
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
-            {"k": "Director", "v": "Catherine Black"},
-            {"k": "Lead Actors", "v": "Catherine Black"},
+            {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
+            # "Actors" renders as an actor-list row (see with_links() in
+            # build.py), which by default auto-links each name to an
+            # IMDb search — actorLinks overrides that per name: Catherine
+            # Black points to her own site (matching the Director row
+            # above), and Pierluca Arancio is explicitly unlinked.
+            {"k": "Actors", "v": "Catherine Black, Pierluca Arancio",
+             "actorLinks": {"Catherine Black": "https://www.directedbycatherineblack.com/",
+                             "Pierluca Arancio": None}},
             {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
             {"k": "Press — Bern Euler, Festival Director, Canadian Film Fest", "v": "“Sexy & Surreal”"},
         ],
-        "logline": "What begins as a picnic becomes a hostage situation, as a woman held by her unstable ex-lover is forced to reckon with obsession and letting go.",
+        "logline": "A picnic turns tense and dangerous as a kidnapped woman tries to escape her delusional ex-partner in a surreal story about obsession and letting go.",
+        # 32 processed stills (site/assets/images/de-puta-madre/), ordered
+        # numerically — same gallery/lightbox/mobile setup as Woman Child
+        # and House of Ideas (native-aspect layout kicks in automatically
+        # once galleryImages has 8+ entries; see GALLERY_NEW_LAYOUT_EXCLUDE
+        # in detail_data()).
+        "galleryImages": [
+            "assets/images/de-puta-madre/de-puta-madre-%02d.jpg" % i for i in range(1, 33)
+        ],
+        # Real stills in place of the old Squarespace screenshot
+        # placeholders, so the 2.35:1 tiles fill correctly.
+        "image": "assets/images/de-puta-madre/de-puta-madre-01.jpg",
+        "image2": "assets/images/de-puta-madre/de-puta-madre-02.jpg",
+        "image3": "assets/images/de-puta-madre/de-puta-madre-03.jpg",
     },
     "narrative-8": {  # God Bless America
         "overrideCredits": [
