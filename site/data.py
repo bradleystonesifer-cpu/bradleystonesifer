@@ -431,7 +431,10 @@ OVERRIDES = {
              "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
-        "creditLine": "Cinematographer, 7 of 8 episodes",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide
+        # sweep). He shot all 8 episodes, so this was never corrected to
+        # "8 of 8" — just dropped entirely, same as every other project.
         # No Watch button on this page — removed per explicit instruction.
         # Center-column fallback (no VIDEOS entry for this project) — the
         # show's official key art, linked out to its truTV watch page.
@@ -453,7 +456,8 @@ OVERRIDES = {
         ],
     },
     "narrative-11": {  # Back in the Day
-        "creditLine": "Cinematographer, Co-Producer",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/back-in-the-day",
         "overrideCredits": [
@@ -467,7 +471,8 @@ OVERRIDES = {
         # todo: festivals, press still needed
     },
     "narrative-12": {  # Midnight in the Switchgrass
-        "creditLine": "Director of Photography, Los Angeles unit",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
@@ -569,7 +574,7 @@ POSTERS = {
     "documentary-3": "uploads/Call me Lucky.jpg",
 }
 
-# Home-page collage: (project key, image slot, aspect ratio, column span).
+# Home-page collage: (tile type, project key, aspect ratio, column span).
 # A repeating 3-row cycle (4 cycles x 8 tiles = 32), each row a whole
 # 12-column row on its own (every tile in a row shares the same ratio/span,
 # which is what keeps it flush at every viewport width). render_home()
@@ -582,61 +587,58 @@ POSTERS = {
 #            no cropping — scripted stills are shot ~2.4:1).
 #   Row 3 — three 16:9 tiles (span 4 + 4 + 4).
 #
-# Three kinds of entry:
-#   - "poster": a project's own fixed poster, never randomized. 4 total,
-#     one per cycle — Misfits & Monsters plus the 3 strongest others
-#     (The Vicious Kind, Hit & Run, Call Me Lucky).
-#   - ("scripted", "scripted", ...): a generic scripted-pool slot — `key`
-#     is an unused placeholder (collage_tile_type()/render_home() never
-#     look a non-poster entry's project up by key, only by its pool), so
-#     the real image always comes from build_collage_pools()'s shared
-#     "scripted" pool (every narrative gallery + Misfits' episode stills).
-#   - a real (key, slot) pair at 16/9: one of the 10 vetted non-scripted
-#     stills (4 commercial, 4 documentary, 2 music video). 2.40:1 slots
-#     (row 2) are scripted-only, so every non-scripted tile lives in a
-#     row-1 or row-3 16:9 slot, spread across all 4 cycles with at least
-#     one scripted tile left in every 16:9 row (never a fully non-scripted
-#     16:9 row). None of the 10 share a title with any of the 4 posters.
+# `key` is only meaningful for type == "poster" (one of the 4 fixed
+# films); every other entry's `key` is None — build_collage_pools() and
+# render_home() assign an actual project to it at build/randomize time
+# from the matching type's pool (project key is unique across the whole
+# page; see build_collage_pools()'s docstring for the no-duplicate-
+# project rule and the Misfits-episodes-count-separately exception).
+#
+# Of the 20 16:9 slots, 6 are "scripted" (generic scripted-pool, same as
+# a 2.40:1 slot) and 14 are non-scripted, split 6 commercial / 5
+# documentary / 3 music video — together with the 4 posters and 8
+# (always-scripted) 2.40:1 slots, that's 18 scripted + 6 + 5 + 3 = 32,
+# matching the target mix (scripted the clear majority).
 COLLAGE_SPEC = [
     # --- Cycle 1 (poster left: The Vicious Kind) ---
-    ("narrative-0", "poster", "2/3", 2),
-    ("commercial-2", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("documentary-1", "image", "16/9", 4),
-    ("music_video-0", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("poster", "narrative-0", "2/3", 2),
+    ("scripted", None, "16/9", 5),
+    ("commercial", None, "16/9", 5),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("commercial", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
+    ("music_video", None, "16/9", 4),
 
     # --- Cycle 2 (poster right: Hit & Run) ---
-    ("documentary-4", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("narrative-1", "poster", "2/3", 2),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("commercial-10", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("scripted", None, "16/9", 5),
+    ("commercial", None, "16/9", 5),
+    ("poster", "narrative-1", "2/3", 2),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("documentary", None, "16/9", 4),
+    ("commercial", None, "16/9", 4),
+    ("scripted", None, "16/9", 4),
 
     # --- Cycle 3 (poster left: Misfits & Monsters) ---
-    ("narrative-10", "poster", "2/3", 2),
-    ("music_video-1", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("documentary-5", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
-    ("commercial-17", "image", "16/9", 4),
+    ("poster", "narrative-10", "2/3", 2),
+    ("music_video", None, "16/9", 5),
+    ("documentary", None, "16/9", 5),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "16/9", 4),
+    ("commercial", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
 
     # --- Cycle 4 (poster right: Call Me Lucky) ---
-    ("commercial-21", "image", "16/9", 5),
-    ("scripted", "scripted", "16/9", 5),
-    ("documentary-3", "poster", "2/3", 2),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "2.40/1", 6),
-    ("scripted", "scripted", "16/9", 4),
-    ("documentary-6", "image", "16/9", 4),
-    ("scripted", "scripted", "16/9", 4),
+    ("commercial", None, "16/9", 5),
+    ("music_video", None, "16/9", 5),
+    ("poster", "documentary-3", "2/3", 2),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "2.40/1", 6),
+    ("scripted", None, "16/9", 4),
+    ("documentary", None, "16/9", 4),
+    ("scripted", None, "16/9", 4),
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).

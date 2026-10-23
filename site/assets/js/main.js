@@ -94,14 +94,19 @@
       wrap.innerHTML = '';
       wrap.appendChild(iframe);
     }
-    function bindPlayButton(btn) {
-      btn.addEventListener('click', function () {
+    // Bound to the whole .video-thumb-overlay (not just the inner circular
+    // button) so clicking anywhere on the thumbnail starts playback, same
+    // as the older [data-video-thumb] mechanism — a click on the button
+    // itself still fires this too, since it bubbles up to its overlay
+    // ancestor.
+    function bindPlayTrigger(overlay) {
+      overlay.addEventListener('click', function () {
         var src = wrap.getAttribute('data-vimeo-src');
         if (!src) return;
         loadVideo(src + (src.indexOf('?') === -1 ? '?' : '&') + 'autoplay=1');
       });
-      btn.addEventListener('mouseenter', preconnectVimeo, { once: true });
-      btn.addEventListener('focus', preconnectVimeo, { once: true });
+      overlay.addEventListener('mouseenter', preconnectVimeo, { once: true });
+      overlay.addEventListener('focus', preconnectVimeo, { once: true });
     }
     // Rebuilds the facade (thumbnail + play button) for a different video —
     // used when a label button is clicked, so the thumb visibly swaps to
@@ -120,15 +125,15 @@
       btn.type = 'button';
       btn.className = 'video-click-btn';
       btn.setAttribute('data-vimeo-play', '');
-      btn.setAttribute('aria-label', wrap.getAttribute('data-vimeo-play-label') || alt);
+      btn.setAttribute('aria-label', wrap.getAttribute('data-vimeo-play-label') || 'Play');
       btn.innerHTML = '<div class="play-btn"><div class="play-btn-tri"></div></div>';
       overlay.appendChild(thumbImg);
       overlay.appendChild(btn);
       wrap.appendChild(overlay);
-      bindPlayButton(btn);
+      bindPlayTrigger(overlay);
     }
-    var playBtn = wrap.querySelector('[data-vimeo-play]');
-    if (playBtn) bindPlayButton(playBtn);
+    var thumbOverlay = wrap.querySelector('.video-thumb-overlay');
+    if (thumbOverlay) bindPlayTrigger(thumbOverlay);
 
     wrap.parentElement.querySelectorAll('[data-vimeo-select]').forEach(function (btn) {
       btn.addEventListener('click', function () {
