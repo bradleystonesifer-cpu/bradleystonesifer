@@ -485,17 +485,10 @@ OVERRIDES = {
         "image": "assets/images/back-in-the-day/back-in-the-day-01.jpg",
         "image2": "assets/images/back-in-the-day/back-in-the-day-02.jpg",
         "image3": "assets/images/back-in-the-day/back-in-the-day-03.jpg",
-        # Trailer, page's video player only. No ?h= hash given — if the
-        # video is privacy-restricted and needs one, the facade will fail
-        # to load (this happened on Midnight in the Switchgrass's trailer;
-        # Bradley supplied the real embed code with the hash afterward).
-        # videoAspect intentionally left unset (defaults to 16/9) — the
-        # oEmbed check this needs
-        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238886191)
-        # couldn't be reached from this environment (vimeo.com is blocked
-        # here), so neither the real ratio nor the hash requirement is
-        # verified.
-        "videoEmbed": "https://player.vimeo.com/video/1238886191",
+        # Trailer, page's video player only. Hash (?h=ec9b2cc5dc) and 16:9
+        # aspect confirmed by Bradley ("Back In The Day Official Trailer 1
+        # 2014"). No videoAspect override needed (16/9 is the default).
+        "videoEmbed": "https://player.vimeo.com/video/1238886191?h=ec9b2cc5dc",
     },
     "narrative-12": {  # Midnight in the Switchgrass
         # No creditLine on purpose — never a role credit for Bradley here;
