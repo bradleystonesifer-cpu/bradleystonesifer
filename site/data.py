@@ -60,12 +60,16 @@ CATS = [
                  {"n": "07", "title": "Better World", "synopsis": "A cutting-edge scientist creates two highly advanced AI forms, which quickly turn against him."},
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
-            # No poster/images yet — still-with-title fallback tile until artwork is supplied.
-            # "poster" is empty until Bradley supplies the file path for
-            # back-in-the-day-poster.jpg — once set, the poster wall tile
-            # switches from the still-with-title fallback automatically.
-            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
-            # Same deal — midnight-in-the-switchgrass-poster.jpg.
+            # Poster now supplied — see narrative-11's posterImage/posterThumb
+            # override below, same pattern as every other project with real
+            # artwork (the still-with-title fallback tile here was only ever
+            # a placeholder for when "poster" was empty).
+            {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
+            # No poster/images yet — still-with-title fallback tile until
+            # artwork is supplied. "poster" is empty until Bradley supplies
+            # the file path for midnight-in-the-switchgrass-poster.jpg —
+            # once set, the poster wall tile switches from the still-with-
+            # title fallback automatically.
             {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
         ],
     },
@@ -431,7 +435,8 @@ OVERRIDES = {
              "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
-        "creditLine": "Cinematographer, 7 of 8 episodes",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         # No Watch button on this page — removed per explicit instruction.
         # Center-column fallback (no VIDEOS entry for this project) — the
         # show's official key art, linked out to its truTV watch page.
@@ -453,21 +458,48 @@ OVERRIDES = {
         ],
     },
     "narrative-11": {  # Back in the Day
-        "creditLine": "Cinematographer, Co-Producer",
+        # No creditLine on purpose — never a Director of Photography (or
+        # any other) credit line for Bradley here; the site is his DP
+        # portfolio already, every project on it implies that.
         "watchLabel": "Watch",
-        "watchUrl": "https://www.justwatch.com/us/movie/back-in-the-day",
+        "watchUrl": "https://therokuchannel.roku.com/watch/692ad3f1f6ff52d0b3b123fcb8a1bb58",
+        # Production Company and Lead Actors below are KEPT AS THEY WERE —
+        # both conflict with the values given for this update (Production
+        # Company: "...WonderStar Productions" vs "...Ericabo Productions";
+        # Lead Actors: this 9-name list vs a 4-name one). Flagged for
+        # Bradley instead of overwritten — see the reply for this task.
         "overrideCredits": [
             {"k": "Director", "v": "Michael Rosenbaum"},
-            {"k": "Writers", "v": "Michael Rosenbaum"},
-            {"k": "Producers", "v": "Kim Waltrip"},
             {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
             {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa, Kristoffer Polaha, Jay R. Ferguson, Emma Caulfield"},
+            {"k": "Distributor", "v": "Screen Media"},
         ],
-        "logline": "Disenchanted with his Hollywood career, Jim Owens returns to his Indiana hometown for his high school reunion, hoping to relive the glory days and win back the one who got away.",
+        # Draft, pending approval — see the reply for this task.
+        "logline": "A man dissatisfied with his career rallies his old high-school friends for a stretch of outrageous parties, and in the process falls for the girl who got away.",
         # todo: festivals, press still needed
+        "posterImage": "assets/images/back-in-the-day/poster-back-in-the-day.jpg",
+        "posterThumb": "assets/images/back-in-the-day/poster-back-in-the-day-thumb.jpg",
+        "galleryImages": [
+            "assets/images/back-in-the-day/back-in-the-day-%02d.jpg" % i for i in range(1, 29)
+        ],
+        "image": "assets/images/back-in-the-day/back-in-the-day-01.jpg",
+        "image2": "assets/images/back-in-the-day/back-in-the-day-02.jpg",
+        "image3": "assets/images/back-in-the-day/back-in-the-day-03.jpg",
+        # Trailer, page's video player only. No ?h= hash given — if the
+        # video is privacy-restricted and needs one, the facade will fail
+        # to load (this happened on Midnight in the Switchgrass's trailer;
+        # Bradley supplied the real embed code with the hash afterward).
+        # videoAspect intentionally left unset (defaults to 16/9) — the
+        # oEmbed check this needs
+        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238886191)
+        # couldn't be reached from this environment (vimeo.com is blocked
+        # here), so neither the real ratio nor the hash requirement is
+        # verified.
+        "videoEmbed": "https://player.vimeo.com/video/1238886191",
     },
     "narrative-12": {  # Midnight in the Switchgrass
-        "creditLine": "Director of Photography, Los Angeles unit",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
