@@ -451,7 +451,10 @@ OVERRIDES = {
              "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
         "logline": "Eight half-hour stories, eight genres, eight different casts — Bobcat Goldthwait's anthology of darkly funny morality tales.",
-        "creditLine": "Cinematographer, 7 of 8 episodes",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide
+        # sweep). He shot all 8 episodes, so this was never corrected to
+        # "8 of 8" — just dropped entirely, same as every other project.
         # No Watch button on this page — removed per explicit instruction.
         # Center-column fallback (no VIDEOS entry for this project) — the
         # show's official key art, linked out to its truTV watch page.
@@ -473,7 +476,8 @@ OVERRIDES = {
         ],
     },
     "narrative-11": {  # Back in the Day
-        "creditLine": "Cinematographer, Co-Producer",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/back-in-the-day",
         "overrideCredits": [
@@ -487,7 +491,8 @@ OVERRIDES = {
         # todo: festivals, press still needed
     },
     "narrative-12": {  # Midnight in the Switchgrass
-        "creditLine": "Director of Photography, Los Angeles unit",
+        # No creditLine on purpose — never a role credit for Bradley here;
+        # the site is his DP portfolio already (removed per site-wide sweep).
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
