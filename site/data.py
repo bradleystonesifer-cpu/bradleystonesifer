@@ -355,6 +355,9 @@ OVERRIDES = {
         "watchUrl": "https://vimeo.com/239052675",
     },
     "narrative-5": {  # The Kid
+        # overrideCredits/logline unchanged — no Writers row, no creditLine
+        # (never one for Bradley on this page; the site's his DP portfolio
+        # already).
         "overrideCredits": [
             {"k": "Director", "v": "Sean Brosnan"},
             {"k": "Production Company", "v": "KnightMarcher"},
@@ -362,6 +365,19 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "Louisville's International Festival of Film '13"},
         ],
         "logline": "Two days in the life of a young poet in Venice, California who deals with situations far beyond his years.",
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.youtube.com/watch?v=N2jn6Bm6wDE",
+        # Keep the existing poster (uploads/theKid.jpg -> poster-the-kid.jpg
+        # via ASSET_RENAME) untouched — not overridden here.
+        # 32 processed stills, best-first (01-03), numeric order otherwise —
+        # same gallery/lightbox/mobile setup as every other project (native-
+        # aspect layout kicks in automatically at 8+ galleryImages, so these
+        # 2.3-2.4:1 frames show uncropped at their own real ratio).
+        "galleryImages": [
+            "assets/images/the-kid/the-kid-%02d.jpg" % i for i in range(1, 33)
+        ],
+        # New trailer (see VIDEOS["the-kid"] above) has a 16:9 player box.
+        "videoAspect": "16/9",
     },
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
@@ -787,8 +803,11 @@ VIDEOS = {
     # films — scripted (the-vicious-kind / hit-and-run / spork excluded, see note above)
     "me-plus-her": [{"url": "https://player.vimeo.com/video/84247438",
                       "thumb": _vt("461045520-c5b0c102b79df337d0cdcb75b623189d8da44e6e97a6592b0044c8e4349cfde7")}],
-    "the-kid": [{"url": "https://player.vimeo.com/video/74362737",
-                  "thumb": _vt("448705170-51a908da4f5aece67198a3dd28cdedb02a648eb00f6daf29184b00bc051a7230")}],
+    "the-kid": [{"url": "https://player.vimeo.com/video/1238158846?h=5dd8104ad8",
+                  # New trailer — the old thumbnail ID is for the previous
+                  # video (74362737) and won't match this one, so falls
+                  # back to the gallery's own first (best) still instead.
+                  "thumb": "assets/images/the-kid/the-kid-01.jpg"}],
     # No hash in the share URL Bradley sent, so no h= param. No thumbnail ID
     # supplied yet — facade falls back to the project's still.
     "god-bless-america": [{"url": "https://player.vimeo.com/video/65878287",
