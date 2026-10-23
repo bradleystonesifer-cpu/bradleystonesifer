@@ -343,7 +343,6 @@ def detail_data(p):
     return {
         'creditGroups': group_credits(linked) if linked else [],
         'pressQuotes': press_quotes(linked) if linked else [],
-        'episodes': p.get('episodes') or [],
         'logline': p.get('logline') or '',
         'posterImage': p.get('posterImage') or p.get('image'),
         'galleryLeft': gallery_left,
@@ -1401,15 +1400,8 @@ def render_detail_page(p, current_folder, next_map):
             body.append('<div class="' + right_col_cls + '"><div>' + right_html + '</div></div>')
         body.append('</div>')  # /detail-grid
 
-    if dd['episodes']:
-        body.append('<div class="field-label">Episodes</div><div class="episodes-list">')
-        for ep in dd['episodes']:
-            body.append('<div class="episode-row"><div class="episode-n">' + esc(ep['n']) + '</div>'
-                         '<div class="episode-title">' + esc(ep['title']) + '</div>'
-                         '<div class="episode-synopsis">' + esc(ep['synopsis']) + '</div></div>')
-        body.append('</div>')
-
     if p.get('episodeGalleries'):
+        body.append('<div class="field-label">Episodes</div>')
         body.append(render_episode_selector(p))
         body.append(render_episode_panels(root, p))
     else:
