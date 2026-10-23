@@ -520,32 +520,66 @@ ul { margin: 0; padding: 0; }
   justify-content: center;
   cursor: pointer;
 }
-/* Explicit (the sitewide img{} rule already does this, but flex-centered
-   children don't always stretch to fill as expected) so the thumbnail
-   always spans the full .video-wrap box rather than sizing to its own
-   intrinsic dimensions inside the centered flex overlay. */
+/* render_video_block()'s main-player overlay is a <button> (for native
+   keyboard access); render_video_player()'s is still a plain <div> with
+   its own nested <button class="video-click-btn"> — this resets only the
+   button-tag usage's default browser chrome, so both render identically. */
+button.video-thumb-overlay {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+/* Taken out of flex flow (absolute, not a sized flex child) so it's a
+   backdrop behind .play-btn rather than competing with it for width —
+   two flex children both demanding ~100% of the row (the image's 100%
+   plus the button's own size) forces flex-shrink to squeeze the button
+   non-uniformly, distorting its circle into an oval. */
 .video-thumb-overlay img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 .play-btn {
-  width: 74px;
-  height: 74px;
+  /* Scales with viewport between 64px and 88px, per the design spec —
+     clamp() keeps it readable on both a phone and a large desktop column
+     without a separate breakpoint rule. */
+  --play-size: clamp(64px, 6vw, 88px);
+  width: var(--play-size);
+  height: var(--play-size);
   border-radius: 50%;
   background: rgba(14, 12, 10, 0.55);
   border: 1px solid rgba(237, 230, 216, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.18s ease, border-color 0.18s ease;
 }
 .play-btn-tri {
   width: 0;
   height: 0;
-  border-top: 13px solid transparent;
-  border-bottom: 13px solid transparent;
-  border-left: 20px solid var(--ink);
-  margin-left: 5px;
+  /* Proportional to --play-size, inherited from .play-btn, so the
+     triangle scales right along with the circle around it. */
+  border-top: calc(var(--play-size) * 0.176) solid transparent;
+  border-bottom: calc(var(--play-size) * 0.176) solid transparent;
+  border-left: calc(var(--play-size) * 0.27) solid var(--ink);
+  margin-left: calc(var(--play-size) * 0.068);
+}
+/* Hover or keyboard focus anywhere in the overlay — including its nested
+   button in render_video_player()'s structure, since :hover/:focus-within
+   on an ancestor is satisfied by a descendant too — brightens the ring
+   and nudges the button larger. prefers-reduced-motion keeps the scale
+   (it's subtle and not disorienting) but the transition is cheap either
+   way since only transform/border-color animate. */
+.video-thumb-overlay:hover .play-btn,
+.video-thumb-overlay:focus-within .play-btn {
+  transform: scale(1.06);
+  border-color: rgba(237, 230, 216, 0.75);
 }
 
 .field-label {

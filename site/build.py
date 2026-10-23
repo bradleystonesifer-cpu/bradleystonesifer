@@ -677,10 +677,10 @@ def render_video_block(p, which, aspect='16/9', root=''):
         vattr = ' data-vimeo-id="' + vid + '"' if vid else ''
         return (
             '<div class="video-wrap" data-video-wrap style="aspect-ratio: ' + aspect + ';" data-embed-src="' + esc(embed) + '">'
-            '<div class="video-thumb-overlay" data-video-thumb' + vattr + '>'
+            '<button type="button" class="video-thumb-overlay" data-video-thumb' + vattr + ' aria-label="Play">'
             + img(thumb_url, p['title']) +
             '<div class="play-btn"><div class="play-btn-tri"></div></div>'
-            '</div></div>'
+            '</button></div>'
         )
     # second / "Selects" player. secondVideoThumb is optional — when unset
     # (the-vicious-kind never sets it) this renders exactly as before, a
@@ -726,7 +726,7 @@ def render_video_player(p, aspect='16/9', root=''):
     # the project's existing still only if one wasn't supplied.
     thumb_url = asset(root, videos[0].get('thumb') or p.get('image'))
     main_src = vimeo_dnt_url(videos[0]['url'])
-    play_label = 'Play ' + p['title']
+    play_label = 'Play'
     out = [
         '<div class="video-wrap" data-vimeo-wrap data-vimeo-title="' + esc(p['title'])
         + '" data-vimeo-play-label="' + esc(play_label) + '" style="aspect-ratio: ' + aspect
