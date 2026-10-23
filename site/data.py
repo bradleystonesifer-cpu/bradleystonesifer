@@ -468,11 +468,13 @@ OVERRIDES = {
     },
     "narrative-12": {  # Midnight in the Switchgrass
         "creditLine": "Director of Photography, Los Angeles unit",
+        # Watch is an external link only (JustWatch) — this is not the one
+        # film (Woman Child) whose full movie plays on-site, so it must
+        # never point at the trailer embed below.
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/midnight-in-the-switchgrass",
         "overrideCredits": [
             {"k": "Director", "v": "Randall Emmett"},
-            {"k": "Writers", "v": "Alan Horsnail"},
             {"k": "Production Company", "v": "Emmett Furla Oasis Films; The Pimienta Film Co."},
             {"k": "Lead Actors", "v": "Megan Fox, Bruce Willis, Emile Hirsch, Lukas Haas, Machine Gun Kelly"},
             {"k": "Notable Festivals", "v": "Gasparilla International Film Festival '21 (Closing Night Film)"},
@@ -480,6 +482,31 @@ OVERRIDES = {
         # Sources disagree on the setting, so the logline stays neutral.
         "logline": "When a young woman goes missing at a truck stop, two FBI agents and a local lawman race to stop a serial killer before he claims another victim.",
         # todo: press still needed
+        # Real poster (site/assets/images/midnight-in-the-switchgrass/), same
+        # posterImage/posterThumb wiring as Woman Child — posterThumb feeds
+        # the Scripted-page grid tile, the detail page keeps the full-res
+        # posterImage. ~0.73:1, object-fit handled the same as every other
+        # poster (gallery-poster/gm-poster img rules), no stretching.
+        "posterImage": "assets/images/midnight-in-the-switchgrass/poster-midnight-in-the-switchgrass.jpg",
+        "posterThumb": "assets/images/midnight-in-the-switchgrass/poster-midnight-in-the-switchgrass-thumb.jpg",
+        # 31 processed stills, ordered numerically — same gallery/lightbox/
+        # mobile setup as the other films (native-aspect layout kicks in
+        # automatically at 8+ galleryImages).
+        "galleryImages": [
+            "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-%02d.jpg" % i for i in range(1, 32)
+        ],
+        "image": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-01.jpg",
+        "image2": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-02.jpg",
+        "image3": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-03.jpg",
+        # Trailer, page's video player only. videoAspect intentionally left
+        # unset (defaults to 16/9) — the oEmbed check this needs
+        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238186502/700b945d6e)
+        # couldn't be reached from this environment (vimeo.com is blocked
+        # here), so the real ratio is unverified. Flagged for Bradley:
+        # confirm the real width/height (or that 16/9 is correct) before
+        # this ships, the same way Woman Child's embed turned out to
+        # already be 16/9 with baked-in letterbox bars.
+        "videoEmbed": "https://player.vimeo.com/video/1238186502?h=700b945d6e",
     },
     "documentary-0": {  # Kiss the Future
         "overrideCredits": [
