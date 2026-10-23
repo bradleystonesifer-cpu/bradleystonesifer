@@ -205,8 +205,8 @@ OVERRIDES = {
         "overrideCredits": [
             {"k": "Director", "v": "Joseph Oxford"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
+            {"k": "Lead Actors", "v": "Keiko Agena, Todd G. Levin, Will Choi, Farah Griffin, Kelvin Kao"},
             {"k": "Notable Festivals", "v": "Sundance Film Festival '14 (Shorts Program)"},
-            {"k": "Cast, puppeteers", "v": "Keiko Agena, Todd G. Levin, Will Choi, Farah Griffin, Kelvin Kao"},
             {"k": "Press — Vice", "v": "“From the trees to the factories, everything in the universe of Sundance-nominated short Me + Her is handcrafted from corrugated cardboard.”", "href": "https://www.vice.com/en/article/me-her-is-a-short-film-constructed-from-cardboard/"},
         ],
         "logline": "In a world built entirely of cardboard, Jack must think outside the box to be reunited with Jill after her illness separates them.",
@@ -321,8 +321,6 @@ OVERRIDES = {
     "narrative-7": {  # Woman Child
         "overrideCredits": [
             {"k": "Director", "v": "Emily Bloom", "href": "https://www.emily-bloom.com/"},
-            {"k": "Writer", "v": "Emily Bloom"},
-            {"k": "Producers", "v": "Jenna Cedicci, Charlie Fonville, Ben Windle"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
             {"k": "Lead Actors", "v": "Alexie Gilmore, Tone Bell, Toby Huss, Lynne Marie Stewart, James Handy, Nora Kirkpatrick"},
         ],
@@ -382,12 +380,12 @@ OVERRIDES = {
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
             {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
-            # "Actors" renders as an actor-list row (see with_links() in
-            # build.py), which by default auto-links each name to an
+            # "Lead Actors" renders as an actor-list row (see with_links()
+            # in build.py), which by default auto-links each name to an
             # IMDb search — actorLinks overrides that per name: Catherine
             # Black points to her own site (matching the Director row
             # above), and Pierluca Arancio is explicitly unlinked.
-            {"k": "Actors", "v": "Catherine Black, Pierluca Arancio",
+            {"k": "Lead Actors", "v": "Catherine Black, Pierluca Arancio",
              "actorLinks": {"Catherine Black": "https://www.directedbycatherineblack.com/",
                              "Pierluca Arancio": None}},
             {"k": "Notable Festivals", "v": "Columbia Gorge International Film Festival '14 (Best Cinematography); Madrid International Film Festival '14 (Best Lead Actress); Filmmaker Festival of World Cinema London '15 (Best Director)"},
@@ -454,8 +452,6 @@ OVERRIDES = {
         "image3": "assets/images/house-of-ideas/house-of-ideas-03.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Gabriel Hardman"},
-            {"k": "Writers", "v": "Ian Brill, Gabriel Hardman"},
-            {"k": "Producers", "v": "Clinton Trucks, Toni Trucks"},
             {"k": "Production Company", "v": "Session Zero Media"},
             {"k": "Lead Actors", "v": "James Wolk, David Alan Basche, Eric Satterberg, Barry Shabaka Henley, Avital Ash, Andrew Leeds, Jonathan Sadowski"},
         ],
@@ -465,8 +461,7 @@ OVERRIDES = {
         "overrideCredits": [
             {"k": "Director", "v": "Bobcat Goldthwait"},
             {"k": "Production Company", "v": "Left/Right Productions"},
-            {"k": "Network", "v": "truTV (2018)"},
-            {"k": "Cast, across episodes", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
+            {"k": "Lead Actors", "v": "Seth Green, Michael Ian Black, Bridget Everett, Dave Foley, Melissa Joan Hart, David Koechner, Danny Pudi, Tara Lynne Barr"},
             {"k": "Press — Robert Ham, Paste", "v": "“Telling eight individual tales was daunting enough, but Goldthwait and his team pushed themselves to give each episode its own distinctive look and feel.”",
              "href": "https://pastemagazine.com/comedy/bobcat-goldthwait/bobcat-goldthwait-unleashes-the-darkly-hilarious-m"},
         ],
@@ -475,11 +470,20 @@ OVERRIDES = {
         # the site is his DP portfolio already (removed per site-wide
         # sweep). He shot all 8 episodes, so this was never corrected to
         # "8 of 8" — just dropped entirely, same as every other project.
-        # No Watch button on this page — removed per explicit instruction.
-        # Center-column fallback (no VIDEOS entry for this project) — the
-        # show's official key art, linked out to its truTV watch page.
-        "keyArtImage": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
-        "keyArtUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
+        # Season 1 trailer (truTV, via Vimeo) — embed code supplied directly
+        # by Bradley, no ?h= privacy hash on it (so none is added here). The
+        # video itself is 16:9 (confirmed by Bradley), so no videoAspect
+        # override is needed — the site's default already matches.
+        # Reuses the show's existing key-art still as the player thumbnail,
+        # since no videoThumb was supplied with the embed.
+        "videoEmbed": "https://player.vimeo.com/video/1238976555",
+        "videoThumb": "assets/images/misfits-and-monsters/misfits-and-monsters-keyart.jpg",
+        # Watch button: truTV's show page — the same link the center-column
+        # key-art fallback used to link out to before this project had its
+        # own trailer (that fallback is now superseded by the player above,
+        # so keyArtImage/keyArtUrl were retired rather than left unused).
+        "watchLabel": "Watch",
+        "watchUrl": "https://www.trutv.com/shows/bobcat-goldthwaits-misfits-and-monsters",
         # Per-episode gallery selector (site/assets/images/misfits-and-monsters/
         # ep-NN/, manifest.json for each still's real w/h — all 8 episodes
         # now have a folder). Titles/synopses are reused from the "episodes"
@@ -510,7 +514,6 @@ OVERRIDES = {
             {"k": "Director", "v": "Michael Rosenbaum"},
             {"k": "Production Company", "v": "Rose and Bomb Productions; Kim & Jim Productions; WonderStar Productions"},
             {"k": "Lead Actors", "v": "Michael Rosenbaum, Morena Baccarin, Nick Swardson, Harland Williams, Sarah Colonna, Isaiah Mustafa, Kristoffer Polaha, Jay R. Ferguson, Emma Caulfield"},
-            {"k": "Distributor", "v": "Screen Media"},
         ],
         # Draft, pending approval — see the reply for this task.
         "logline": "A man dissatisfied with his career rallies his old high-school friends for a stretch of outrageous parties, and in the process falls for the girl who got away.",
