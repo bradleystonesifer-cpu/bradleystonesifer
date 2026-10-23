@@ -498,18 +498,11 @@ OVERRIDES = {
         "image": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-01.jpg",
         "image2": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-02.jpg",
         "image3": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-03.jpg",
-        # Trailer, page's video player only. No ?h= hash given this time
-        # (the earlier embed had one) — if the video is privacy-restricted
-        # and actually needs one, the facade will fail to load and it'll
-        # need adding. videoAspect intentionally left unset (defaults to
-        # 16/9) — the oEmbed check this needs
-        # (https://vimeo.com/api/oembed.json?url=https://vimeo.com/1238881769)
-        # couldn't be reached from this environment (vimeo.com is blocked
-        # here), so neither the real ratio nor the hash requirement is
-        # verified. Flagged for Bradley: confirm both (or that this loads
-        # fine as-is) before this ships, the same way Woman Child's embed
-        # turned out to already be 16/9 with baked-in letterbox bars.
-        "videoEmbed": "https://player.vimeo.com/video/1238881769",
+        # Trailer, page's video player only. Hash (?h=f1b198c690) and 16:9
+        # aspect both confirmed from Bradley's actual Vimeo embed code
+        # (its padding:56.25% wrapper is the 9/16 ratio marker) — no
+        # videoAspect override needed, same as Woman Child.
+        "videoEmbed": "https://player.vimeo.com/video/1238881769?h=f1b198c690",
         # Hero frame picked by Bradley in place of the auto-default
         # (image, still 01) for the video player thumbnail specifically.
         "videoThumb": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-24.jpg",
