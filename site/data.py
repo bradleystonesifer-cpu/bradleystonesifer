@@ -218,6 +218,14 @@ OVERRIDES = {
         ],
     },
     "narrative-3": {  # Almost Kings
+        # Final poster design (white textured ALMOST/KINGS title, laurel
+        # under the title, face-still background) — replaces the old 216KB
+        # uploads/almost kings.jpg via the legacy POSTERS/ASSET_RENAME path,
+        # which is now removed below so it can't silently overwrite this on
+        # a future build. Lives in its own subfolder like every other
+        # recent project's poster, not at the assets/images/ root.
+        "posterImage": "assets/images/almost-kings/poster-almost-kings.jpg",
+        "posterThumb": "assets/images/almost-kings/poster-almost-kings-thumb.jpg",
         # The video that used to be the main player, moved to a "Selects"
         # card at the bottom of the gallery (same mechanism the-vicious-kind
         # uses for its own Selects video) when the main player switched to
@@ -380,6 +388,7 @@ OVERRIDES = {
     "narrative-6": {  # De Puta Madre: A Love Story
         "overrideCredits": [
             {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
+            {"k": "Production Company", "v": "Hello Challenger Productions", "href": "https://www.imdb.com/company/co0431289/"},
             # "Lead Actors" renders as an actor-list row (see with_links()
             # in build.py), which by default auto-links each name to an
             # IMDb search — actorLinks overrides that per name: Catherine
@@ -650,7 +659,6 @@ POSTERS = {
     "narrative-0": "uploads/posters-1787856825910-69yy.jpg",
     "narrative-1": "uploads/posters-1787856825898-bis9.jpg",
     "narrative-2": "uploads/ME+HER.jpg",
-    "narrative-3": "uploads/almost kings.jpg",
     "narrative-4": "uploads/spork.jpg",
     "narrative-5": "uploads/theKid.jpg",
     "narrative-6": "uploads/DePutaMadre.jpg",
