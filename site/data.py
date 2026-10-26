@@ -218,6 +218,17 @@ OVERRIDES = {
         ],
     },
     "narrative-3": {  # Almost Kings
+        # Final 27:40 poster (~0.675 ratio) — replaces the old 216KB
+        # uploads/almost kings.jpg via the legacy POSTERS/ASSET_RENAME
+        # path, which is now removed below so it can't silently overwrite
+        # this on a future build. posterThumb feeds the Scripted-page grid
+        # tile (poster_tile_data() prefers it over posterImage); the home
+        # collage never shows this project's poster at all — it isn't one
+        # of COLLAGE_SPEC's 4 fixed poster slots (those are narrative-0,
+        # narrative-1, narrative-10, documentary-3), so it only ever
+        # appears there via its gallery stills through the random pool.
+        "posterImage": "assets/images/poster-almost-kings.jpg",
+        "posterThumb": "assets/images/poster-almost-kings-thumb.jpg",
         # The video that used to be the main player, moved to a "Selects"
         # card at the bottom of the gallery (same mechanism the-vicious-kind
         # uses for its own Selects video) when the main player switched to
@@ -650,7 +661,6 @@ POSTERS = {
     "narrative-0": "uploads/posters-1787856825910-69yy.jpg",
     "narrative-1": "uploads/posters-1787856825898-bis9.jpg",
     "narrative-2": "uploads/ME+HER.jpg",
-    "narrative-3": "uploads/almost kings.jpg",
     "narrative-4": "uploads/spork.jpg",
     "narrative-5": "uploads/theKid.jpg",
     "narrative-6": "uploads/DePutaMadre.jpg",
