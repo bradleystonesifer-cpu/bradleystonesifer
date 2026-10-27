@@ -597,9 +597,9 @@ OVERRIDES = {
         # .video-thumb-overlay / .play-btn).
         "videoEmbed": "https://player.vimeo.com/video/1239929151?h=1405bf8c67",
         # Hero/facade thumbnail — same pattern as Midnight's videoThumb (a
-        # local gallery still, not the marketing poster). Bono, the lead
-        # interview subject, from gallery image 01.
-        "videoThumb": "assets/images/kiss-the-future/kiss-the-future-01.jpg",
+        # local gallery still, not the marketing poster). Director Nenad
+        # Cicin-Sain with Asja Dupanović, from gallery image 09.
+        "videoThumb": "assets/images/kiss-the-future/kiss-the-future-09.jpg",
         # Order is intentional — do not re-sort. Images 01-07 are the known
         # faces (Bono, Edge, Clinton, Amanpour, Clayton) and sit beside the
         # poster at the top of the gallery. Images 40-45 are four-camera
