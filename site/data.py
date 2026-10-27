@@ -6,46 +6,6 @@ CATS = [
     {
         "key": "narrative", "no": "01", "label": "Scripted", "section": "films",
         "projects": [
-            {"title": "The Vicious Kind", "note": "Sundance '09",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607103342287-HL1ST5M3XPAEORB8L3Z0/Screen+Shot+2020-12-01+at+4.52.58+PM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667422219397-PLU18KRH6KPFRJE0HUVE/Screen+Shot+2022-11-02+at+1.34.28+PM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607103339479-2NQ4EV6P0P0RRHKQI8MP/Screen+Shot+2020-12-01+at+4.55.47+PM.png"},
-            {"title": "Hit & Run", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107148708-7A2S36WYHRS26THPSAZT/Screen%2BShot%2B2020-12-04%2Bat%2B10.24.36%2BAM.jpg",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607106999953-CYTLJSNOB107ZL5RKBOW/Screen%2BShot%2B2020-12-04%2Bat%2B10.25.04%2BAM.jpg",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107468026-THK7AOW5WANEMU28S34F/Screen+Shot+2020-12-04+at+10.43.23+AM.png"},
-            {"title": "Me + Her", "note": "Sundance '14",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107461761-CGV4PJTQQ0TYTKSJ7XAP/Screen+Shot+2020-12-04+at+10.42.50+AM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107468450-SBXLXMVG5NLZ0ORUEI5A/Screen+Shot+2020-12-04+at+10.43.45+AM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107928794-OKL9UWV3U9NN2HZ378IR/Screen+Shot+2020-12-04+at+10.50.10+AM.png"},
-            {"title": "Almost Kings", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107928699-2YH6NARBNXNWXYOLLJN8/Screen+Shot+2020-12-04+at+10.50.25+AM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107932767-QE5BT9T1MNC11X16INTD/Screen+Shot+2020-12-04+at+10.51.00+AM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108943581-DVOMNQQZ4SDKIINVJ2S2/Screen+Shot+2020-12-04+at+11.05.57+AM.png"},
-            {"title": "Spork", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108972825-MMRW1EMQB6S0KOGNNM3B/Screen+Shot+2020-12-04+at+11.08.19+AM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108944846-ZKDGKU7PWPZGH473WBC7/Screen+Shot+2020-12-04+at+11.06.43+AM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058336723-VIUS00EL9VVAVZOJ112A/Screen+Shot+2021-01-30+at+5.55.54+PM.png"},
-            {"title": "The Kid", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316900-TGEJ8QEB85YHKPCLLFPW/Screen+Shot+2021-01-30+at+5.52.52+PM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316873-DA054WY2HK33E6SQ8V6U/Screen+Shot+2021-01-30+at+5.51.25+PM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059154342-U4XEQ5K5CK26XGJS09SU/Screen+Shot+2021-01-30+at+6.07.17+PM.png"},
-            {"title": "De Puta Madre: A Love Story", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059129651-9EWJ2MZJAQ97OVMLV9RL/Screen+Shot+2021-01-30+at+6.06.28+PM.png",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172630812-OMJICR9GR8GQCE5O4O7O/D042C001_220624L7_CANON_12213921.JPG"},
-            {"title": "Woman Child", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172640305-4XRSDVO9UQYN2O9ZVNHU/A043C001_220624TD_CANON_10230817.JPG",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769188-KFXF422B0X6SKDMHD2WD/A043C001_220624TD_CANON_10230817.JPG"},
-            {"title": "God Bless America", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172774120-50FBS2VVPRH40V3360PA/D042C001_220624L7_CANON_12213921.JPG",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173018043-KAQ3V4BVKMU7ZNINCTNX/A043C001_220624TD_CANON_10230817.JPG"},
-            {"title": "House of Ideas", "note": "",
-             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG",
-             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173022957-RT5MKXVYFTUB3NO4V5EZ/D042C001_220624L7_CANON_12213921.JPG",
-             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123558-5YC8JC9M35CGCBX32L4Z/B043C001_2206249J_CANON_11452309.JPG"},
             {"title": "Misfits & Monsters", "note": "",
              "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123775-64XEY101U48YCZTZDQVF/A043C001_220624TD_CANON_10230817.JPG",
              "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173128740-GS6D33PVUZ3X3KFRFCL4/D042C001_220624L7_CANON_12213921.JPG",
@@ -60,17 +20,55 @@ CATS = [
                  {"n": "07", "title": "Better World", "synopsis": "A cutting-edge scientist creates two highly advanced AI forms, which quickly turn against him."},
                  {"n": "08", "title": "The Buzzkill", "synopsis": "A fighting musical duo is about to break up when a freak accident transforms them into bees."},
              ]},
-            # Poster now supplied — see narrative-11's posterImage/posterThumb
+            {"title": "Hit & Run", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107148708-7A2S36WYHRS26THPSAZT/Screen%2BShot%2B2020-12-04%2Bat%2B10.24.36%2BAM.jpg",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607106999953-CYTLJSNOB107ZL5RKBOW/Screen%2BShot%2B2020-12-04%2Bat%2B10.25.04%2BAM.jpg",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107468026-THK7AOW5WANEMU28S34F/Screen+Shot+2020-12-04+at+10.43.23+AM.png"},
+            {"title": "God Bless America", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769097-1TUDALUL66E9TOMY0EAM/B043C001_2206249J_CANON_11452309.JPG",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172774120-50FBS2VVPRH40V3360PA/D042C001_220624L7_CANON_12213921.JPG",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173018043-KAQ3V4BVKMU7ZNINCTNX/A043C001_220624TD_CANON_10230817.JPG"},
+            {"title": "Spork", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108972825-MMRW1EMQB6S0KOGNNM3B/Screen+Shot+2020-12-04+at+11.08.19+AM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108944846-ZKDGKU7PWPZGH473WBC7/Screen+Shot+2020-12-04+at+11.06.43+AM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058336723-VIUS00EL9VVAVZOJ112A/Screen+Shot+2021-01-30+at+5.55.54+PM.png"},
+            {"title": "The Vicious Kind", "note": "Sundance '09",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607103342287-HL1ST5M3XPAEORB8L3Z0/Screen+Shot+2020-12-01+at+4.52.58+PM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1667422219397-PLU18KRH6KPFRJE0HUVE/Screen+Shot+2022-11-02+at+1.34.28+PM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607103339479-2NQ4EV6P0P0RRHKQI8MP/Screen+Shot+2020-12-01+at+4.55.47+PM.png"},
+            {"title": "House of Ideas", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173017969-TJ90HKCW0LXD4BNNF6FJ/B043C001_2206249J_CANON_11452309.JPG",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173022957-RT5MKXVYFTUB3NO4V5EZ/D042C001_220624L7_CANON_12213921.JPG",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660173123558-5YC8JC9M35CGCBX32L4Z/B043C001_2206249J_CANON_11452309.JPG"},
+            {"title": "Me + Her", "note": "Sundance '14",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107461761-CGV4PJTQQ0TYTKSJ7XAP/Screen+Shot+2020-12-04+at+10.42.50+AM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107468450-SBXLXMVG5NLZ0ORUEI5A/Screen+Shot+2020-12-04+at+10.43.45+AM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107928794-OKL9UWV3U9NN2HZ378IR/Screen+Shot+2020-12-04+at+10.50.10+AM.png"},
+            # Real poster supplied via OVERRIDES narrative-7's posterImage/
+            # posterThumb below (this "poster" field is legacy/unused, kept
+            # empty since posterImage already takes priority over it).
+            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
+            {"title": "Woman Child", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172631290-UUJ4585VBUJBYXR2BKQJ/B043C001_2206249J_CANON_11452309.JPG",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172640305-4XRSDVO9UQYN2O9ZVNHU/A043C001_220624TD_CANON_10230817.JPG",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172769188-KFXF422B0X6SKDMHD2WD/A043C001_220624TD_CANON_10230817.JPG"},
+            {"title": "Almost Kings", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107928699-2YH6NARBNXNWXYOLLJN8/Screen+Shot+2020-12-04+at+10.50.25+AM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607107932767-QE5BT9T1MNC11X16INTD/Screen+Shot+2020-12-04+at+10.51.00+AM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1607108943581-DVOMNQQZ4SDKIINVJ2S2/Screen+Shot+2020-12-04+at+11.05.57+AM.png"},
+            {"title": "De Puta Madre: A Love Story", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059142652-RRBWJ9ZZ5A99XXWLOKJL/Screen+Shot+2021-01-30+at+6.11.32+PM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059129651-9EWJ2MZJAQ97OVMLV9RL/Screen+Shot+2021-01-30+at+6.06.28+PM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1660172630812-OMJICR9GR8GQCE5O4O7O/D042C001_220624L7_CANON_12213921.JPG"},
+            {"title": "The Kid", "note": "",
+             "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316900-TGEJ8QEB85YHKPCLLFPW/Screen+Shot+2021-01-30+at+5.52.52+PM.png",
+             "image2": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612058316873-DA054WY2HK33E6SQ8V6U/Screen+Shot+2021-01-30+at+5.51.25+PM.png",
+             "image3": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1612059154342-U4XEQ5K5CK26XGJS09SU/Screen+Shot+2021-01-30+at+6.07.17+PM.png"},
+            # Poster now supplied — see narrative-12's posterImage/posterThumb
             # override below, same pattern as every other project with real
             # artwork (the still-with-title fallback tile here was only ever
             # a placeholder for when "poster" was empty).
             {"title": "Back in the Day", "note": "", "image": "", "image2": "", "image3": ""},
-            # No poster/images yet — still-with-title fallback tile until
-            # artwork is supplied. "poster" is empty until Bradley supplies
-            # the file path for midnight-in-the-switchgrass-poster.jpg —
-            # once set, the poster wall tile switches from the still-with-
-            # title fallback automatically.
-            {"title": "Midnight in the Switchgrass", "note": "", "image": "", "image2": "", "image3": "", "poster": ""},
         ],
     },
     {
@@ -201,7 +199,7 @@ OVERRIDES = {
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/hit-and-run-2012",
     },
-    "narrative-2": {  # Me + Her
+    "narrative-6": {  # Me + Her
         "overrideCredits": [
             {"k": "Director", "v": "Joseph Oxford"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
@@ -217,15 +215,15 @@ OVERRIDES = {
             "assets/images/me-her/me-her-%02d.jpg" % i for i in range(1, 51)
         ],
     },
-    "narrative-3": {  # Almost Kings
+    "narrative-9": {  # Almost Kings
         # Final 27:40 poster (~0.675 ratio) — replaces the old 216KB
         # uploads/almost kings.jpg via the legacy POSTERS/ASSET_RENAME
         # path, which is now removed below so it can't silently overwrite
         # this on a future build. posterThumb feeds the Scripted-page grid
         # tile (poster_tile_data() prefers it over posterImage); the home
         # collage never shows this project's poster at all — it isn't one
-        # of COLLAGE_SPEC's 4 fixed poster slots (those are narrative-0,
-        # narrative-1, narrative-10, documentary-3), so it only ever
+        # of COLLAGE_SPEC's 4 fixed poster slots (those are narrative-4,
+        # narrative-1, narrative-0, documentary-3), so it only ever
         # appears there via its gallery stills through the random pool.
         "posterImage": "assets/images/poster-almost-kings.jpg",
         "posterThumb": "assets/images/poster-almost-kings-thumb.jpg",
@@ -286,7 +284,7 @@ OVERRIDES = {
             "Fire",
         ],
     },
-    "narrative-4": {  # Spork
+    "narrative-3": {  # Spork
         "videoEmbed": "https://www.youtube.com/embed/NIRuoCWTtfs?rel=0",
         "logline": "SPORK is a feature film about an adolescent “inter-sexed” kid who identifies as a female. Not a spoon. Not a fork. Spork! A dark musical comedy aimed at self love and acceptance.",
         "watchLabel": "Watch",
@@ -306,7 +304,7 @@ OVERRIDES = {
             {"k": "Press — Variety", "v": "“Like a John Waters movie that Waters never got around to making.”", "href": "https://variety.com/2010/film/markets-festivals/spork-1117942628/"},
         ],
     },
-    "narrative-0": {  # The Vicious Kind
+    "narrative-4": {  # The Vicious Kind
         "image": "https://images.squarespace-cdn.com/content/v1/55395793e4b01dde7b68c0b0/1550728903007-RT7WATMX2IF1UIN82Y3M/TVK_Poster.jpg",
         "posterImage": "uploads/posters-1787856825910-69yy.jpg",
         "videoEmbed": "https://player.vimeo.com/video/1218379599?badge=0&autopause=0&player_id=0&app_id=58479",
@@ -329,7 +327,7 @@ OVERRIDES = {
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/the-vicious-kind",
     },
-    "narrative-7": {  # Woman Child
+    "narrative-8": {  # Woman Child
         "overrideCredits": [
             {"k": "Director", "v": "Emily Bloom", "href": "https://www.emily-bloom.com/"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
@@ -350,7 +348,7 @@ OVERRIDES = {
             "assets/images/woman-child/woman-child-%02d.jpg" % i for i in range(1, 29)
         ],
         # Real stills in place of the recycled Canon-camera-test
-        # Squarespace placeholder frames (see narrative-8's own note).
+        # Squarespace placeholder frames (see narrative-2's own note).
         "image": "assets/images/woman-child/woman-child-01.jpg",
         "image2": "assets/images/woman-child/woman-child-02.jpg",
         "image3": "assets/images/woman-child/woman-child-03.jpg",
@@ -363,7 +361,7 @@ OVERRIDES = {
         "watchLabel": "Watch",
         "watchUrl": "https://vimeo.com/239052675",
     },
-    "narrative-5": {  # The Kid
+    "narrative-11": {  # The Kid
         # overrideCredits/logline unchanged — no Writers row, no creditLine
         # (never one for Bradley on this page; the site's his DP portfolio
         # already).
@@ -388,7 +386,7 @@ OVERRIDES = {
         # New trailer (see VIDEOS["the-kid"] above) has a 16:9 player box.
         "videoAspect": "16/9",
     },
-    "narrative-6": {  # De Puta Madre: A Love Story
+    "narrative-10": {  # De Puta Madre: A Love Story
         "overrideCredits": [
             {"k": "Director", "v": "Catherine Black", "href": "https://www.directedbycatherineblack.com/"},
             {"k": "Production Company", "v": "Hello Challenger Productions", "href": "https://www.imdb.com/company/co0431289/"},
@@ -418,7 +416,7 @@ OVERRIDES = {
         "image2": "assets/images/de-puta-madre/de-puta-madre-02.jpg",
         "image3": "assets/images/de-puta-madre/de-puta-madre-03.jpg",
     },
-    "narrative-8": {  # God Bless America
+    "narrative-2": {  # God Bless America
         "overrideCredits": [
             {"k": "Director", "v": "Bobcat Goldthwait"},
             {"k": "Production Company", "v": "Darko Entertainment"},
@@ -441,7 +439,7 @@ OVERRIDES = {
         "watchLabel": "Watch",
         "watchUrl": "https://www.justwatch.com/us/movie/god-bless-america",
     },
-    "narrative-9": {  # House of Ideas
+    "narrative-5": {  # House of Ideas
         "comingSoon": True,
         # Real still (with "Coming Soon" baked in, no CSS overlay needed)
         # in place of the old uploads/house of Ideas.avif design-bundle
@@ -458,7 +456,7 @@ OVERRIDES = {
             "assets/images/house-of-ideas/house-of-ideas-%02d.jpg" % i for i in range(1, 29)
         ],
         # Real stills in place of the recycled Canon-camera-test
-        # Squarespace placeholder frames (see narrative-8's own note).
+        # Squarespace placeholder frames (see narrative-2's own note).
         "image": "assets/images/house-of-ideas/house-of-ideas-01.jpg",
         "image2": "assets/images/house-of-ideas/house-of-ideas-02.jpg",
         "image3": "assets/images/house-of-ideas/house-of-ideas-03.jpg",
@@ -469,7 +467,7 @@ OVERRIDES = {
         ],
         "logline": "New York, 1964: during a recording session for a fan-club album, Stan Lee clashes with artists Jack Kirby and Steve Ditko over credit and control.",
     },
-    "narrative-10": {  # Misfits & Monsters
+    "narrative-0": {  # Misfits & Monsters
         "overrideCredits": [
             {"k": "Director", "v": "Bobcat Goldthwait"},
             {"k": "Production Company", "v": "Left/Right Productions"},
@@ -511,7 +509,7 @@ OVERRIDES = {
             {"n": "08", "folder": "ep-08"},
         ],
     },
-    "narrative-11": {  # Back in the Day
+    "narrative-12": {  # Back in the Day
         # No creditLine on purpose — never a Director of Photography (or
         # any other) credit line for Bradley here; the site is his DP
         # portfolio already, every project on it implies that.
@@ -543,7 +541,7 @@ OVERRIDES = {
         # 2014"). No videoAspect override needed (16/9 is the default).
         "videoEmbed": "https://player.vimeo.com/video/1238886191?h=ec9b2cc5dc",
     },
-    "narrative-12": {  # Midnight in the Switchgrass
+    "narrative-7": {  # Midnight in the Switchgrass
         # No creditLine on purpose — never a role credit for Bradley here;
         # the site is his DP portfolio already (removed per site-wide
         # sweep; flagged on this branch earlier, now actually fixed).
@@ -659,14 +657,14 @@ OVERRIDES = {
 
 # posterImage overrides applied on top of OVERRIDES (matches applyOverrides()'s `posters` map).
 POSTERS = {
-    "narrative-0": "uploads/posters-1787856825910-69yy.jpg",
+    "narrative-4": "uploads/posters-1787856825910-69yy.jpg",
     "narrative-1": "uploads/posters-1787856825898-bis9.jpg",
-    "narrative-2": "uploads/ME+HER.jpg",
-    "narrative-4": "uploads/spork.jpg",
-    "narrative-5": "uploads/theKid.jpg",
-    "narrative-6": "uploads/DePutaMadre.jpg",
-    "narrative-8": "uploads/posters-1787856825786-bd9q.jpg",
-    "narrative-10": "uploads/misfits and monsters.jpg",
+    "narrative-6": "uploads/ME+HER.jpg",
+    "narrative-3": "uploads/spork.jpg",
+    "narrative-11": "uploads/theKid.jpg",
+    "narrative-10": "uploads/DePutaMadre.jpg",
+    "narrative-2": "uploads/posters-1787856825786-bd9q.jpg",
+    "narrative-0": "uploads/misfits and monsters.jpg",
     "documentary-0": "uploads/KTF.jpg",
     "documentary-1": "uploads/youth governor.jpg",
     "documentary-2": "uploads/fire on the hill.jpg",
@@ -700,7 +698,7 @@ POSTERS = {
 # matching the target mix (scripted the clear majority).
 COLLAGE_SPEC = [
     # --- Cycle 1 (poster left: The Vicious Kind) ---
-    ("poster", "narrative-0", "2/3", 2),
+    ("poster", "narrative-4", "2/3", 2),
     ("scripted", None, "16/9", 5),
     ("commercial", None, "16/9", 5),
     ("scripted", None, "2.40/1", 6),
@@ -720,7 +718,7 @@ COLLAGE_SPEC = [
     ("scripted", None, "16/9", 4),
 
     # --- Cycle 3 (poster left: Misfits & Monsters) ---
-    ("poster", "narrative-10", "2/3", 2),
+    ("poster", "narrative-0", "2/3", 2),
     ("music_video", None, "16/9", 5),
     ("documentary", None, "16/9", 5),
     ("scripted", None, "2.40/1", 6),
@@ -741,8 +739,11 @@ COLLAGE_SPEC = [
 ]
 
 # Category display-order overrides (matches the `order` reorder in renderVals()).
+# "narrative" removed: CATS' own project list is now already in the exact
+# display order Bradley wants (see the 13-title reorder), so this override
+# — which pointed at stale pre-reorder list positions and would silently
+# re-shuffle to the wrong films if left in — would only cause bugs now.
 CATEGORY_ORDER = {
-    "narrative": [0, 1, 2, 4, 7, 8, 9, 10, 5, 6, 3],
     "documentary": [0, 3, 2, 1],
 }
 
@@ -829,7 +830,7 @@ VIDEOS = {
     "de-puta-madre-a-love-story": [{"url": "https://player.vimeo.com/video/128685578?h=4856e2f997",
                                      "thumb": _vt("519906211-506cfcf7540e141336a6d4a8ec90725f8f1d1af897db2d372ec018578f3c6a4d")}],
     # Old video (128559140) moved to the "Selects" card — see
-    # OVERRIDES["narrative-3"].secondVideoEmbed. No thumbnail ID supplied
+    # OVERRIDES["narrative-9"].secondVideoEmbed. No thumbnail ID supplied
     # yet for this new video, so the facade falls back to the project's
     # still (p.get('image')) until one is provided.
     "almost-kings": [{"url": "https://player.vimeo.com/video/1234196372?h=0267df5bf3"}],
