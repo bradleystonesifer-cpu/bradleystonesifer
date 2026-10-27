@@ -648,6 +648,14 @@ button.video-thumb-overlay {
    reasoning as --pc above. */
 .gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: var(--ar, 2.35 / 1); background: #000; }
 .gallery-bottom-cell img { object-position: center 30%; }
+/* Opt-in per project (GALLERY_CONTAIN_FROM in build.py) for a tail of
+   stills whose own aspect ratio doesn't match the gallery's shared --ar
+   (set from image 1 — see detail_data()) — e.g. Kiss the Future's 2x2
+   camera-setup composites among ~2:1 interview stills. object-fit:
+   contain instead of the default cover, so they show in full (letter-
+   boxed in the cell's own background) rather than being cropped to fit
+   a box shaped for the rest of the gallery. */
+.gallery-bottom-cell--contain img, .gm-cell--contain img { object-fit: contain; object-position: center; }
 
 /* Desktop click-to-enlarge (opt-in per project — see DESKTOP_LIGHTBOX_SLUGS
    in build.py): only cells that got a data-gm-index attribute render as

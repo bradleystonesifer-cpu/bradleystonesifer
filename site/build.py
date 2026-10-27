@@ -38,6 +38,15 @@ VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-p
 GALLERY_BOTTOM_COLS = {
     'almost-kings': 3,  # 21 images: 7 rows of 3
 }
+# 1-based galleryImages position a page's bottom-grid/mobile-grid cells
+# switch from object-fit: cover to contain, so wide-format images that
+# don't match the gallery's shared --ar (set from image 1 — see
+# detail_data()) show in full instead of being cropped to fit a box
+# shaped for the rest of the gallery. Kiss the Future's images 40-45 are
+# 4-camera 2x2 composites (~16:9) among otherwise ~2:1 interview stills.
+GALLERY_CONTAIN_FROM = {
+    'kiss-the-future': 40,
+}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -784,7 +793,7 @@ def _gallery_item(item, title):
     return item if isinstance(item, tuple) else (item, title)
 
 
-def render_gallery(root, dd, title):
+def render_gallery(root, dd, title, slug=None):
     # asset(root, url) root-prefixes a local path (no-op for absolute
     # http(s) URLs, e.g. the legacy Squarespace-hosted galleries) — same
     # treatment the poster image already gets, so galleryImages can store
@@ -828,12 +837,14 @@ def render_gallery(root, dd, title):
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + right + '</div></div>')
     out.append('</div>')
     bottom = dd['galleryBottom']
+    contain_from = GALLERY_CONTAIN_FROM.get(slug)
     if bottom:
         out.append('<div class="gallery-bottom"' + bottom_style + '>')
         for item, idx in zip(bottom, dd['galleryBottomIdx']):
             url, alt = _gallery_item(item, title)
             if url:
-                out.append('<div class="gallery-bottom-cell"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
+                cell_cls = 'gallery-bottom-cell' + (' gallery-bottom-cell--contain' if contain_from and (idx + 1) >= contain_from else '')
+                out.append('<div class="' + cell_cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -842,7 +853,7 @@ GALLERY_MOBILE_INITIAL = 16
 GALLERY_MOBILE_BATCH = 16
 
 
-def render_gallery_mobile(root, dd, title):
+def render_gallery_mobile(root, dd, title, slug=None):
     """Phone-width (<=600px) gallery: poster full-width first, then every
     still in the same order used elsewhere (the 8 featured/interleaved
     stills, then the rest) in a 2-column grid. Only the first 16 cells get
@@ -857,6 +868,7 @@ def render_gallery_mobile(root, dd, title):
         return ''
     ar = dd.get('galleryAr') or 2.35
     cell_style = ' style="aspect-ratio: %.4f;"' % ar
+    contain_from = GALLERY_CONTAIN_FROM.get(slug)
     cells = []
     for i, (url, alt) in enumerate(items):
         full_url = asset(root, url)
@@ -866,7 +878,8 @@ def render_gallery_mobile(root, dd, title):
             inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="'
                       + esc(full_url) + '">')
         hidden = ' gm-hidden' if i >= GALLERY_MOBILE_INITIAL else ''
-        cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i)
+        contain = ' gm-cell--contain' if contain_from and (i + 1) >= contain_from else ''
+        cells.append('<button type="button" class="gm-cell' + hidden + contain + '" data-gm-index="' + str(i)
                       + '"' + cell_style + '>' + inner + '</button>')
     more_btn = '<button type="button" class="gm-more" data-gm-more>Show more</button>' if len(items) > GALLERY_MOBILE_INITIAL else ''
     poster = asset(root, dd['posterImage'])
@@ -1394,8 +1407,8 @@ def render_detail_page(p, current_folder, next_map):
         body.append(render_episode_selector(p))
         body.append(render_episode_panels(root, p))
     else:
-        body.append(render_gallery(root, dd, p['title']))
-        body.append(render_gallery_mobile(root, dd, p['title']))
+        body.append(render_gallery(root, dd, p['title'], p.get('slug')))
+        body.append(render_gallery_mobile(root, dd, p['title'], p.get('slug')))
     body.append(render_video_block(p, 'second', root=root))
     body.append('</div>')  # /detail-wrap
 

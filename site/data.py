@@ -602,6 +602,19 @@ OVERRIDES = {
         # the marketing poster (laurels/title treatment/pull quotes),
         # which isn't used as a facade thumb on any other page either.
         "videoEmbed": "https://player.vimeo.com/video/1239929151?h=1405bf8c67",
+        # Order is intentional — do not re-sort. Images 01-07 are the known
+        # faces (Bono, Edge, Clinton, Amanpour, Clayton) and sit beside the
+        # poster at the top of the gallery. Images 40-45 are four-camera
+        # setup collages (2x2 composites); GALLERY_CONTAIN_FROM in build.py
+        # displays them uncropped since their aspect ratio doesn't match
+        # the rest of the gallery.
+        "galleryImages": [
+            "assets/images/kiss-the-future/kiss-the-future-%02d.jpg" % i for i in range(1, 46)
+        ],
+        "galleryAlts": (
+            ["Kiss the Future interview still"] * 39
+            + ["Kiss the Future four-camera setup"] * 6
+        ),
         "overrideCredits": [
             {"k": "Director", "v": "Nenad Cicin-Sain"},
             {"k": "Production Company", "v": "Pearl Street Films; Fifth Season; In Cahoots Productions"},
