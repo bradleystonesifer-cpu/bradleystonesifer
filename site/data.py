@@ -594,14 +594,12 @@ OVERRIDES = {
     "documentary-0": {  # Kiss the Future
         # Trailer, page's video player only (same videoEmbed facade as
         # Midnight in the Switchgrass / Back in the Day — .video-wrap /
-        # .video-thumb-overlay / .play-btn). No explicit videoThumb: this
-        # project's existing "image" field (its lead Squarespace still,
-        # already the page's primary visual) is what render_video_block
-        # falls back to with no override — same mechanism Back in the Day
-        # and Midnight rely on for their own facade thumbnail, rather than
-        # the marketing poster (laurels/title treatment/pull quotes),
-        # which isn't used as a facade thumb on any other page either.
+        # .video-thumb-overlay / .play-btn).
         "videoEmbed": "https://player.vimeo.com/video/1239929151?h=1405bf8c67",
+        # Hero/facade thumbnail — same pattern as Midnight's videoThumb (a
+        # local gallery still, not the marketing poster). Bono, the lead
+        # interview subject, from gallery image 01.
+        "videoThumb": "assets/images/kiss-the-future/kiss-the-future-01.jpg",
         # Order is intentional — do not re-sort. Images 01-07 are the known
         # faces (Bono, Edge, Clinton, Amanpour, Clayton) and sit beside the
         # poster at the top of the gallery. Images 40-45 are four-camera
