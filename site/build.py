@@ -998,13 +998,14 @@ def render_episode_selector(p):
 def render_episode_panels(root, p):
     """Full-width episode panels for Misfits & Monsters — one per
     episode, swapped by the selector buttons above (JS, no reload). Each
-    panel's stills are grouped into up to two justified-row flex groups
-    (desktop) — all 16:9 first, then the 4:3 ones (episode 2's news-
-    broadcast frames) in their own row group, capped by JS to the 16:9
-    rows' own width so they wrap sooner rather than running wider — or a
-    2-column grid (mobile), reusing the same .gm-cell/.gm-more/.gm-data
-    wiring and shared lightbox as every other gallery page, just with
-    its own collapse-on-episode-switch behavior layered on in main.js.
+    panel's stills render as a single uniform CSS grid (3 columns desktop,
+    2 at 900px and below — see .ep-grid in style.css): every tile is a
+    16:9 box with object-fit: cover, so a 4:3 still (episode 2's news-
+    broadcast frames) crops to fit rather than letterboxing, and every
+    row — including a sparse last row after Show more — uses identical
+    tile sizes. Reuses the same .gm-cell/.gm-more/.gm-data wiring and
+    shared lightbox as every other gallery page, just with its own
+    collapse-on-episode-switch behavior layered on in main.js.
     Episode titles/synopses are reused from the existing "episodes" list
     by matching "n" — never duplicated here. Episodes with no folder yet
     (1 and 8) still get a real, clickable panel — title, synopsis, and a
@@ -1048,13 +1049,11 @@ def render_episode_panels(root, p):
                 if raw_narrow:
                     raw_narrow = order_by_similar_look(folder, raw_narrow)
             files = raw_wide + raw_narrow
-            items, wide_cells, narrow_cells = [], [], []
+            items, cells = [], []
             for i, f in enumerate(files):
                 url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
                 alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
-                ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
                 items.append({'url': url, 'alt': alt})
-                style = ' style="--ar: %.4f"' % ar
                 if i < EPISODE_FEATURED_COUNT:
                     # Only the default/visible-on-load episode gets its
                     # first couple of images eager — every other panel
@@ -1065,8 +1064,7 @@ def render_episode_panels(root, p):
                 else:
                     inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
                 hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
-                cell = ('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
-                (wide_cells if ar > 1.5 else narrow_cells).append(cell)
+                cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '">' + inner + '</button>')
 
             more_btn = ''
             rest = len(files) - EPISODE_FEATURED_COUNT
@@ -1076,17 +1074,8 @@ def render_episode_panels(root, p):
                              'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
                              + esc(more_label) + '</button>')
 
-            # Two separate flex-wrap rows, not one, so JS can cap the 4:3
-            # row's width to whatever the 16:9 row actually achieves —
-            # otherwise narrower 4:3 cells pack one extra per row and the
-            # row runs wider than the 16:9 rows above it (see main.js
-            # syncNarrowRowWidth). Only emitted if this episode actually
-            # has any of that shape.
-            rows_html = '<div class="ep-grid-row" data-ep-row-wide>' + ''.join(wide_cells) + '</div>'
-            if narrow_cells:
-                rows_html += '<div class="ep-grid-row" data-ep-row-narrow>' + ''.join(narrow_cells) + '</div>'
             data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
-            gallery_html = ('<div class="ep-grid">' + rows_html + '</div>' + more_btn
+            gallery_html = ('<div class="ep-grid">' + ''.join(cells) + '</div>' + more_btn
                              + '<script type="application/json" class="gm-data">' + data_json + '</script>')
         else:
             gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
@@ -1551,7 +1540,6 @@ ASSET_RENAME = {
     'posters-1787856825910-69yy.jpg': 'poster-the-vicious-kind.jpg',
     'posters-1787856825898-bis9.jpg': 'poster-hit-and-run.jpg',
     'ME+HER.jpg': 'poster-me-plus-her.jpg',
-    'almost kings.jpg': 'poster-almost-kings.jpg',
     'spork.jpg': 'poster-spork.jpg',
     'theKid.jpg': 'poster-the-kid.jpg',
     'DePutaMadre.jpg': 'poster-de-puta-madre.jpg',
