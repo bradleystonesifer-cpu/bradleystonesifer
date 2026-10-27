@@ -575,6 +575,16 @@ OVERRIDES = {
         "videoThumb": "assets/images/midnight-in-the-switchgrass/midnight-switchgrass-24.jpg",
     },
     "documentary-0": {  # Kiss the Future
+        # Trailer, page's video player only (same videoEmbed facade as
+        # Midnight in the Switchgrass / Back in the Day — .video-wrap /
+        # .video-thumb-overlay / .play-btn). No explicit videoThumb: this
+        # project's existing "image" field (its lead Squarespace still,
+        # already the page's primary visual) is what render_video_block
+        # falls back to with no override — same mechanism Back in the Day
+        # and Midnight rely on for their own facade thumbnail, rather than
+        # the marketing poster (laurels/title treatment/pull quotes),
+        # which isn't used as a facade thumb on any other page either.
+        "videoEmbed": "https://player.vimeo.com/video/1239929151?h=1405bf8c67",
         "overrideCredits": [
             {"k": "Director", "v": "Nenad Cicin-Sain"},
             {"k": "Production Company", "v": "Pearl Street Films; Fifth Season; In Cahoots Productions"},
