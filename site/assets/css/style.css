@@ -559,6 +559,15 @@ button.video-thumb-overlay {
   align-items: center;
   justify-content: center;
   transition: transform 0.18s ease, border-color 0.18s ease;
+  /* Without this, render_video_block()'s structure (.play-btn as a plain
+     non-positioned child after the absolutely-positioned thumb <img> in
+     .video-thumb-overlay) paints the circle BELOW the image once that
+     image actually loads, hiding it entirely — render_video_player()'s
+     structure avoids this only because its own button wrapper is itself
+     absolutely positioned. position + z-index here lifts .play-btn above
+     the thumb in both structures. */
+  position: relative;
+  z-index: 1;
 }
 .play-btn-tri {
   width: 0;
