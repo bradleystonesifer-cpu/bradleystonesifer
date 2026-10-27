@@ -200,6 +200,13 @@ OVERRIDES = {
         "watchUrl": "https://www.justwatch.com/us/movie/hit-and-run-2012",
     },
     "narrative-6": {  # Me + Her
+        # New 2:3 poster (1500x2250) — replaces the old poster via the
+        # legacy POSTERS/ASSET_RENAME path, which is now removed below so
+        # it can't silently overwrite this on a future build. Same
+        # explicit posterImage/posterThumb pattern as Midnight/Almost
+        # Kings/Back in the Day.
+        "posterImage": "assets/images/poster-me-plus-her.jpg",
+        "posterThumb": "assets/images/poster-me-plus-her-thumb.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Joseph Oxford"},
             {"k": "Production Company", "v": "Island Creek Pictures"},
@@ -659,7 +666,6 @@ OVERRIDES = {
 POSTERS = {
     "narrative-4": "uploads/posters-1787856825910-69yy.jpg",
     "narrative-1": "uploads/posters-1787856825898-bis9.jpg",
-    "narrative-6": "uploads/ME+HER.jpg",
     "narrative-3": "uploads/spork.jpg",
     "narrative-11": "uploads/theKid.jpg",
     "narrative-10": "uploads/DePutaMadre.jpg",

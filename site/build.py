@@ -1539,7 +1539,6 @@ def render_about():
 ASSET_RENAME = {
     'posters-1787856825910-69yy.jpg': 'poster-the-vicious-kind.jpg',
     'posters-1787856825898-bis9.jpg': 'poster-hit-and-run.jpg',
-    'ME+HER.jpg': 'poster-me-plus-her.jpg',
     'spork.jpg': 'poster-spork.jpg',
     'theKid.jpg': 'poster-the-kid.jpg',
     'DePutaMadre.jpg': 'poster-de-puta-madre.jpg',
