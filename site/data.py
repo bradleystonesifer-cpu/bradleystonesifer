@@ -625,6 +625,13 @@ OVERRIDES = {
         "watchUrl": "https://www.justwatch.com/us/movie/kiss-the-future",
     },
     "documentary-2": {  # Fire on the Hill
+        # New poster with festival laurels, 2:3 (1500x2250; thumb 600x900) —
+        # explicit posterImage/posterThumb, same pattern as Midnight/Almost
+        # Kings/Me + Her. The legacy POSTERS/ASSET_RENAME mapping to
+        # project/uploads/"fire on the hill.jpg" is removed below so it
+        # can't silently overwrite this on a future build.
+        "posterImage": "assets/images/poster-fire-on-the-hill.jpg",
+        "posterThumb": "assets/images/poster-fire-on-the-hill-thumb.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Brett Fallentine"},
             {"k": "Production Company", "v": "Preamble Pictures, in association with RYOT, Contend and Enzo"},
@@ -632,7 +639,7 @@ OVERRIDES = {
             {"k": "Notable Festivals", "v": "LA Film Festival '18 (LA Muse Documentary Award); Big Sky Documentary Film Festival '19 (Artistic Vision Award); Heartland International Film Festival '19 (Jimmy Stewart Legacy Award); Portland Film Festival '19 (Best Documentary Feature)"},
             {"k": "Press — The Hollywood Reporter", "v": "“This modern-day buckaroo, like Brett Fallentine’s well-observed film, embraces a burnished Wild West archetype while redefining it.”", "href": "https://www.hollywoodreporter.com/review/fire-hill-1157020"},
         ],
-        "logline": "Three Black cowboys in Compton and South LA fight to keep their riding culture alive after arson destroys their historic stable.",
+        "logline": "On the edge of Compton, California in South Central LA, a band of inner-city cowboys fight to resurrect a horse stable that was mysteriously burnt to the ground.",
     },
     "documentary-3": {  # Call Me Lucky
         "overrideCredits": [
@@ -694,7 +701,6 @@ POSTERS = {
     "narrative-0": "uploads/misfits and monsters.jpg",
     "documentary-0": "uploads/KTF.jpg",
     "documentary-1": "uploads/youth governor.jpg",
-    "documentary-2": "uploads/fire on the hill.jpg",
     "documentary-3": "uploads/Call me Lucky.jpg",
 }
 

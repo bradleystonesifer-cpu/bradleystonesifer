@@ -1559,7 +1559,6 @@ ASSET_RENAME = {
     'misfits and monsters.jpg': 'poster-misfits-and-monsters.jpg',
     'KTF.jpg': 'poster-kiss-the-future.jpg',
     'youth governor.jpg': 'poster-the-youth-governor.jpg',
-    'fire on the hill.jpg': 'poster-fire-on-the-hill.jpg',
     'Call me Lucky.jpg': 'poster-call-me-lucky.jpg',
 }
 
