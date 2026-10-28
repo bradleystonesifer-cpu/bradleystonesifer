@@ -630,8 +630,14 @@ OVERRIDES = {
         # Kings/Me + Her. The legacy POSTERS/ASSET_RENAME mapping to
         # project/uploads/"fire on the hill.jpg" is removed below so it
         # can't silently overwrite this on a future build.
-        "posterImage": "assets/images/poster-fire-on-the-hill.jpg",
-        "posterThumb": "assets/images/poster-fire-on-the-hill-thumb.jpg",
+        # Filename carries a -v2 suffix (not poster-fire-on-the-hill.jpg)
+        # on purpose: /assets/images/* is served with a one-year immutable
+        # Cache-Control (netlify.toml), so swapping this image's bytes at
+        # its old URL would leave every browser that already cached that
+        # URL stuck on the old poster indefinitely. A new filename forces
+        # a fresh URL no one has cached yet.
+        "posterImage": "assets/images/poster-fire-on-the-hill-v2.jpg",
+        "posterThumb": "assets/images/poster-fire-on-the-hill-v2-thumb.jpg",
         "overrideCredits": [
             {"k": "Director", "v": "Brett Fallentine"},
             {"k": "Production Company", "v": "Preamble Pictures, in association with RYOT, Contend and Enzo"},
