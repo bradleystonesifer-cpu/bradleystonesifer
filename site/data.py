@@ -642,6 +642,13 @@ OVERRIDES = {
         "logline": "On the edge of Compton, California in South Central LA, a band of inner-city cowboys fight to resurrect a horse stable that was mysteriously burnt to the ground.",
     },
     "documentary-3": {  # Call Me Lucky
+        # Order is intentional — do not re-sort (comedians first, then
+        # family, then Barry, then B-roll). Same gallery rendering as Kiss
+        # the Future (uniform CSS grid + lightbox, lazy-loaded below the
+        # fold via img()'s default loading="lazy").
+        "galleryImages": [
+            "assets/images/call-me-lucky/call-me-lucky-%02d.jpg" % i for i in range(1, 38)
+        ],
         "overrideCredits": [
             {"k": "Director", "v": "Bobcat Goldthwait"},
             {"k": "Production Company", "v": "Type 55 Films; MPI Media Group"},
