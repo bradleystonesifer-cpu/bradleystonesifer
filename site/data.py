@@ -638,6 +638,14 @@ OVERRIDES = {
         # a fresh URL no one has cached yet.
         "posterImage": "assets/images/poster-fire-on-the-hill-v2.jpg",
         "posterThumb": "assets/images/poster-fire-on-the-hill-v2-thumb.jpg",
+        # Order is intentional — do not re-sort (already in the intended
+        # film order). Same gallery rendering as Kiss the Future/Call Me
+        # Lucky. All 68 stills are a uniform 1280x532 — see
+        # GALLERY_IMG_DIMS in build.py, which emits real width/height
+        # attributes on these cells.
+        "galleryImages": [
+            "assets/images/fire-on-the-hill/fire-on-the-hill-%02d.jpg" % i for i in range(1, 69)
+        ],
         "overrideCredits": [
             {"k": "Director", "v": "Brett Fallentine"},
             {"k": "Production Company", "v": "Preamble Pictures, in association with RYOT, Contend and Enzo"},
@@ -884,7 +892,7 @@ VIDEOS = {
     "call-me-lucky": [{"url": "https://player.vimeo.com/video/135433937?h=c4e54b27a5",
                         "thumb": _vt("529370370-05cddb21a30bd1109b08cec21aa0897daa834706fbe71203f2e0b05f16f9a93d")}],
     "fire-on-the-hill": [{"url": "https://player.vimeo.com/video/325276727",
-                           "thumb": _vt("768960835-ae521a2df0bf6bfd3de928b1224fc5c4dd80e583aec1c8fa04509f4708791acf")}],
+                           "thumb": "assets/images/fire-on-the-hill/fire-on-the-hill-trailer-thumb.jpg"}],
     "microsoft-philanthropies-mary-mwende": [{"url": "https://player.vimeo.com/video/264378235",
                                                "thumb": _vt("694143610-9e37b63a80b3e4e015916d95644815820c4cd9b6a86c74e7df576ce83f41e655")}],
     # films — music video (each already has its own detail page from earlier

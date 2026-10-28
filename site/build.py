@@ -47,6 +47,15 @@ GALLERY_BOTTOM_COLS = {
 GALLERY_CONTAIN_FROM = {
     'kiss-the-future': 40,
 }
+# Per-slug (width, height) emitted as explicit <img width height> attributes
+# on gallery cells, for projects whose stills are all one known uniform
+# size — lets the browser reserve the right box before the image loads
+# (avoiding layout shift) instead of relying only on the CSS aspect-ratio
+# box. Opt-in: most projects' galleryImages aren't uniformly sized, so
+# this isn't applied unless a project is listed here.
+GALLERY_IMG_DIMS = {
+    'fire-on-the-hill': (1280, 532),
+}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -807,10 +816,12 @@ def render_gallery(root, dd, title, slug=None):
     # desktop click-to-enlarge wiring in main.js can reuse that one dataset
     # instead of embedding a second copy.
     lb_attrs = (lambda idx: ' data-gm-index="' + str(idx) + '" tabindex="0" role="button"') if desktop_lb else (lambda idx: '')
+    dims = GALLERY_IMG_DIMS.get(slug)
+    dims_attr = ' width="%d" height="%d"' % dims if dims else ''
 
     def cell(item, idx, cls):
         url, alt = _gallery_item(item, title)
-        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>'
+        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt, extra=dims_attr) + '</div>'
     left = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryLeft'], dd['galleryLeftIdx']) if _gallery_item(u, title)[0])
     right = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryRight'], dd['galleryRightIdx']) if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
@@ -844,7 +855,7 @@ def render_gallery(root, dd, title, slug=None):
             url, alt = _gallery_item(item, title)
             if url:
                 cell_cls = 'gallery-bottom-cell' + (' gallery-bottom-cell--contain' if contain_from and (idx + 1) >= contain_from else '')
-                out.append('<div class="' + cell_cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
+                out.append('<div class="' + cell_cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt, extra=dims_attr) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -869,13 +880,15 @@ def render_gallery_mobile(root, dd, title, slug=None):
     ar = dd.get('galleryAr') or 2.35
     cell_style = ' style="aspect-ratio: %.4f;"' % ar
     contain_from = GALLERY_CONTAIN_FROM.get(slug)
+    dims = GALLERY_IMG_DIMS.get(slug)
+    dims_attr = ' width="%d" height="%d"' % dims if dims else ''
     cells = []
     for i, (url, alt) in enumerate(items):
         full_url = asset(root, url)
         if i < GALLERY_MOBILE_INITIAL:
-            inner = img(full_url, alt, lazy=(i > 1))
+            inner = img(full_url, alt, lazy=(i > 1), extra=dims_attr)
         else:
-            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="'
+            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false"' + dims_attr + ' data-gm-src="'
                       + esc(full_url) + '">')
         hidden = ' gm-hidden' if i >= GALLERY_MOBILE_INITIAL else ''
         contain = ' gm-cell--contain' if contain_from and (i + 1) >= contain_from else ''
