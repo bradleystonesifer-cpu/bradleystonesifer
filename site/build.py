@@ -38,6 +38,25 @@ VIDEO_ONLY_SLUGS = {'t-mobile-iphone-14', 't-mobile-audition', 'google-the-big-p
 GALLERY_BOTTOM_COLS = {
     'almost-kings': 3,  # 21 images: 7 rows of 3
 }
+# 1-based galleryImages position a page's bottom-grid/mobile-grid cells
+# switch from object-fit: cover to contain, so wide-format images that
+# don't match the gallery's shared --ar (set from image 1 — see
+# detail_data()) show in full instead of being cropped to fit a box
+# shaped for the rest of the gallery. Kiss the Future's images 40-45 are
+# 4-camera 2x2 composites (~16:9) among otherwise ~2:1 interview stills.
+GALLERY_CONTAIN_FROM = {
+    'kiss-the-future': 40,
+}
+# Per-slug (width, height) emitted as explicit <img width height> attributes
+# on gallery cells, for projects whose stills are all one known uniform
+# size — lets the browser reserve the right box before the image loads
+# (avoiding layout shift) instead of relying only on the CSS aspect-ratio
+# box. Opt-in: most projects' galleryImages aren't uniformly sized, so
+# this isn't applied unless a project is listed here.
+GALLERY_IMG_DIMS = {
+    'fire-on-the-hill': (1280, 532),
+    'the-youth-governor': (1280, 720),
+}
 
 # ---------------------------------------------------------------- helpers --
 
@@ -784,7 +803,7 @@ def _gallery_item(item, title):
     return item if isinstance(item, tuple) else (item, title)
 
 
-def render_gallery(root, dd, title):
+def render_gallery(root, dd, title, slug=None):
     # asset(root, url) root-prefixes a local path (no-op for absolute
     # http(s) URLs, e.g. the legacy Squarespace-hosted galleries) — same
     # treatment the poster image already gets, so galleryImages can store
@@ -798,10 +817,12 @@ def render_gallery(root, dd, title):
     # desktop click-to-enlarge wiring in main.js can reuse that one dataset
     # instead of embedding a second copy.
     lb_attrs = (lambda idx: ' data-gm-index="' + str(idx) + '" tabindex="0" role="button"') if desktop_lb else (lambda idx: '')
+    dims = GALLERY_IMG_DIMS.get(slug)
+    dims_attr = ' width="%d" height="%d"' % dims if dims else ''
 
     def cell(item, idx, cls):
         url, alt = _gallery_item(item, title)
-        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>'
+        return '<div class="' + cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt, extra=dims_attr) + '</div>'
     left = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryLeft'], dd['galleryLeftIdx']) if _gallery_item(u, title)[0])
     right = ''.join(cell(u, i, 'gallery-cell') for u, i in zip(dd['galleryRight'], dd['galleryRightIdx']) if _gallery_item(u, title)[0])
     poster = asset(root, dd['posterImage'])
@@ -828,12 +849,14 @@ def render_gallery(root, dd, title):
     out.append('<div class="gallery-side"><div class="gallery-side-grid">' + right + '</div></div>')
     out.append('</div>')
     bottom = dd['galleryBottom']
+    contain_from = GALLERY_CONTAIN_FROM.get(slug)
     if bottom:
         out.append('<div class="gallery-bottom"' + bottom_style + '>')
         for item, idx in zip(bottom, dd['galleryBottomIdx']):
             url, alt = _gallery_item(item, title)
             if url:
-                out.append('<div class="gallery-bottom-cell"' + lb_attrs(idx) + '>' + img(asset(root, url), alt) + '</div>')
+                cell_cls = 'gallery-bottom-cell' + (' gallery-bottom-cell--contain' if contain_from and (idx + 1) >= contain_from else '')
+                out.append('<div class="' + cell_cls + '"' + lb_attrs(idx) + '>' + img(asset(root, url), alt, extra=dims_attr) + '</div>')
         out.append('</div>')
     return ''.join(out)
 
@@ -842,7 +865,7 @@ GALLERY_MOBILE_INITIAL = 16
 GALLERY_MOBILE_BATCH = 16
 
 
-def render_gallery_mobile(root, dd, title):
+def render_gallery_mobile(root, dd, title, slug=None):
     """Phone-width (<=600px) gallery: poster full-width first, then every
     still in the same order used elsewhere (the 8 featured/interleaved
     stills, then the rest) in a 2-column grid. Only the first 16 cells get
@@ -857,16 +880,20 @@ def render_gallery_mobile(root, dd, title):
         return ''
     ar = dd.get('galleryAr') or 2.35
     cell_style = ' style="aspect-ratio: %.4f;"' % ar
+    contain_from = GALLERY_CONTAIN_FROM.get(slug)
+    dims = GALLERY_IMG_DIMS.get(slug)
+    dims_attr = ' width="%d" height="%d"' % dims if dims else ''
     cells = []
     for i, (url, alt) in enumerate(items):
         full_url = asset(root, url)
         if i < GALLERY_MOBILE_INITIAL:
-            inner = img(full_url, alt, lazy=(i > 1))
+            inner = img(full_url, alt, lazy=(i > 1), extra=dims_attr)
         else:
-            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="'
+            inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false"' + dims_attr + ' data-gm-src="'
                       + esc(full_url) + '">')
         hidden = ' gm-hidden' if i >= GALLERY_MOBILE_INITIAL else ''
-        cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i)
+        contain = ' gm-cell--contain' if contain_from and (i + 1) >= contain_from else ''
+        cells.append('<button type="button" class="gm-cell' + hidden + contain + '" data-gm-index="' + str(i)
                       + '"' + cell_style + '>' + inner + '</button>')
     more_btn = '<button type="button" class="gm-more" data-gm-more>Show more</button>' if len(items) > GALLERY_MOBILE_INITIAL else ''
     poster = asset(root, dd['posterImage'])
@@ -998,13 +1025,14 @@ def render_episode_selector(p):
 def render_episode_panels(root, p):
     """Full-width episode panels for Misfits & Monsters — one per
     episode, swapped by the selector buttons above (JS, no reload). Each
-    panel's stills are grouped into up to two justified-row flex groups
-    (desktop) — all 16:9 first, then the 4:3 ones (episode 2's news-
-    broadcast frames) in their own row group, capped by JS to the 16:9
-    rows' own width so they wrap sooner rather than running wider — or a
-    2-column grid (mobile), reusing the same .gm-cell/.gm-more/.gm-data
-    wiring and shared lightbox as every other gallery page, just with
-    its own collapse-on-episode-switch behavior layered on in main.js.
+    panel's stills render as a single uniform CSS grid (3 columns desktop,
+    2 at 900px and below — see .ep-grid in style.css): every tile is a
+    16:9 box with object-fit: cover, so a 4:3 still (episode 2's news-
+    broadcast frames) crops to fit rather than letterboxing, and every
+    row — including a sparse last row after Show more — uses identical
+    tile sizes. Reuses the same .gm-cell/.gm-more/.gm-data wiring and
+    shared lightbox as every other gallery page, just with its own
+    collapse-on-episode-switch behavior layered on in main.js.
     Episode titles/synopses are reused from the existing "episodes" list
     by matching "n" — never duplicated here. Episodes with no folder yet
     (1 and 8) still get a real, clickable panel — title, synopsis, and a
@@ -1048,13 +1076,11 @@ def render_episode_panels(root, p):
                 if raw_narrow:
                     raw_narrow = order_by_similar_look(folder, raw_narrow)
             files = raw_wide + raw_narrow
-            items, wide_cells, narrow_cells = [], [], []
+            items, cells = [], []
             for i, f in enumerate(files):
                 url = asset(root, 'assets/images/misfits-and-monsters/' + folder + '/' + f['file'])
                 alt = (title or ('Episode ' + n)) + ' — still ' + str(i + 1)
-                ar = (f['w'] / f['h']) if f.get('h') else 16 / 9
                 items.append({'url': url, 'alt': alt})
-                style = ' style="--ar: %.4f"' % ar
                 if i < EPISODE_FEATURED_COUNT:
                     # Only the default/visible-on-load episode gets its
                     # first couple of images eager — every other panel
@@ -1065,8 +1091,7 @@ def render_episode_panels(root, p):
                 else:
                     inner = ('<img alt="' + esc(alt) + '" decoding="async" draggable="false" data-gm-src="' + esc(url) + '">')
                 hidden = ' gm-hidden' if i >= EPISODE_FEATURED_COUNT else ''
-                cell = ('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '"' + style + '>' + inner + '</button>')
-                (wide_cells if ar > 1.5 else narrow_cells).append(cell)
+                cells.append('<button type="button" class="gm-cell' + hidden + '" data-gm-index="' + str(i) + '">' + inner + '</button>')
 
             more_btn = ''
             rest = len(files) - EPISODE_FEATURED_COUNT
@@ -1076,17 +1101,8 @@ def render_episode_panels(root, p):
                              'data-show-more-label="' + esc(more_label) + '" data-show-less-label="Show less">'
                              + esc(more_label) + '</button>')
 
-            # Two separate flex-wrap rows, not one, so JS can cap the 4:3
-            # row's width to whatever the 16:9 row actually achieves —
-            # otherwise narrower 4:3 cells pack one extra per row and the
-            # row runs wider than the 16:9 rows above it (see main.js
-            # syncNarrowRowWidth). Only emitted if this episode actually
-            # has any of that shape.
-            rows_html = '<div class="ep-grid-row" data-ep-row-wide>' + ''.join(wide_cells) + '</div>'
-            if narrow_cells:
-                rows_html += '<div class="ep-grid-row" data-ep-row-narrow>' + ''.join(narrow_cells) + '</div>'
             data_json = json.dumps(items, separators=(',', ':')).replace('</', '<\\/')
-            gallery_html = ('<div class="ep-grid">' + rows_html + '</div>' + more_btn
+            gallery_html = ('<div class="ep-grid">' + ''.join(cells) + '</div>' + more_btn
                              + '<script type="application/json" class="gm-data">' + data_json + '</script>')
         else:
             gallery_html = '<p class="ep-coming-soon">Stills coming soon.</p>'
@@ -1405,8 +1421,8 @@ def render_detail_page(p, current_folder, next_map):
         body.append(render_episode_selector(p))
         body.append(render_episode_panels(root, p))
     else:
-        body.append(render_gallery(root, dd, p['title']))
-        body.append(render_gallery_mobile(root, dd, p['title']))
+        body.append(render_gallery(root, dd, p['title'], p.get('slug')))
+        body.append(render_gallery_mobile(root, dd, p['title'], p.get('slug')))
     body.append(render_video_block(p, 'second', root=root))
     body.append('</div>')  # /detail-wrap
 
@@ -1550,8 +1566,6 @@ def render_about():
 ASSET_RENAME = {
     'posters-1787856825910-69yy.jpg': 'poster-the-vicious-kind.jpg',
     'posters-1787856825898-bis9.jpg': 'poster-hit-and-run.jpg',
-    'ME+HER.jpg': 'poster-me-plus-her.jpg',
-    'almost kings.jpg': 'poster-almost-kings.jpg',
     'spork.jpg': 'poster-spork.jpg',
     'theKid.jpg': 'poster-the-kid.jpg',
     'DePutaMadre.jpg': 'poster-de-puta-madre.jpg',
@@ -1559,7 +1573,6 @@ ASSET_RENAME = {
     'misfits and monsters.jpg': 'poster-misfits-and-monsters.jpg',
     'KTF.jpg': 'poster-kiss-the-future.jpg',
     'youth governor.jpg': 'poster-the-youth-governor.jpg',
-    'fire on the hill.jpg': 'poster-fire-on-the-hill.jpg',
     'Call me Lucky.jpg': 'poster-call-me-lucky.jpg',
 }
 

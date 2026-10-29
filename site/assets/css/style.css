@@ -559,6 +559,15 @@ button.video-thumb-overlay {
   align-items: center;
   justify-content: center;
   transition: transform 0.18s ease, border-color 0.18s ease;
+  /* Without this, render_video_block()'s structure (.play-btn as a plain
+     non-positioned child after the absolutely-positioned thumb <img> in
+     .video-thumb-overlay) paints the circle BELOW the image once that
+     image actually loads, hiding it entirely — render_video_player()'s
+     structure avoids this only because its own button wrapper is itself
+     absolutely positioned. position + z-index here lifts .play-btn above
+     the thumb in both structures. */
+  position: relative;
+  z-index: 1;
 }
 .play-btn-tri {
   width: 0;
@@ -648,6 +657,14 @@ button.video-thumb-overlay {
    reasoning as --pc above. */
 .gallery-bottom-cell { position: relative; overflow: hidden; border-radius: 2px; aspect-ratio: var(--ar, 2.35 / 1); background: #000; }
 .gallery-bottom-cell img { object-position: center 30%; }
+/* Opt-in per project (GALLERY_CONTAIN_FROM in build.py) for a tail of
+   stills whose own aspect ratio doesn't match the gallery's shared --ar
+   (set from image 1 — see detail_data()) — e.g. Kiss the Future's 2x2
+   camera-setup composites among ~2:1 interview stills. object-fit:
+   contain instead of the default cover, so they show in full (letter-
+   boxed in the cell's own background) rather than being cropped to fit
+   a box shaped for the rest of the gallery. */
+.gallery-bottom-cell--contain img, .gm-cell--contain img { object-fit: contain; object-position: center; }
 
 /* Desktop click-to-enlarge (opt-in per project — see DESKTOP_LIGHTBOX_SLUGS
    in build.py): only cells that got a data-gm-index attribute render as
@@ -812,32 +829,23 @@ button.video-thumb-overlay {
 .episode-info .logline-text { margin-bottom: 0; }
 .ep-coming-soon { font: 400 14px/1.5 'Inter', sans-serif; color: var(--muted); font-style: italic; margin: 0; }
 
-/* Justified rows: a row height that scales continuously with the
-   viewport (clamp, not a breakpoint jump) + each cell's own --ar (from
-   the image's real w/h) gives the cell its correct width with zero
-   crop — no flex-grow, so a width is never stretched past its true
-   ratio (that would letterbox inside the cell) and the last, sparser
-   row stays left-aligned instead of being forced to fill the row.
-   max-width: 100% is only a safety clamp for a narrow viewport, not the
-   normal case.
+/* Uniform grid: every tile is the same 16:9 box regardless of the
+   source still's real aspect ratio (the 4:3 news-broadcast frames in
+   episode 2 crop to fit via the base img rule's object-fit: cover
+   instead of letterboxing), so every row — including a sparse last
+   row — uses identical tile sizes with no stretched/undersized/missing
+   tile. 3 columns down to 901px, 2 columns at 900px and below. */
+.ep-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ep-grid .gm-cell { aspect-ratio: 16/9; }
 
-   The 16:9 and 4:3 stills are two separate flex-wrap rows (.ep-grid-row),
-   not one — narrower 4:3 cells otherwise pack one extra per row and
-   that row runs wider than the 16:9 rows above it. main.js measures the
-   16:9 row's actual achieved width and applies it as the 4:3 row's
-   max-width, so it wraps at that same boundary instead of the full
-   container width. */
-.ep-grid { display: flex; flex-direction: column; gap: 12px; }
-.ep-grid-row { display: flex; flex-wrap: wrap; gap: 12px; }
-.ep-grid-row .gm-cell { height: clamp(130px, 13.5vw, 220px); width: auto; aspect-ratio: var(--ar, 16/9); flex-grow: 0; flex-shrink: 0; max-width: 100%; }
-.ep-grid-row .gm-cell img { width: 100%; height: 100%; object-fit: contain; background: var(--brown); }
+@media (max-width: 900px) {
+  .ep-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 600px) {
   .episode-select-row { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; }
   .episode-select-row .ep-select-btn { flex: 0 0 auto; white-space: nowrap; }
   .episode-panels { margin-top: 20px; }
-  .ep-grid-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-width: none !important; }
-  .ep-grid-row .gm-cell { height: auto; width: auto; }
 }
 
 /* simplified Music Video / Commercial pages: a plain stills grid, no poster */
