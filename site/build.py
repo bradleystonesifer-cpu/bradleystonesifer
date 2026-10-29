@@ -55,6 +55,7 @@ GALLERY_CONTAIN_FROM = {
 # this isn't applied unless a project is listed here.
 GALLERY_IMG_DIMS = {
     'fire-on-the-hill': (1280, 532),
+    'the-youth-governor': (1280, 720),
 }
 
 # ---------------------------------------------------------------- helpers --

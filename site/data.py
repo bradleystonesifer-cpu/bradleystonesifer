@@ -682,6 +682,15 @@ OVERRIDES = {
         # todo: director, logline still needed
     },
     "documentary-1": {  # The Youth Governor
+        # Order is intentional — do not re-sort (film order). Same gallery
+        # rendering as Kiss the Future/Call Me Lucky. All 49 stills are a
+        # uniform 1280x720 (16:9) — see GALLERY_IMG_DIMS in build.py, which
+        # emits real width/height attributes on these cells and (via
+        # image_aspect_ratio() in detail_data()) the gallery's shared --ar
+        # self-adapts to 16:9 from image 1, so nothing is cropped.
+        "galleryImages": [
+            "assets/images/the-youth-governor/the-youth-governor-%02d.jpg" % i for i in range(1, 50)
+        ],
         "overrideCredits": [
             {"k": "Director", "v": "Matthew Halmy, Jaron Halmy"},
             {"k": "Production Company", "v": "Blumhouse Television; Red Earth"},
