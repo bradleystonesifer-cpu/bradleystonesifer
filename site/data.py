@@ -902,6 +902,8 @@ VIDEOS = {
                         "thumb": _vt("529370370-05cddb21a30bd1109b08cec21aa0897daa834706fbe71203f2e0b05f16f9a93d")}],
     "fire-on-the-hill": [{"url": "https://player.vimeo.com/video/325276727",
                            "thumb": "assets/images/fire-on-the-hill/fire-on-the-hill-trailer-thumb.jpg"}],
+    "the-youth-governor": [{"url": "https://player.vimeo.com/video/1119621108?h=2f5bc2c5e2",
+                             "thumb": "assets/images/the-youth-governor/the-youth-governor-02.jpg"}],
     "microsoft-philanthropies-mary-mwende": [{"url": "https://player.vimeo.com/video/264378235",
                                                "thumb": _vt("694143610-9e37b63a80b3e4e015916d95644815820c4cd9b6a86c74e7df576ce83f41e655")}],
     # films — music video (each already has its own detail page from earlier
